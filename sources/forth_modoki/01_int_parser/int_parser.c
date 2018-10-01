@@ -10,45 +10,43 @@ int main() {
     int answer3 = 0;
 
     // write something here.
-    int start = 0;
-    int end = 0;
-    int finish_flg = 0;
+    int parsed_len = 0;
 
-    int answers[3];
-    int idx = 0;
+    // 1st int.
+    int len = 0;
+    len = getcharlen(input);
 
-    while (finish_flg != 1) {
-        for (int i = start; input[i] != '\0'; i++) {
-            if (input[i] != ' ') {
-                start = i;
-                for (int j = start; input[j] != '\0'; j++) {
-                    if (input[j] == ' ') {
-                        end = j - 1; // one character before the space.
-                        break;
-                    }
-                    else {
-                        end = j;
-                        finish_flg = 1;
-                    }
-                }
+    answer1 = cl_atoi(input, len, &parsed_len);
 
-                // store splited strings into arrays.
-                int length = end - start;
-                char substr[length];
-                for (int k = 0; k <= length; k++){
-                    substr[k] = input[start+k];
-                }
-                answers[idx] = atoi(substr);
-                idx += 1;
+    // 2nd int.
+    int len1 = 0;
+    char *rest1 = input + parsed_len;
+    len1 = getcharlen(rest1);
 
-                // proceed with loop index by strings length
-                i += end - start;
-            }
+    for (int i = 0; i < len1; i++) {
+        rest1 += 1;
+        len1 -= 1;
+        if (rest1[i] != ' ') {
+            break;
         }
     }
-    answer1 = answers[0];
-    answer2 = answers[1];
-    answer3 = answers[2];
+
+    answer2 = cl_atoi(rest1, len1, &parsed_len);
+
+    // 3rd int.
+    int len2 = 0;
+    char *rest2 = rest1 + parsed_len;
+    len2 = getcharlen(rest2);
+
+    for (int i = 0; i < len2; i++) {
+        rest2 += 1;
+        len2 -= 1;
+        if (rest2[i] != ' ') {
+            break;
+        }
+    }
+
+    answer3 = cl_atoi(rest2, len2, &parsed_len);
 
     // verity result.
     assert(answer1 == 123);
@@ -56,4 +54,25 @@ int main() {
     assert(answer3 == 1203);
 
     return 1;
+}
+
+int cl_atoi(char *s, int len, int *out_parsed_len) {
+    int result = 0;
+    *out_parsed_len = 0;
+    for (int i = 0; i < len; i++) {
+        if (s[i] == ' ') {
+            break;
+        }
+        result = 10*result + (s[i] - '0');
+        *out_parsed_len += 1;
+    }
+    return result;
+}
+
+int getcharlen(char *s) {
+    int len = 0;
+    for (int i=0; s[i] != '\0'; i++){
+        len += 1;
+    }
+    return len;
 }
