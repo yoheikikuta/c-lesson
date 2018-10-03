@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+
 static const char* const input = "123 456  1203";
 
 
@@ -10,43 +11,39 @@ int main() {
     int answer3 = 0;
 
     // write something here.
+    char *rest = input;
     int parsed_len = 0;
+    int answers[3] = {0,0,0};
 
     // 1st int.
-    int len = 0;
-    len = getcharlen(input);
+    int str_len = 0;
+    str_len = cl_strlen(rest);
 
-    answer1 = cl_atoi(input, len, &parsed_len);
-
-    // 2nd int.
-    int len1 = 0;
-    char *rest1 = input + parsed_len;
-    len1 = getcharlen(rest1);
-
-    for (int i = 0; i < len1; i++) {
-        rest1 += 1;
-        len1 -= 1;
-        if (rest1[i] != ' ') {
-            break;
+    for (int i = 0; str_len != 0; i++) {
+        // For the first time eliminate the head space(s).
+        if (i == 0) {
+            skip_space(rest, str_len, &parsed_len);
+            rest = rest + parsed_len;
+            str_len = cl_strlen(rest);
         }
+
+        // Parse one int.
+        answers[i] = parse_one_int(rest, str_len, &parsed_len);
+
+        // Move the pointer by parsed_len.
+        rest = rest + parsed_len;
+
+        // Eliminate space(s) up to the next character.
+        skip_space(rest, str_len, &parsed_len);
+        rest = rest + parsed_len;
+
+        // Compute str_len.
+        str_len = cl_strlen(rest);
     }
 
-    answer2 = cl_atoi(rest1, len1, &parsed_len);
-
-    // 3rd int.
-    int len2 = 0;
-    char *rest2 = rest1 + parsed_len;
-    len2 = getcharlen(rest2);
-
-    for (int i = 0; i < len2; i++) {
-        rest2 += 1;
-        len2 -= 1;
-        if (rest2[i] != ' ') {
-            break;
-        }
-    }
-
-    answer3 = cl_atoi(rest2, len2, &parsed_len);
+    answer1 = answers[0];
+    answer2 = answers[1];
+    answer3 = answers[2];
 
     // verity result.
     assert(answer1 == 123);
@@ -56,23 +53,37 @@ int main() {
     return 1;
 }
 
-int cl_atoi(char *s, int len, int *out_parsed_len) {
-    int result = 0;
-    *out_parsed_len = 0;
-    for (int i = 0; i < len; i++) {
-        if (s[i] == ' ') {
-            break;
-        }
-        result = 10*result + (s[i] - '0');
-        *out_parsed_len += 1;
-    }
-    return result;
-}
-
-int getcharlen(char *s) {
+int cl_strlen(char *s) {
     int len = 0;
     for (int i=0; s[i] != '\0'; i++){
         len += 1;
     }
     return len;
+}
+
+int parse_one_int(char *s, int len, int *out_parsed_len) {
+    int parsed_int = 0;
+    *out_parsed_len = 0;
+
+    for (int i = 0; i < len; i++) {
+        if (s[i] == ' ') {
+            break;
+        }
+        parsed_int = 10*parsed_int + (s[i] - '0');
+        *out_parsed_len += 1;
+    }
+
+    return parsed_int;
+}
+
+void skip_space(char *s, int len, int *out_parsed_len) {
+    *out_parsed_len = 0;
+
+    for (int i = 0; i < len; i++) {
+        if (s[i] != ' ') {
+            break;
+        }
+        *out_parsed_len += 1;
+    }
+
 }
