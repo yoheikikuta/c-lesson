@@ -14,31 +14,31 @@ int main() {
     char *rest = input;
     int parsed_len = 0;
     int answers[3] = {0,0,0};
+    int rest_len = 0;
 
-    // 1st int.
-    int str_len = 0;
-    str_len = cl_strlen(rest);
+    rest_len = cl_strlen(rest);
 
-    for (int i = 0; str_len != 0; i++) {
-        // For the first time eliminate the head space(s).
-        if (i == 0) {
-            skip_space(rest, str_len, &parsed_len);
-            rest = rest + parsed_len;
-            str_len = cl_strlen(rest);
-        }
+    // Eliminate the head space(s).
+    skip_space(rest, rest_len, &parsed_len);
+    rest = rest + parsed_len;
+    rest_len = cl_strlen(rest);
 
+    int lc = 0;
+    while (rest_len > 0) {
         // Parse one int.
-        answers[i] = parse_one_int(rest, str_len, &parsed_len);
+        answers[lc] = parse_one_int(rest, rest_len, &parsed_len);
 
         // Move the pointer by parsed_len.
         rest = rest + parsed_len;
 
         // Eliminate space(s) up to the next character.
-        skip_space(rest, str_len, &parsed_len);
+        skip_space(rest, rest_len, &parsed_len);
         rest = rest + parsed_len;
 
-        // Compute str_len.
-        str_len = cl_strlen(rest);
+        // Compute rest_len of the rest string.
+        rest_len = cl_strlen(rest);
+
+        lc++;
     }
 
     answer1 = answers[0];
@@ -55,9 +55,10 @@ int main() {
 
 int cl_strlen(char *s) {
     int len = 0;
-    for (int i=0; s[i] != '\0'; i++){
-        len += 1;
+    while (*s++) {
+        len++;
     }
+
     return len;
 }
 
