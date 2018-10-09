@@ -6,43 +6,13 @@ cc cl_getc.c int_parser_getc.c
 */
 enum TokenType {NUMBER, SPACE};
 
-int main() {
-    int answer1 = 0;
-    int answer2 = 0;
 
-    // Unit test.
-    test_parse_one_123();
-
-    // Reset the input string.
-    cl_getc_set_src("123 456");
-
-    // write something here.
-    // Initialization.
-    enum TokenType out_token_type;
-    int out_token_value = 0;
-    int head_char = '\0';
-    int answers[2];
-
-    // Parse one by one.
-    int idx = 0;
-    while (head_char != EOF) {
-        head_char = parse_one(head_char, &out_token_type, &out_token_value);
-        if (out_token_type == NUMBER) {
-            answers[idx] = out_token_value;
-            idx++;
-        }
+int is_digit(int c) {
+    if (('0' <= c) && (c <= '9')) {
+        return 1;
+    } else {
+        return 0;
     }
-
-    // Store the results.
-    answer1 = answers[0];
-    answer2 = answers[1];
-
-    // verity result.
-    assert(answer1 == 123);
-    assert(answer2 == 456);
-
-    return 1;
-
 }
 
 
@@ -87,11 +57,6 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
 }
 
 
-int is_digit(int c) {
-    if (('0' <= c) && (c <= '9')) {return 1;}
-}
-
-
 void test_parse_one_123() {
     char *input = "123";
     cl_getc_set_src(input);
@@ -104,3 +69,44 @@ void test_parse_one_123() {
 
     assert(expected == actual);
 }
+
+
+int main() {
+    int answer1 = 0;
+    int answer2 = 0;
+
+    // Unit test.
+    test_parse_one_123();
+
+    // Reset the input string.
+    cl_getc_set_src("123 456");
+
+    // write something here.
+    // Initialization.
+    enum TokenType out_token_type;
+    int out_token_value = 0;
+    int head_char = '\0';
+    int answers[2];
+
+    // Parse one by one.
+    int idx = 0;
+    while (head_char != EOF) {
+        head_char = parse_one(head_char, &out_token_type, &out_token_value);
+        if (out_token_type == NUMBER) {
+            answers[idx] = out_token_value;
+            idx++;
+        }
+    }
+
+    // Store the results.
+    answer1 = answers[0];
+    answer2 = answers[1];
+
+    // verity result.
+    assert(answer1 == 123);
+    assert(answer2 == 456);
+
+    return 1;
+
+}
+
