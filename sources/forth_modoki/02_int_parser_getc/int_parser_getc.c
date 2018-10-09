@@ -61,7 +61,7 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
                 return cur_char;
             }
         }
-    } else if (('0' <= head_char) && (head_char <= '9')) {
+    } else if (is_digit(head_char)) {
         // Set the first number come from the head character.
         *out_token_value = (head_char - '0');
         *out_token_type = NUMBER;
@@ -70,7 +70,7 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
         // Since while loop continues to the next space character,
         // out_token_value has to be computed after if condition.
         while ((cur_char = cl_getc()) != EOF) {
-            if ((cur_char <= '0') || ('9' <= cur_char)) {
+            if (!is_digit(cur_char)) {
                 return cur_char;
             }
             *out_token_value = (10 * *out_token_value) + (cur_char - '0');
@@ -80,3 +80,7 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
     return cur_char;
 }
 
+
+int is_digit(int c) {
+    if (('0' <= c) && (c <= '9')) {return 1;}
+}
