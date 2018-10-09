@@ -4,7 +4,7 @@
 /*
 cc cl_getc.c int_parser_getc.c
 */
-enum TokenType {NUMBER, SPACE};
+enum TokenType {INITIAL, NUMBER, SPACE};
 
 int main() {
     int answer1 = 0;
@@ -20,11 +20,6 @@ int main() {
     // Parse one by one.
     int idx = 0;
     while (head_char != EOF) {
-        // Read the first character.
-        if (head_char == '\0') {
-            head_char = cl_getc();
-        }
-
         head_char = parse_one(head_char, &out_token_type, &out_token_value);
         if (out_token_type == NUMBER) {
             answers[idx] = out_token_value;
@@ -51,13 +46,17 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
     int cur_char = 0;
 
     // Parse one unit for each head_char type.
-    if (head_char == ' ') {
+    if (head_char == '\0') {
+        *out_token_type = INITIAL;
+        cur_char = cl_getc();
+        return cur_char;
+    } else if (head_char == ' ') {
         *out_token_value = ' ';
         *out_token_type = SPACE;
 
-        // Move to the next digit chracter.
+        // Move to the next non-space chracter.
         while ((cur_char = cl_getc()) != EOF) {
-            if (('0' <= cur_char) && (cur_char <= '9')) {
+            if (cur_char != ' ') {
                 return cur_char;
             }
         }
@@ -70,7 +69,7 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
         // Since while loop continues to the next space character,
         // out_token_value has to be computed after if condition.
         while ((cur_char = cl_getc()) != EOF) {
-            if (cur_char == ' ') {
+            if ((cur_char <= '0') || ('9' <= cur_char)) {
                 return cur_char;
             }
             *out_token_value = (10 * *out_token_value) + (cur_char - '0');
@@ -79,3 +78,4 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
 
     return cur_char;
 }
+
