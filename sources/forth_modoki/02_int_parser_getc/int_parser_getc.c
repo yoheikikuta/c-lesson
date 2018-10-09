@@ -4,7 +4,7 @@
 /*
 cc cl_getc.c int_parser_getc.c
 */
-enum TokenType {INITIAL, NUMBER, SPACE};
+enum TokenType {NUMBER, SPACE};
 
 int main() {
     int answer1 = 0;
@@ -45,12 +45,13 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
     *out_token_value = 0;
     int cur_char = 0;
 
-    // Parse one unit for each head_char type.
+    // Read the first character and reset head_char for the initial case.
     if (head_char == '\0') {
-        *out_token_type = INITIAL;
-        cur_char = cl_getc();
-        return cur_char;
-    } else if (head_char == ' ') {
+        head_char = cl_getc();
+    }
+
+    // Parse one unit for each head_char type.
+    if (head_char == ' ') {
         *out_token_value = ' ';
         *out_token_type = SPACE;
 
