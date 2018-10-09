@@ -10,6 +10,12 @@ int main() {
     int answer1 = 0;
     int answer2 = 0;
 
+    // Unit test.
+    test_parse_one_123();
+
+    // Reset the input string.
+    cl_getc_set_src("123 456");
+
     // write something here.
     // Initialization.
     enum TokenType out_token_type;
@@ -83,4 +89,18 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
 
 int is_digit(int c) {
     if (('0' <= c) && (c <= '9')) {return 1;}
+}
+
+
+void test_parse_one_123() {
+    char *input = "123";
+    cl_getc_set_src(input);
+    int head_char = '\0';
+    enum TokenType out_token_type;
+    int actual = 0;
+
+    int expected = 123;
+    parse_one(head_char, &out_token_type, &actual);
+
+    assert(expected == actual);
 }
