@@ -7,7 +7,7 @@ cc cl_getc.c int_parser_getc.c
 enum TokenType {NUMBER, SPACE};
 
 
-int is_digit(int c) {
+static int is_digit(int c) {
     if (('0' <= c) && (c <= '9')) {
         return 1;
     } else {
@@ -57,7 +57,7 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
 }
 
 
-void test_parse_one_123() {
+static void test_parse_one_123() {
     char *input = "123";
     cl_getc_set_src(input);
     int head_char = '\0';
