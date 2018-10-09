@@ -59,12 +59,13 @@ int parse_one(int head_char, enum TokenType *out_token_type, int *out_token_valu
 
 static void test_parse_one_123() {
     char *input = "123";
+    int expected = 123;
+
     cl_getc_set_src(input);
     int head_char = '\0';
     enum TokenType out_token_type;
     int actual = 0;
 
-    int expected = 123;
     parse_one(head_char, &out_token_type, &actual);
 
     assert(expected == actual);
