@@ -10,7 +10,7 @@ enum LexicalType {
     EXECUTABLE_NAME,
     LITERAL_NAME,
     OPEN_CURLY,
-    CLOSE_CURLY, 
+    CLOSE_CURLY,
     END_OF_FILE,
     UNKNOWN
 };
@@ -28,14 +28,61 @@ struct Token {
 
 #define NAME_SIZE 256
 
+
+static int is_space(int c) {
+    return c == ' ';
+}
+
+static int is_digit(int c) {
+    return ('0' <= c) && (c <= '9');
+}
+
+
 int parse_one(int prev_ch, struct Token *out_token) {
     /****
      * 
      * TODO: Implement here!
      * 
     ****/
+    int cur_ch = 0;
+    //*out_token = //How to initialize?
+
+    // Read the first character and reset prev_ch for the initial case.
+    if (prev_ch == EOF) {
+        cur_ch = cl_getc();
+    } else {
+        cur_ch = prev_ch;
+    }
+
+    // Parse one unit for each head_char type.
+    if (cur_ch == EOF) {
+        out_token->ltype = END_OF_FILE;
+
+        return EOF;
+
+    } else if (cur_ch == ' ') {
+        out_token->ltype = SPACE;
+
+        // Just move to the next non-space character.
+        for (; is_space(cur_ch); cur_ch=cl_getc()) {;}
+
+        return cur_ch;
+
+    } else if (is_digit(cur_ch)) {
+        out_token->ltype = NUMBER;
+
+        // Construct integer recursively.
+        for (; is_digit(cur_ch); cur_ch=cl_getc()) {
+            out_token->u.number = (10 * out_token->u.number) + (cur_ch - '0');
+        }
+
+        return cur_ch;
+
+    }
+
     out_token->ltype = UNKNOWN;
     return EOF;
+
 }
 
 
@@ -120,7 +167,7 @@ static void unit_tests() {
 int main() {
     unit_tests();
 
-    cl_getc_set_src("123 45 add /some { 2 3 add } def");
-    parser_print_all();
+    //cl_getc_set_src("123 45 add /some { 2 3 add } def");
+    //parser_print_all();
     return 1;
 }
