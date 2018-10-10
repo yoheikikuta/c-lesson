@@ -72,12 +72,47 @@ static void test_parse_one_123() {
 }
 
 
+static void test_parse_one_123_456() {
+    char *input = "123  456";
+    enum TokenType expected_t1 = NUMBER;
+    int expected_v1 = 123;
+    int expected_h1 = ' ';
+    enum TokenType expected_t2 = SPACE;
+    int expected_v2 = ' ';
+    int expected_h2 = '4';
+    enum TokenType expected_t3 = NUMBER;
+    int expected_v3 = 456;
+    int expected_h3 = EOF;
+
+    cl_getc_set_src(input);
+    int head_char = '\0';
+    enum TokenType actual_t;
+    int actual_v = 0;
+
+    head_char = parse_one(head_char, &actual_t, &actual_v);
+    assert(expected_t1 == actual_t);
+    assert(expected_v1 == actual_v);
+    assert(expected_h1 == head_char);
+
+    head_char = parse_one(head_char, &actual_t, &actual_v);
+    assert(expected_t2 == actual_t);
+    assert(expected_v2 == actual_v);
+    assert(expected_h2 == head_char);
+
+    head_char = parse_one(head_char, &actual_t, &actual_v);
+    assert(expected_t3 == actual_t);
+    assert(expected_v3 == actual_v);
+    assert(expected_h3 == head_char);
+}
+
+
 int main() {
     int answer1 = 0;
     int answer2 = 0;
 
     // Unit test.
     test_parse_one_123();
+    test_parse_one_123_456();
 
     // Reset the input string.
     cl_getc_set_src("123 456");
