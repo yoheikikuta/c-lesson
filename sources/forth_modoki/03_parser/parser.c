@@ -55,7 +55,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
     // Parse one unit for each cur_ch type.
     if (cur_ch == EOF) {
         out_token->ltype = END_OF_FILE;
-        return EOF;
+        return cur_ch;
 
     } else if (is_space(cur_ch)) {
         // Just move to the next non-space character.
