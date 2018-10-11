@@ -62,6 +62,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         for (cur_ch; is_space(cur_ch); cur_ch=cl_getc()) {;}
 
         out_token->ltype = SPACE;
+        out_token->u.onechar = ' ';
         return cur_ch;
 
     } else if (is_digit(cur_ch)) {
@@ -155,10 +156,27 @@ static void test_parse_one_empty_should_return_END_OF_FILE() {
     assert(token.ltype == expect);
 }
 
+static void test_parse_one_space() {
+    char *input = " 123";
+    int expect = ' ';
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+
+    ch = parse_one(EOF, &token);
+
+    assert(ch == '1');
+    assert(token.ltype == SPACE);
+    assert(expect == token.u.onechar);
+}
+
 
 static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
     test_parse_one_number();
+    test_parse_one_space();
 }
 
 
