@@ -214,12 +214,29 @@ static void test_parse_one_executable_name() {
     assert(compare_two_strs(expect_name, token.u.name));
 }
 
+static void test_parse_one_literal_name() {
+    char* input = "/add";
+    char* expect_name = "add";
+    int expect_type = LITERAL_NAME;
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+    ch = parse_one(EOF, &token);
+
+    assert(ch == EOF);
+    assert(token.ltype == expect_type);
+    assert(compare_two_strs(expect_name, token.u.name));
+}
+
 
 static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
     test_parse_one_number();
     test_parse_one_space();
     test_parse_one_executable_name();
+    test_parse_one_literal_name();
 }
 
 
