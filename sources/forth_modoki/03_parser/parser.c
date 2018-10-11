@@ -16,7 +16,6 @@ enum LexicalType {
 };
 
 
-
 struct Token {
     enum LexicalType ltype;
     union {
@@ -45,37 +44,35 @@ int parse_one(int prev_ch, struct Token *out_token) {
      * 
     ****/
     int cur_ch = 0;
-    //*out_token = //How to initialize?
 
-    // Read the first character and reset prev_ch for the initial case.
+    // Set the head character as cur_ch
     if (prev_ch == EOF) {
         cur_ch = cl_getc();
     } else {
         cur_ch = prev_ch;
     }
 
-    // Parse one unit for each head_char type.
+    // Parse one unit for each cur_ch type.
     if (cur_ch == EOF) {
         out_token->ltype = END_OF_FILE;
-
         return EOF;
 
-    } else if (cur_ch == ' ') {
-        out_token->ltype = SPACE;
-
+    } else if (is_space(cur_ch)) {
         // Just move to the next non-space character.
-        for (; is_space(cur_ch); cur_ch=cl_getc()) {;}
+        for (cur_ch; is_space(cur_ch); cur_ch=cl_getc()) {;}
 
+        out_token->ltype = SPACE;
         return cur_ch;
 
     } else if (is_digit(cur_ch)) {
-        out_token->ltype = NUMBER;
-
-        // Construct integer recursively.
-        for (; is_digit(cur_ch); cur_ch=cl_getc()) {
-            out_token->u.number = (10 * out_token->u.number) + (cur_ch - '0');
+        // Construct integer recursively up to the next non-digit character.
+        int num = 0;
+        for (cur_ch; is_digit(cur_ch); cur_ch=cl_getc()) {
+            num = (10 * num) + (cur_ch - '0');
         }
 
+        out_token->ltype = NUMBER;
+        out_token->u.number = num;
         return cur_ch;
 
     }
@@ -163,6 +160,7 @@ static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
     test_parse_one_number();
 }
+
 
 int main() {
     unit_tests();
