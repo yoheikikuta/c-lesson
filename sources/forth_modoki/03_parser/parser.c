@@ -36,6 +36,14 @@ static int is_digit(int c) {
     return ('0' <= c) && (c <= '9');
 }
 
+static int is_alphabet(int c) {
+    return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
+}
+
+static int is_non_space_char(int c) {
+    return ('!' <= c) && (c <= '~');
+}
+
 
 int parse_one(int prev_ch, struct Token *out_token) {
     /****
@@ -74,6 +82,19 @@ int parse_one(int prev_ch, struct Token *out_token) {
 
         out_token->ltype = NUMBER;
         out_token->u.number = num;
+        return cur_ch;
+
+    } else if (is_alphabet(cur_ch)) {
+        // Construct.
+        char *name, *dummy;
+        dummy = name = (char *)malloc(sizeof(unsigned char) * NAME_SIZE);
+        for (cur_ch; is_non_space_char(cur_ch); cur_ch=cl_getc()) {
+            *dummy++ = cur_ch;
+        }
+        *dummy = '\0';
+
+        out_token->ltype = EXECUTABLE_NAME;
+        out_token->u.name = name;
         return cur_ch;
 
     }
@@ -172,6 +193,15 @@ static void test_parse_one_space() {
     assert(expect == token.u.onechar);
 }
 
+static int compare_two_strs(char *s1, char *s2) {
+    // Return 1 if two strings are identical.
+    if ((strcmp(s1, s2)) == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 static void test_parse_one_executable_name() {
     char* input = "add";
     char* expect_name = "add";
@@ -185,7 +215,7 @@ static void test_parse_one_executable_name() {
 
     assert(ch == EOF);
     assert(token.ltype == expect_type);
-    assert(expect_name == token.u.name);
+    assert(compare_two_strs(expect_name, token.u.name));
 }
 
 
