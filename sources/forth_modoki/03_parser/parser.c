@@ -195,11 +195,7 @@ static void test_parse_one_space() {
 
 static int compare_two_strs(char *s1, char *s2) {
     // Return 1 if two strings are identical.
-    if ((strcmp(s1, s2)) == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return strcmp(s1, s2) == 0;
 }
 
 static void test_parse_one_executable_name() {
