@@ -85,7 +85,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         return cur_ch;
 
     } else if (is_alphabet(cur_ch)) {
-        // Construct.
+        // Copy strings up to the next space character.
         char *name, *dummy;
         dummy = name = (char *)malloc(sizeof(unsigned char) * NAME_SIZE);
         for (cur_ch; is_non_space_char(cur_ch); cur_ch=cl_getc()) {
