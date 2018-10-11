@@ -44,6 +44,10 @@ static int is_non_space_char(int c) {
     return ('!' <= c) && (c <= '~');
 }
 
+static int is_slash(int c) {
+    return c == '/';
+}
+
 
 int parse_one(int prev_ch, struct Token *out_token) {
     /****
@@ -94,6 +98,21 @@ int parse_one(int prev_ch, struct Token *out_token) {
         *dummy = '\0';
 
         out_token->ltype = EXECUTABLE_NAME;
+        out_token->u.name = name;
+        return cur_ch;
+
+    } else if (is_slash(cur_ch)) {
+        // Read the next character to skip slash.
+        cur_ch = cl_getc();
+        // Copy strings up to the next space character.
+        char *name, *dummy;
+        dummy = name = (char *)malloc(sizeof(unsigned char) * NAME_SIZE);
+        for (cur_ch; is_non_space_char(cur_ch); cur_ch=cl_getc()) {
+            *dummy++ = cur_ch;
+        }
+        *dummy = '\0';
+
+        out_token->ltype = LITERAL_NAME;
         out_token->u.name = name;
         return cur_ch;
 
