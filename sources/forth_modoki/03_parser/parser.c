@@ -48,6 +48,14 @@ static int is_slash(int c) {
     return c == '/';
 }
 
+static int is_open_curly(int c) {
+    return c == '{';
+}
+
+static int is_close_curly(int c) {
+    return c == '}';
+}
+
 
 int parse_one(int prev_ch, struct Token *out_token) {
     /****
@@ -114,6 +122,20 @@ int parse_one(int prev_ch, struct Token *out_token) {
 
         out_token->ltype = LITERAL_NAME;
         out_token->u.name = name;
+        return cur_ch;
+
+    } else if (is_open_curly(cur_ch)) {
+        for (cur_ch; is_open_curly(cur_ch); cur_ch=cl_getc()) {;}
+
+        out_token->ltype = OPEN_CURLY;
+        out_token->u.onechar = '{';
+        return cur_ch;
+
+    } else if (is_close_curly(cur_ch)) {
+        for (cur_ch; is_close_curly(cur_ch); cur_ch=cl_getc()) {;}
+
+        out_token->ltype = CLOSE_CURLY;
+        out_token->u.onechar = '}';
         return cur_ch;
 
     }
@@ -267,8 +289,8 @@ static void test_parse_one_open_curly() {
 }
 
 static void test_parse_one_close_curly() {
-    char* input = "{";
-    char expect_onechar = '{';
+    char* input = "}";
+    char expect_onechar = '}';
     int expect_type = CLOSE_CURLY;
 
     struct Token token = {UNKNOWN, {0}};
