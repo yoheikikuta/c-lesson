@@ -199,8 +199,8 @@ static void test_parse_one_number() {
 
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == NUMBER);
+    assert(EOF == ch);
+    assert(NUMBER == token.ltype);
     assert(expect == token.u.number);
 }
 
@@ -214,8 +214,8 @@ static void test_parse_one_empty_should_return_END_OF_FILE() {
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == expect);
+    assert(EOF == ch);
+    assert(expect == token.ltype);
 }
 
 static void test_parse_one_space() {
@@ -229,8 +229,8 @@ static void test_parse_one_space() {
 
     ch = parse_one(EOF, &token);
 
-    assert(ch == '1');
-    assert(token.ltype == SPACE);
+    assert('1' == ch);
+    assert(SPACE == token.ltype);
     assert(expect == token.u.onechar);
 }
 
@@ -250,8 +250,8 @@ static void test_parse_one_executable_name() {
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == expect_type);
+    assert(EOF == ch);
+    assert(expect_type == token.ltype);
     assert(is_two_strs_equal(expect_name, token.u.name));
 }
 
@@ -266,11 +266,10 @@ static void test_parse_one_literal_name() {
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == expect_type);
+    assert(EOF == ch);
+    assert(expect_type == token.ltype);
     assert(is_two_strs_equal(expect_name, token.u.name));
 }
-
 
 static void test_parse_one_open_curly() {
     char* input = "{";
@@ -283,8 +282,8 @@ static void test_parse_one_open_curly() {
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == expect_type);
+    assert(EOF == ch);
+    assert(expect_type == token.ltype);
     assert(expect_onechar == token.u.onechar);
 }
 
@@ -299,8 +298,8 @@ static void test_parse_one_close_curly() {
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
 
-    assert(ch == EOF);
-    assert(token.ltype == expect_type);
+    assert(EOF == ch);
+    assert(expect_type == token.ltype);
     assert(expect_onechar == token.u.onechar);
 }
 
