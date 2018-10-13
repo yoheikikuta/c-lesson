@@ -108,7 +108,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         buf[i] = '\0';
 
         char *name;
-        name = (char *)malloc(sizeof(unsigned char) * (i+1));
+        name = (char *)malloc(sizeof(char) * (i+1));
         strcpy(name, buf);
 
         out_token->ltype = EXECUTABLE_NAME;
@@ -128,7 +128,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         buf[i] = '\0';
 
         char *name;
-        name = (char *)malloc(sizeof(unsigned char) * (i+1));
+        name = (char *)malloc(sizeof(char) * (i+1));
         strcpy(name, buf);
 
         out_token->ltype = LITERAL_NAME;
