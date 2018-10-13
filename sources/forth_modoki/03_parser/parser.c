@@ -98,28 +98,38 @@ int parse_one(int prev_ch, struct Token *out_token) {
         return cur_ch;
 
     } else if (is_alphabet(cur_ch)) {
-        // Copy strings up to the next space character.
-        char *name, *dummy;
-        dummy = name = (char *)malloc(sizeof(unsigned char) * NAME_SIZE);
-        for (cur_ch; is_non_space_char(cur_ch); cur_ch=cl_getc()) {
-            *dummy++ = cur_ch;
+        // Parse executable name: "a?c " -> "a?c" + cur_ch=' '
+        char buf[NAME_SIZE];
+        int i;
+        for (i=0; is_non_space_char(cur_ch); i++) {
+            buf[i] = cur_ch;
+            cur_ch=cl_getc();
         }
-        *dummy = '\0';
+        buf[i] = '\0';
+
+        char *name;
+        name = (char *)malloc(sizeof(unsigned char) * (i+1));
+        strcpy(name, buf);
 
         out_token->ltype = EXECUTABLE_NAME;
         out_token->u.name = name;
         return cur_ch;
 
     } else if (is_slash(cur_ch)) {
-        // Read the next character to skip slash.
+        // Parse literal name: "/a?c " -> "a?c" + cur_ch=' '
         cur_ch = cl_getc();
-        // Copy strings up to the next space character.
-        char *name, *dummy;
-        dummy = name = (char *)malloc(sizeof(unsigned char) * NAME_SIZE);
-        for (cur_ch; is_non_space_char(cur_ch); cur_ch=cl_getc()) {
-            *dummy++ = cur_ch;
+
+        char buf[NAME_SIZE];
+        int i;
+        for (i=0; is_non_space_char(cur_ch); i++) {
+            buf[i] = cur_ch;
+            cur_ch=cl_getc();
         }
-        *dummy = '\0';
+        buf[i] = '\0';
+
+        char *name;
+        name = (char *)malloc(sizeof(unsigned char) * (i+1));
+        strcpy(name, buf);
 
         out_token->ltype = LITERAL_NAME;
         out_token->u.name = name;
