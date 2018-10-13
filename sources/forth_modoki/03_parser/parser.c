@@ -136,12 +136,14 @@ int parse_one(int prev_ch, struct Token *out_token) {
         return cur_ch;
 
     } else if (is_open_curly(cur_ch)) {
+        // Parse open curly brace: "{a" -> "{" + cur_ch='a'
         cur_ch = cl_getc();
         out_token->ltype = OPEN_CURLY;
         out_token->u.onechar = '{';
         return cur_ch;
 
     } else if (is_close_curly(cur_ch)) {
+        // Parse close curly brace: "}a" -> "}" + cur_ch='a'
         cur_ch = cl_getc();
         out_token->ltype = CLOSE_CURLY;
         out_token->u.onechar = '}';
