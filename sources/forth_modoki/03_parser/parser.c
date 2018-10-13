@@ -232,7 +232,7 @@ static void test_parse_one_space() {
     assert(expect == token.u.onechar);
 }
 
-static int is_two_strs_equal(char *s1, char *s2) {
+static int streq(char *s1, char *s2) {
     // Return 1 if two strings are identical.
     return strcmp(s1, s2) == 0;
 }
@@ -250,7 +250,7 @@ static void test_parse_one_executable_name() {
 
     assert(EOF == ch);
     assert(expect_type == token.ltype);
-    assert(is_two_strs_equal(expect_name, token.u.name));
+    assert(streq(expect_name, token.u.name));
 }
 
 static void test_parse_one_literal_name() {
@@ -266,7 +266,7 @@ static void test_parse_one_literal_name() {
 
     assert(EOF == ch);
     assert(expect_type == token.ltype);
-    assert(is_two_strs_equal(expect_name, token.u.name));
+    assert(streq(expect_name, token.u.name));
 }
 
 static void test_parse_one_open_curly() {
