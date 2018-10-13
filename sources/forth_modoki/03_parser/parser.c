@@ -78,18 +78,19 @@ int parse_one(int prev_ch, struct Token *out_token) {
         return cur_ch;
 
     } else if (is_space(cur_ch)) {
-        // Just move to the next non-space character.
-        for (cur_ch; is_space(cur_ch); cur_ch=cl_getc()) {;}
+        // Parse space(s): "  a" -> ' ' + cur_ch='a'
+        while (is_space(cur_ch)) {cur_ch=cl_getc();}
 
         out_token->ltype = SPACE;
         out_token->u.onechar = ' ';
         return cur_ch;
 
     } else if (is_digit(cur_ch)) {
-        // Construct integer recursively up to the next non-digit character.
+        // Parse digit(s): "123 " -> 123 + cur_ch=' '
         int num = 0;
-        for (cur_ch; is_digit(cur_ch); cur_ch=cl_getc()) {
+        while (is_digit(cur_ch)) {
             num = (10 * num) + (cur_ch - '0');
+            cur_ch=cl_getc();
         }
 
         out_token->ltype = NUMBER;
