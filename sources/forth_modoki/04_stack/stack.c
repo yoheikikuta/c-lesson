@@ -72,13 +72,12 @@ static void test_one_push() {
 
 static void test_one_push_one_pop() {
     struct Data data_push = {NUMBER, {123}};
-    struct Data data_pop;
     struct Data expect_data_pop = {NUMBER, {123}};
     int expect = 1;
 
     stack_push(&data_push);
-    int actual = stack_pop(&data_pop);
-    struct Data actual_data_pop = data_pop;
+    struct Data actual_data_pop;
+    int actual = stack_pop(&actual_data_pop);
 
     assert(compare_two_data(expect_data_pop, actual_data_pop));
     reset_stuck_num();
@@ -87,7 +86,6 @@ static void test_one_push_one_pop() {
 static void test_two_push_two_pop() {
     struct Data data_push_1 = {NUMBER, {123}};
     struct Data data_push_2 = {LITERAL_NAME, .u.name = "add"};
-    struct Data data_pop_1, data_pop_2;
     struct Data expect_data_1 = {NUMBER, {123}};
     struct Data expect_data_2 = {LITERAL_NAME, .u.name = "add"};
     struct Data expect_data_pop_1 = {NUMBER, {123}};
@@ -100,10 +98,9 @@ static void test_two_push_two_pop() {
     assert(compare_two_data(expect_data_1, actual_data_1));
     assert(compare_two_data(expect_data_2, actual_data_2));
 
-    stack_pop(&data_pop_2);
-    stack_pop(&data_pop_1);
-    struct Data actual_data_pop_2 = data_pop_2;
-    struct Data actual_data_pop_1 = data_pop_1;
+    struct Data actual_data_pop_1, actual_data_pop_2;
+    stack_pop(&actual_data_pop_2);
+    stack_pop(&actual_data_pop_1);
     assert(compare_two_data(expect_data_pop_1, actual_data_pop_1));
     assert(compare_two_data(expect_data_pop_2, actual_data_pop_2));
 
