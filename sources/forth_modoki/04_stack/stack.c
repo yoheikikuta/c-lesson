@@ -166,6 +166,8 @@ static void unit_tests() {
     test_one_push_one_pop();
     test_two_push();
     test_two_push_two_pop();
+
+    printf("All unit tests are successfully passed.\n");
 }
 
 
