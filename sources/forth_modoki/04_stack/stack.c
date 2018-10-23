@@ -27,9 +27,13 @@ static void reset_stack() {
 }
 
 int stack_push(struct Data *push_elem) {
-    stack[stack_num++] = *push_elem;
+    if (stack_num == STACK_SIZE) {
+        return 0;
+    } else {
+        stack[stack_num++] = *push_elem;
 
-    return 1;
+        return 1;
+    }
 }
 
 int stack_pop(struct Data *pop_elem) {
