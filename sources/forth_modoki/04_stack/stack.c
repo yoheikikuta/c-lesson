@@ -26,7 +26,10 @@ static void reset_stack() {
     stack_num = 0;
 }
 
-int stack_push(struct Data *push_elem) {;}
+int stack_push(struct Data *push_elem) {
+    stack[0] = *push_elem;
+    return 1;
+}
 
 int stack_pop(struct Data *pop_elem) {
     if (stack_num == 0) {
