@@ -132,16 +132,17 @@ static void test_two_push_two_pop() {
     reset_stack();
 }
 
+static void unit_tests() {
+    test_pop_from_empty();
+    test_one_push();
+    test_one_push_one_pop();
+    test_two_push();
+    test_two_push_two_pop();
+}
+
 
 int main() {
-    // The following codes are tentative ones for checking.
-    struct Data test1[2] = {
-        {NUMBER, .u.number = 123},
-        {LITERAL_NAME, .u.name = "abc"}
-    };
-    struct Data test2 = {LITERAL_NAME, .u.name = "abc"};
-    struct Data *test3 = &test1[1];
-    assert_two_data_eq(&test1[1], &test2);
-    assert_two_data_eq(test3, &test2);
+    unit_tests();
+
     return 1;
 }
