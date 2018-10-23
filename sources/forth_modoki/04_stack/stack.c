@@ -27,8 +27,7 @@ static void reset_stack() {
 }
 
 int stack_push(struct Data *push_elem) {
-    stack[0] = *push_elem;
-    stack_num++;
+    stack[stack_num++] = *push_elem;
 
     return 1;
 }
