@@ -87,24 +87,44 @@ static void test_one_push_one_pop() {
     reset_stack();
 }
 
-static void test_two_push_two_pop() {
+static void test_two_push() {
     struct Data input_1 = {NUMBER, {123}};
     struct Data input_2 = {LITERAL_NAME, .u.name = "add"};
     struct Data expect_data_1 = {NUMBER, {123}};
     struct Data expect_data_2 = {LITERAL_NAME, .u.name = "add"};
-    struct Data expect_data_pop_1 = {NUMBER, {123}};
-    struct Data expect_data_pop_2 = {LITERAL_NAME, .u.name = "add"};
+    int expect_1 = 1;
+    int expect_2 = 1;
 
-    stack_push(&input_1);
-    stack_push(&input_2);
+    int actual_1 = stack_push(&input_1);
+    int actual_2 = stack_push(&input_2);
     struct Data *actual_data_1 = &stack[0];
     struct Data *actual_data_2 = &stack[1];
+
+    assert(expect_1 == actual_1);
+    assert(expect_2 == actual_2);
     assert_two_data_eq(&expect_data_1, actual_data_1);
     assert_two_data_eq(&expect_data_2, actual_data_2);
 
+    reset_stack();
+}
+
+static void test_two_push_two_pop() {
+    struct Data input_1 = {NUMBER, {123}};
+    struct Data input_2 = {LITERAL_NAME, .u.name = "add"};
+    struct Data expect_data_pop_1 = {NUMBER, {123}};
+    struct Data expect_data_pop_2 = {LITERAL_NAME, .u.name = "add"};
+    int expect_1 = 1;
+    int expect_2 = 1;
+
+    stack_push(&input_1);
+    stack_push(&input_2);
+
     struct Data actual_data_pop_1, actual_data_pop_2;
-    stack_pop(&actual_data_pop_2);
-    stack_pop(&actual_data_pop_1);
+    int actual_2 = stack_pop(&actual_data_pop_2);
+    int actual_1 = stack_pop(&actual_data_pop_1);
+
+    assert(expect_1 == actual_1);
+    assert(expect_2 == actual_2);
     assert_two_data_eq(&expect_data_pop_1, &actual_data_pop_1);
     assert_two_data_eq(&expect_data_pop_2, &actual_data_pop_2);
 
