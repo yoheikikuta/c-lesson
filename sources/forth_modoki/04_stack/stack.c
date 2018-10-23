@@ -20,10 +20,10 @@ struct Data {
 };
 
 static struct Data stack[STACK_SIZE];
-static int stuck_num = 0;
+static int stack_num = 0;
 
-static void reset_stuck_num() {
-    stuck_num = 0;
+static void reset_stack() {
+    stack_num = 0;
 }
 
 int stack_push(struct Data *push_elem) {;}
@@ -58,7 +58,7 @@ static void test_pop_from_empty() {
     int actual = stack_pop(&input);
 
     assert(expect == actual);
-    reset_stuck_num();
+    reset_stack();
 }
 
 static void test_one_push() {
@@ -71,7 +71,7 @@ static void test_one_push() {
 
     assert(expect == actual);
     assert_two_data_eq(&expect_data, &actual_data);
-    reset_stuck_num();
+    reset_stack();
 }
 
 static void test_one_push_one_pop() {
@@ -84,7 +84,7 @@ static void test_one_push_one_pop() {
     int actual = stack_pop(&actual_data_pop);
 
     assert_two_data_eq(&expect_data_pop, &actual_data_pop);
-    reset_stuck_num();
+    reset_stack();
 }
 
 static void test_two_push_two_pop() {
@@ -108,7 +108,7 @@ static void test_two_push_two_pop() {
     assert_two_data_eq(&expect_data_pop_1, &actual_data_pop_1);
     assert_two_data_eq(&expect_data_pop_2, &actual_data_pop_2);
 
-    reset_stuck_num();
+    reset_stack();
 }
 
 
