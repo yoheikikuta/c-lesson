@@ -67,10 +67,10 @@ static void test_one_push() {
     int expect = 1;
 
     int actual = stack_push(&input);
-    struct Data actual_data = stack[0];
+    struct Data *actual_data = &stack[0];
 
     assert(expect == actual);
-    assert_two_data_eq(&expect_data, &actual_data);
+    assert_two_data_eq(&expect_data, actual_data);
     reset_stack();
 }
 
@@ -97,10 +97,10 @@ static void test_two_push_two_pop() {
 
     stack_push(&input_1);
     stack_push(&input_2);
-    struct Data actual_data_1 = stack[0];
-    struct Data actual_data_2 = stack[1];
-    assert_two_data_eq(&expect_data_1, &actual_data_1);
-    assert_two_data_eq(&expect_data_2, &actual_data_2);
+    struct Data *actual_data_1 = &stack[0];
+    struct Data *actual_data_2 = &stack[1];
+    assert_two_data_eq(&expect_data_1, actual_data_1);
+    assert_two_data_eq(&expect_data_2, actual_data_2);
 
     struct Data actual_data_pop_1, actual_data_pop_2;
     stack_pop(&actual_data_pop_2);
@@ -119,6 +119,8 @@ int main() {
         {LITERAL_NAME, .u.name = "abc"}
     };
     struct Data test2 = {LITERAL_NAME, .u.name = "abc"};
+    struct Data *test3 = &test1[1];
     assert_two_data_eq(&test1[1], &test2);
+    assert_two_data_eq(test3, &test2);
     return 1;
 }
