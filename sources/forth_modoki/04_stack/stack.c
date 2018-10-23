@@ -36,11 +36,11 @@ int stack_push(struct Data *push_elem) {
     }
 }
 
-int stack_pop(struct Data *pop_elem) {
+int stack_pop(struct Data *out_elem) {
     if (stack_num == 0) {
         return 0;
     } else {
-        *pop_elem = stack[--stack_num];
+        *out_elem = stack[--stack_num];
 
         return 1;
     }
