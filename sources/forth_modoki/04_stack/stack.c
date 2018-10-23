@@ -83,6 +83,7 @@ static void test_one_push_one_pop() {
     struct Data actual_data_pop;
     int actual = stack_pop(&actual_data_pop);
 
+    assert(expect == actual);
     assert_two_data_eq(&expect_data_pop, &actual_data_pop);
     reset_stack();
 }
