@@ -81,7 +81,9 @@ static void test_pop_from_empty() {
 static void test_push_to_full() {
     struct Data input = {UNKNOWN, {0}};
     int expect = 0;
-    stack_num = STACK_SIZE;
+    while (stack_num < STACK_SIZE) {
+        stack_push(&input);
+    }
     int actual = stack_push(&input);
 
     assert(expect == actual);
