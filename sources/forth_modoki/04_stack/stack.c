@@ -74,6 +74,16 @@ static void test_pop_from_empty() {
     reset_stack();
 }
 
+static void test_push_to_full() {
+    struct Data input = {UNKNOWN, {0}};
+    int expect = 0;
+    stack_num = STACK_SIZE;
+    int actual = stack_push(&input);
+
+    assert(expect == actual);
+    reset_stack();
+}
+
 static void test_one_push() {
     struct Data input = {NUMBER, {123}};
     struct Data expect_data = {NUMBER, {123}};
@@ -147,6 +157,7 @@ static void test_two_push_two_pop() {
 
 static void unit_tests() {
     test_pop_from_empty();
+    test_push_to_full();
     test_one_push();
     test_one_push_one_pop();
     test_two_push();
