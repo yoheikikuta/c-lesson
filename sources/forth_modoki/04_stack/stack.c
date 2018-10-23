@@ -28,12 +28,18 @@ static void reset_stack() {
 
 int stack_push(struct Data *push_elem) {
     stack[0] = *push_elem;
+    stack_num++;
+
     return 1;
 }
 
 int stack_pop(struct Data *pop_elem) {
     if (stack_num == 0) {
         return 0;
+    } else {
+        stack_num--;
+
+        return 1;
     }
 }
 
