@@ -36,8 +36,7 @@ int stack_pop(struct Data *pop_elem) {
     if (stack_num == 0) {
         return 0;
     } else {
-        *pop_elem = stack[0];
-        stack_num--;
+        *pop_elem = stack[--stack_num];
 
         return 1;
     }
