@@ -304,6 +304,7 @@ static void unit_tests() {
 }
 
 
+#if 0
 int main() {
     unit_tests();
 
@@ -311,3 +312,4 @@ int main() {
     parser_print_all();
     return 1;
 }
+#endif

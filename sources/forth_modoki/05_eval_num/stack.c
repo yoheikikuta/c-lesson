@@ -158,8 +158,10 @@ static void unit_tests() {
 }
 
 
+#if 0
 int main() {
     unit_tests();
 
     return 1;
 }
+#endif
