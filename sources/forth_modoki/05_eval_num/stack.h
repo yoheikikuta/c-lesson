@@ -1,14 +1,18 @@
+#pragma once
+#include "parser.h"
 #include <stdio.h>
 
-
+/*
 enum DataType {
     NUMBER,
     LITERAL_NAME,
     UNKNOWN,
 };
+*/
 
 typedef struct Data {
-    enum DataType dtype;
+    //enum DataType dtype;
+    enum LexicalType dtype;
     union {
         int number;
         char *name;
