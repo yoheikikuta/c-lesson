@@ -1,4 +1,7 @@
 #include "clesson.h"
+#include "parser.h"
+#include "stack.h"
+#include <assert.h>
 
 void eval() {}
 
@@ -35,7 +38,7 @@ static void test_eval_num_two() {
 }
 
 
-static void test_eval_add() {
+static void test_eval_num_add() {
     char *input = "1 2 add";
     int expect = 3;
 
