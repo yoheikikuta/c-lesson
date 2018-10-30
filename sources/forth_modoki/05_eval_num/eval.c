@@ -17,6 +17,8 @@ void eval() {
                 case NUMBER:
                     stack_push(&token);
                     break;
+                case SPACE:
+                    break;
 
                 default:
                     printf("Unknown type %d\n", token.ltype);
@@ -56,6 +58,11 @@ static void test_eval_num_two() {
     /* TODO: write code to pop stack top and second top element */
     int actual1 = 0;
     int actual2 = 0;
+    struct Data dummy = {UNKNOWN, {0}};
+    stack_pop(&dummy);
+    actual1 = dummy.u.number;
+    stack_pop(&dummy);
+    actual2 = dummy.u.number;
 
     assert(expect1 == actual1);
     assert(expect2 == actual2);
