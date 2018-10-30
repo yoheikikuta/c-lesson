@@ -1,7 +1,9 @@
 #include "clesson.h"
+#include "cl_util.h"
 #include "parser.h"
 #include "stack.h"
 #include <assert.h>
+
 
 void eval() {
     int ch = EOF;
@@ -18,6 +20,19 @@ void eval() {
                     stack_push(&token);
                     break;
                 case SPACE:
+                    break;
+                case EXECUTABLE_NAME:
+                    if (streq(token.u.name, "add")) {
+                        // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
+                        struct Data dummy = {UNKNOWN, {0}};
+                        stack_pop(&dummy);
+                        int v1 = dummy.u.number;
+                        stack_pop(&dummy);
+                        int v2 = dummy.u.number;
+
+                        struct Data result = {NUMBER, {v1+v2}};
+                        stack_push(&result);
+                    }
                     break;
 
                 default:
@@ -78,6 +93,10 @@ static void test_eval_num_add() {
 
     /* TODO: write code to pop stack top element */
     int actual = 0;
+    struct Data dummy = {UNKNOWN, {0}};
+    stack_pop(&dummy);
+    actual = dummy.u.number;
+
     assert(expect == actual);
 }
 
