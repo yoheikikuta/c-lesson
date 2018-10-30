@@ -62,7 +62,6 @@ static void test_eval_num_one() {
     actual = stack_pop_int();
 
     assert(expect == actual);
-
 }
 
 static void test_eval_num_two() {
@@ -97,6 +96,20 @@ static void test_eval_num_add() {
     assert(expect == actual);
 }
 
+static void test_eval_num_add_complicated() {
+    char *input = "12 34 add 5 6 add add";
+    int expect = 57;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
 static void test_eval_unknown() {
     char *input = "123 ? 456";
     int expect = 123;
@@ -109,7 +122,6 @@ static void test_eval_unknown() {
     actual = stack_pop_int();
 
     assert(expect == actual);
-
 }
 
 
@@ -117,6 +129,7 @@ int main() {
     test_eval_num_one();
     test_eval_num_two();
     test_eval_num_add();
+    test_eval_num_add_complicated();
     test_eval_unknown();
 
     return 0;
