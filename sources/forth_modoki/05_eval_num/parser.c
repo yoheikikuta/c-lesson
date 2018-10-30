@@ -37,11 +37,6 @@ static int is_close_curly(int c) {
 
 
 int parse_one(int prev_ch, struct Token *out_token) {
-    /****
-     * 
-     * TODO: Implement here!
-     * 
-    ****/
     int cur_ch = 0;
 
     // Set the head character as cur_ch

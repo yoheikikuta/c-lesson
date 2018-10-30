@@ -51,7 +51,6 @@ static void test_eval_num_one() {
 
     eval();
 
-    /* TODO: write code to pop stack top element */
     int actual = 0;
     struct Data dummy = {UNKNOWN, {0}};
     stack_pop(&dummy);
@@ -70,7 +69,6 @@ static void test_eval_num_two() {
 
     eval();
 
-    /* TODO: write code to pop stack top and second top element */
     int actual1 = 0;
     int actual2 = 0;
     struct Data dummy = {UNKNOWN, {0}};
@@ -91,7 +89,6 @@ static void test_eval_num_add() {
 
     eval();
 
-    /* TODO: write code to pop stack top element */
     int actual = 0;
     struct Data dummy = {UNKNOWN, {0}};
     stack_pop(&dummy);
