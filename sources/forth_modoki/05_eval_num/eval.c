@@ -5,6 +5,15 @@
 #include <assert.h>
 
 
+int stack_pop_int(){
+    // Return the value of popped NUMBER data from the stack.
+    struct Data input = {UNKNOWN, {0}};
+    stack_pop(&input);
+    int num = input.u.number;
+
+    return num;
+}
+
 void eval() {
     int ch = EOF;
     struct Token token = {
@@ -23,11 +32,8 @@ void eval() {
             case EXECUTABLE_NAME:
                 if (streq(token.u.name, "add")) {
                     // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
-                    struct Data dummy = {UNKNOWN, {0}};
-                    stack_pop(&dummy);
-                    int v1 = dummy.u.number;
-                    stack_pop(&dummy);
-                    int v2 = dummy.u.number;
+                    int v1 = stack_pop_int();
+                    int v2 = stack_pop_int();
 
                     struct Data result = {NUMBER, {v1+v2}};
                     stack_push(&result);
@@ -53,9 +59,7 @@ static void test_eval_num_one() {
     eval();
 
     int actual = 0;
-    struct Data dummy = {UNKNOWN, {0}};
-    stack_pop(&dummy);
-    actual = dummy.u.number;
+    actual = stack_pop_int();
 
     assert(expect == actual);
 
@@ -72,11 +76,8 @@ static void test_eval_num_two() {
 
     int actual1 = 0;
     int actual2 = 0;
-    struct Data dummy = {UNKNOWN, {0}};
-    stack_pop(&dummy);
-    actual1 = dummy.u.number;
-    stack_pop(&dummy);
-    actual2 = dummy.u.number;
+    actual1 = stack_pop_int();
+    actual2 = stack_pop_int();
 
     assert(expect1 == actual1);
     assert(expect2 == actual2);
@@ -91,9 +92,7 @@ static void test_eval_num_add() {
     eval();
 
     int actual = 0;
-    struct Data dummy = {UNKNOWN, {0}};
-    stack_pop(&dummy);
-    actual = dummy.u.number;
+    actual = stack_pop_int();
 
     assert(expect == actual);
 }
@@ -107,9 +106,7 @@ static void test_eval_unknown() {
     eval();
 
     int actual = 0;
-    struct Data dummy = {UNKNOWN, {0}};
-    stack_pop(&dummy);
-    actual = dummy.u.number;
+    actual = stack_pop_int();
 
     assert(expect == actual);
 
