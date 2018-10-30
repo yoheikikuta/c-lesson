@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "cl_util.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -29,12 +30,6 @@ int stack_pop(struct Data *out_elem) {
 
         return 1;
     }
-}
-
-
-static int streq(char *s1, char *s2) {
-    // Return 1 if two strings are identical.
-    return strcmp(s1, s2) == 0;
 }
 
 static int two_data_eq(struct Data *d1, struct Data *d2) {

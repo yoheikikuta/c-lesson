@@ -1,4 +1,5 @@
 #include "clesson.h"
+#include "cl_util.h"
 #include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,11 +222,6 @@ static void test_parse_one_space() {
     assert('1' == ch);
     assert(SPACE == token.ltype);
     assert(expect == token.u.onechar);
-}
-
-static int streq(char *s1, char *s2) {
-    // Return 1 if two strings are identical.
-    return strcmp(s1, s2) == 0;
 }
 
 static void test_parse_one_executable_name() {
