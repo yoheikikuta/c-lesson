@@ -14,31 +14,32 @@ void eval() {
 
     do {
         ch = parse_one(ch, &token);
-        if (token.ltype != UNKNOWN) {
-            switch (token.ltype) {
-                case NUMBER:
-                    stack_push(&token);
-                    break;
-                case SPACE:
-                    break;
-                case EXECUTABLE_NAME:
-                    if (streq(token.u.name, "add")) {
-                        // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
-                        struct Data dummy = {UNKNOWN, {0}};
-                        stack_pop(&dummy);
-                        int v1 = dummy.u.number;
-                        stack_pop(&dummy);
-                        int v2 = dummy.u.number;
+        switch (token.ltype) {
+            case NUMBER:
+                stack_push(&token);
+                break;
+            case SPACE:
+                break;
+            case EXECUTABLE_NAME:
+                if (streq(token.u.name, "add")) {
+                    // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
+                    struct Data dummy = {UNKNOWN, {0}};
+                    stack_pop(&dummy);
+                    int v1 = dummy.u.number;
+                    stack_pop(&dummy);
+                    int v2 = dummy.u.number;
 
-                        struct Data result = {NUMBER, {v1+v2}};
-                        stack_push(&result);
-                    }
-                    break;
+                    struct Data result = {NUMBER, {v1+v2}};
+                    stack_push(&result);
+                }
+                break;
+            case UNKNOWN:
+                printf("Terminate eval on the way due to the UNKNOWN Type\n");
+                break;
 
-                default:
-                    printf("Unknown type %d\n", token.ltype);
-                    break;
-            }
+            default:
+                printf("Unknown type %d\n", token.ltype);
+                break;
         }
     } while (ch != EOF);
 }
@@ -97,11 +98,29 @@ static void test_eval_num_add() {
     assert(expect == actual);
 }
 
+static void test_eval_unknown() {
+    char *input = "123 ? 456";
+    int expect = 123;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    struct Data dummy = {UNKNOWN, {0}};
+    stack_pop(&dummy);
+    actual = dummy.u.number;
+
+    assert(expect == actual);
+
+}
+
 
 int main() {
     test_eval_num_one();
     test_eval_num_two();
     test_eval_num_add();
+    test_eval_unknown();
 
     return 0;
 }
