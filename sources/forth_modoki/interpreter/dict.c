@@ -22,7 +22,11 @@ void dict_put(char* key, struct Data *elem){
     dict_array[dict_pos] = put_key_value;
 };
 
-int dict_get(char* key, struct Data *out_elem){;};
+int dict_get(char* key, struct Data *out_elem){
+    *out_elem = dict_array[0].value;
+    return 1;
+};
+
 void dict_print_all(){;};
 
 static int two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
