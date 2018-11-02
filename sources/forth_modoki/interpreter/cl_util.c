@@ -17,3 +17,7 @@ int two_data_eq(struct Data *d1, struct Data *d2) {
         return 0;
     }
 }
+
+void assert_two_data_eq(struct Data *d1, struct Data *d2) {
+    assert(two_data_eq(d1, d2));
+}

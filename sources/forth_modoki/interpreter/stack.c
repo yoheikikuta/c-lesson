@@ -32,10 +32,6 @@ int stack_pop(struct Data *out_elem) {
     }
 }
 
-static void assert_two_data_eq(struct Data *d1, struct Data *d2) {
-    assert(two_data_eq(d1, d2));
-}
-
 static void test_pop_from_empty() {
     struct Data input = {UNKNOWN, {0}};
     int expect = 0;
