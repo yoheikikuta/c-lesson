@@ -30,6 +30,10 @@ static int two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
     }
 }
 
+static void assert_two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
+    assert(two_keyvalue_eq(kv1, kv2));
+}
+
 static void test_one_put() {
     char *input_key = "key";
     struct Data input_data = {NUMBER, {123}};
@@ -38,7 +42,7 @@ static void test_one_put() {
     dict_put(input_key, &input_data);
     struct KeyValue *actual = &dict_array[0];
 
-    assert(two_keyvalue_eq(&expect, actual));
+    assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
 }
 
@@ -68,7 +72,7 @@ static void test_two_put() {
     dict_put(input_key_2, &input_data_2);
     struct KeyValue *actual = &dict_array[1];
 
-    assert(two_keyvalue_eq(&expect, actual));
+    assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
 }
 
