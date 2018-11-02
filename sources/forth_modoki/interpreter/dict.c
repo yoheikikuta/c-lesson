@@ -19,7 +19,7 @@ static struct KeyValue dict_array[DICT_SIZE];
 
 void dict_put(char* key, struct Data *elem){
     struct KeyValue put_key_value = {key, *elem};
-    dict_array[dict_pos] = put_key_value;
+    dict_array[dict_pos++] = put_key_value;
 };
 
 int dict_get(char* key, struct Data *out_elem){
