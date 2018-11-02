@@ -53,7 +53,7 @@ static void test_one_put_one_get() {
     int actual = dict_get("key", actual_data);
 
     assert(expect == actual);
-    assert(two_data_eq(&expect_data, actual_data));
+    assert_two_data_eq(&expect_data, actual_data);
     reset_dict();
 }
 
@@ -90,9 +90,9 @@ static void test_two_put_two_get() {
     int actual_2 = dict_get("key2", actual_data_2);
 
     assert(expect_1 == actual_1);
-    assert(two_data_eq(&expect_data_1, actual_data_1));
+    assert_two_data_eq(&expect_data_1, actual_data_1);
     assert(expect_2 == actual_2);
-    assert(two_data_eq(&expect_data_2, actual_data_2));
+    assert_two_data_eq(&expect_data_2, actual_data_2);
 
     reset_dict();
 }
