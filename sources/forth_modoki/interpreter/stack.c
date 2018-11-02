@@ -32,19 +32,6 @@ int stack_pop(struct Data *out_elem) {
     }
 }
 
-static int two_data_eq(struct Data *d1, struct Data *d2) {
-    // Return 1 if two Data are identical.
-    if (d1->dtype == d2->dtype) {
-        if (d1->dtype == NUMBER) {
-            return d1->u.number == d2->u.number;
-        } else if (d1->dtype == LITERAL_NAME) {
-            return streq(d1->u.name, d2->u.name);
-        }
-    } else {
-        return 0;
-    }
-}
-
 static void assert_two_data_eq(struct Data *d1, struct Data *d2) {
     assert(two_data_eq(d1, d2));
 }
