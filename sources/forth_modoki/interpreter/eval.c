@@ -14,6 +14,15 @@ int stack_pop_int(){
     return num;
 }
 
+char* stack_pop_str(){
+    // Return the value of popped LITERAL_NAME data from the stack.
+    struct Data input = {UNKNOWN, {0}};
+    stack_pop(&input);
+    char *str = input.u.name;
+
+    return str;
+}
+
 void eval() {
     int ch = EOF;
     struct Token token = {
@@ -38,6 +47,9 @@ void eval() {
                     struct Data result = {NUMBER, {v1+v2}};
                     stack_push(&result);
                 }
+                break;
+            case LITERAL_NAME:
+                stack_push(&token);
                 break;
             case UNKNOWN:
                 printf("Terminate eval on the way due to the UNKNOWN Type\n");
@@ -110,6 +122,20 @@ static void test_eval_num_add_complicated() {
     assert(expect == actual);
 }
 
+static void test_eval_literal_name() {
+    char *input = "/abc";
+    char *expect = "abc";
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    char *actual;
+    actual = stack_pop_str();
+
+    assert(streq(expect, actual));
+}
+
 static void test_eval_unknown() {
     char *input = "123 ? 456";
     int expect = 123;
@@ -130,6 +156,7 @@ int main() {
     test_eval_num_two();
     test_eval_num_add();
     test_eval_num_add_complicated();
+    test_eval_literal_name();
     test_eval_unknown();
 
     return 0;
