@@ -53,6 +53,9 @@ void eval() {
                     struct Data elem = {NUMBER, {val}};
                     char *literal_name = stack_pop_str();
                     dict_put(literal_name, &elem);
+                } else if (dict_get(token.u.name, &token)) {
+                    // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
+                    stack_push(&token);
                 }
                 break;
             case LITERAL_NAME:
