@@ -1,7 +1,7 @@
-#include "stack.h"
+#include <assert.h>
 #include "cl_util.h"
 #include "dict.h"
-#include <assert.h>
+#include "stack.h"
 
 
 static int dict_pos = 0;

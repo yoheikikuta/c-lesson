@@ -1,6 +1,6 @@
 #pragma once
-#include "stack.h"
 #include <stdio.h>
+#include "stack.h"
 
 
 typedef struct KeyValue {

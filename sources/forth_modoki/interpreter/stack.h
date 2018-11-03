@@ -1,6 +1,6 @@
 #pragma once
-#include "parser.h"
 #include <stdio.h>
+#include "parser.h"
 
 /*
 enum DataType {
