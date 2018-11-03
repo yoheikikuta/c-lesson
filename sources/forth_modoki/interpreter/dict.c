@@ -18,10 +18,10 @@ struct KeyValue {
 static struct KeyValue dict_array[DICT_SIZE];
 
 static int find_key_index(char* key, int* out_index) {
-    out_index = 0;
+    *out_index = 0;
     for (int i=0; i < dict_pos; i++) {
         if (dict_array[i].key == key) {return 1;}
-        out_index++;
+        (*out_index)++;
     }
     return 0;
 }
@@ -37,11 +37,12 @@ void dict_put(char* key, struct Data *elem){
 };
 
 int dict_get(char* key, struct Data *out_elem){
-    for(int i = 0; i < dict_pos; i++) {
-        if (dict_array[i].key == key) {
-            *out_elem = dict_array[i].value;
-            return 1;
-        }
+    int index = 0;
+    if (find_key_index(key, &index)) {
+        *out_elem = dict_array[index].value;
+        return 1;
+    } else {
+        return 0;
     }
 };
 
