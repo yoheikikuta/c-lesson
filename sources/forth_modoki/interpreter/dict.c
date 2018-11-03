@@ -1,19 +1,14 @@
 #include "stack.h"
 #include "cl_util.h"
+#include "dict.h"
 #include <assert.h>
 
-#define DICT_SIZE 1024
 
 static int dict_pos = 0;
 
 static void reset_dict() {
     dict_pos = 0;
 }
-
-struct KeyValue {
-    char *key;
-    struct Data value;
-};
 
 static struct KeyValue dict_array[DICT_SIZE];
 
