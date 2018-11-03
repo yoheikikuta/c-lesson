@@ -21,7 +21,7 @@ static int find_key_index(char* key, int* out_index) {
     return 0;
 }
 
-void dict_put(char* key, struct Data *elem){
+void dict_put(char* key, struct Data *elem) {
     int index = 0;
     if (find_key_index(key, &index)) {
         dict_array[index].value = *elem;
@@ -31,7 +31,7 @@ void dict_put(char* key, struct Data *elem){
     }
 };
 
-int dict_get(char* key, struct Data *out_elem){
+int dict_get(char* key, struct Data *out_elem) {
     int index = 0;
     if (find_key_index(key, &index)) {
         *out_elem = dict_array[index].value;
@@ -41,13 +41,17 @@ int dict_get(char* key, struct Data *out_elem){
     }
 };
 
-void dict_print_all(){
+void dict_print_all() {
     printf("All keys in the dict: ");
     for (int i=0; i < dict_pos; i++) {
         printf("%s ", dict_array[i].key);
     }
     printf("\n");
 };
+
+//
+// TEST
+//
 
 static int two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
     // Return 1 if two KeyValues are identical.
