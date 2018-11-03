@@ -1,10 +1,10 @@
-#include "clesson.h"
-#include "cl_util.h"
-#include "parser.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include "clesson.h"
+#include "cl_util.h"
+#include "parser.h"
 
 
 static int is_space(int c) {

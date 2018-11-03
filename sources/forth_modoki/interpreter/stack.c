@@ -1,8 +1,8 @@
-#include "stack.h"
-#include "cl_util.h"
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
+#include "cl_util.h"
+#include "stack.h"
 
 
 static struct Data stack[STACK_SIZE];
