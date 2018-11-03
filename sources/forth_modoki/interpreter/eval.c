@@ -143,6 +143,20 @@ static void test_eval_def_store() {
     assert_two_data_eq(&expect, &actual);
 }
 
+static void test_eval_def_add() {
+    char *input = "/abc 123 def 321 abc add";
+    int expect = 444;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
 static void test_eval_literal_name() {
     char *input = "/abc";
     char *expect = "abc";
@@ -178,6 +192,7 @@ int main() {
     test_eval_num_add();
     test_eval_num_add_complicated();
     test_eval_def_store();
+    test_eval_def_add();
     test_eval_literal_name();
     test_eval_unknown();
 
