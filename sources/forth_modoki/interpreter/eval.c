@@ -1,9 +1,9 @@
+#include <assert.h>
 #include "clesson.h"
 #include "cl_util.h"
+#include "dict.h"
 #include "parser.h"
 #include "stack.h"
-#include "dict.h"
-#include <assert.h>
 
 
 int stack_pop_int(){
