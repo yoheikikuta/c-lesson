@@ -32,6 +32,10 @@ int stack_pop(struct Data *out_elem) {
     }
 }
 
+//
+// TEST
+//
+
 static void test_pop_from_empty() {
     struct Data input = {UNKNOWN, {0}};
     int expect = 0;
