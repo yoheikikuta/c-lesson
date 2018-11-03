@@ -169,9 +169,9 @@ void parser_print_all() {
     }while(ch != EOF);
 }
 
-
-
-
+//
+// TEST
+//
 
 static void test_parse_one_number() {
     char *input = "123";

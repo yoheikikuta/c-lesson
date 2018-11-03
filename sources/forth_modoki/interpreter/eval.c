@@ -72,6 +72,10 @@ void eval() {
     } while (ch != EOF);
 }
 
+//
+// TEST
+//
+
 static void test_eval_num_one() {
     char *input = "123";
     int expect = 123;
