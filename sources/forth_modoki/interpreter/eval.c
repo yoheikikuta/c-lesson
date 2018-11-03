@@ -49,7 +49,10 @@ void eval() {
                     stack_push(&result);
                 } else if (streq(token.u.name, "def")) {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
-                    ;
+                    int val = stack_pop_int();
+                    struct Data elem = {NUMBER, {val}};
+                    char *literal_name = stack_pop_str();
+                    dict_put(literal_name, &elem);
                 }
                 break;
             case LITERAL_NAME:
