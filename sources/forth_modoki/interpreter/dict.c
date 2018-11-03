@@ -17,9 +17,23 @@ struct KeyValue {
 
 static struct KeyValue dict_array[DICT_SIZE];
 
+static int find_key_index(char* key, int* out_index) {
+    out_index = 0;
+    for (int i=0; i < dict_pos; i++) {
+        if (dict_array[i].key == key) {return 1;}
+        out_index++;
+    }
+    return 0;
+}
+
 void dict_put(char* key, struct Data *elem){
-    struct KeyValue put_key_value = {key, *elem};
-    dict_array[dict_pos++] = put_key_value;
+    int index = 0;
+    if (find_key_index(key, &index)) {
+        dict_array[index].value = *elem;
+    } else {
+        struct KeyValue key_value_elem = {key, *elem};
+        dict_array[dict_pos++] = key_value_elem;
+    }
 };
 
 int dict_get(char* key, struct Data *out_elem){
