@@ -15,7 +15,7 @@ static struct KeyValue dict_array[DICT_SIZE];
 static int find_key_index(char* key, int* out_index) {
     *out_index = 0;
     for (int i=0; i < dict_pos; i++) {
-        if (dict_array[i].key == key) {return 1;}
+        if (streq(dict_array[i].key, key)) {return 1;}
         (*out_index)++;
     }
     return 0;
