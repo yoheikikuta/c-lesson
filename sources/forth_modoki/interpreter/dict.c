@@ -113,12 +113,41 @@ static void test_two_put_two_get() {
     reset_dict();
 }
 
+static void test_rewrite_dict() {
+    char *input_key = "key";
+    struct Data input_data_1 = {NUMBER, {123}};
+    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    struct KeyValue expect = {"key", {LITERAL_NAME, .u.name = "abc"}};
+
+    dict_put(input_key, &input_data_1);
+    dict_put(input_key, &input_data_2);
+    struct KeyValue *actual = &dict_array[0];
+
+    assert_two_keyvalue_eq(&expect, actual);
+    reset_dict();
+}
+
+static void test_get_nil_key() {
+    char *input_key = "key";
+    struct Data input_data = {NUMBER, {123}};
+    int expect = 0;
+
+    dict_put(input_key, &input_data);
+    struct Data actual_data = {UNKNOWN, {0}};
+    int actual = dict_get("nil_key", &actual_data);
+
+    assert(expect == actual);
+    reset_dict();
+}
+
 
 int main () {
     test_one_put();
     test_one_put_one_get();
     test_two_put();
     test_two_put_two_get();
+    test_rewrite_dict();
+    test_get_nil_key();
 
     return 0;
 }
