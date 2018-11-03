@@ -23,8 +23,12 @@ void dict_put(char* key, struct Data *elem){
 };
 
 int dict_get(char* key, struct Data *out_elem){
-    *out_elem = dict_array[0].value;
-    return 1;
+    for(int i = 0; i < dict_pos; i++) {
+        if (dict_array[i].key == key) {
+            *out_elem = dict_array[i].value;
+            return 1;
+        }
+    }
 };
 
 void dict_print_all(){;};
@@ -61,11 +65,11 @@ static void test_one_put_one_get() {
     int expect = 1;
 
     dict_put(input_key, &input_data);
-    struct Data *actual_data;
-    int actual = dict_get("key", actual_data);
+    struct Data actual_data = {UNKNOWN, {0}};
+    int actual = dict_get("key", &actual_data);
 
     assert(expect == actual);
-    assert_two_data_eq(&expect_data, actual_data);
+    assert_two_data_eq(&expect_data, &actual_data);
     reset_dict();
 }
 
@@ -96,15 +100,15 @@ static void test_two_put_two_get() {
 
     dict_put(input_key_1, &input_data_1);
     dict_put(input_key_2, &input_data_2);
-    struct Data *actual_data_1;
-    struct Data *actual_data_2;
-    int actual_1 = dict_get("key1", actual_data_1);
-    int actual_2 = dict_get("key2", actual_data_2);
+    struct Data actual_data_1 = {UNKNOWN, {0}};
+    struct Data actual_data_2 = {UNKNOWN, {0}};
+    int actual_1 = dict_get("key1", &actual_data_1);
+    int actual_2 = dict_get("key2", &actual_data_2);
 
     assert(expect_1 == actual_1);
-    assert_two_data_eq(&expect_data_1, actual_data_1);
+    assert_two_data_eq(&expect_data_1, &actual_data_1);
     assert(expect_2 == actual_2);
-    assert_two_data_eq(&expect_data_2, actual_data_2);
+    assert_two_data_eq(&expect_data_2, &actual_data_2);
 
     reset_dict();
 }
