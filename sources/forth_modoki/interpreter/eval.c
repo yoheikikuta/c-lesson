@@ -2,6 +2,7 @@
 #include "cl_util.h"
 #include "parser.h"
 #include "stack.h"
+#include "dict.h"
 #include <assert.h>
 
 
@@ -46,6 +47,9 @@ void eval() {
 
                     struct Data result = {NUMBER, {v1+v2}};
                     stack_push(&result);
+                } else if (streq(token.u.name, "def")) {
+                    // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
+                    ;
                 }
                 break;
             case LITERAL_NAME:
@@ -122,6 +126,20 @@ static void test_eval_num_add_complicated() {
     assert(expect == actual);
 }
 
+static void test_eval_def_store() {
+    char *input = "/abc 123 def";
+    struct Data expect = {NUMBER, {123}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Data actual = {UNKNOWN, {0}};
+    dict_get("abc", &actual);
+
+    assert_two_data_eq(&expect, &actual);
+}
+
 static void test_eval_literal_name() {
     char *input = "/abc";
     char *expect = "abc";
@@ -156,6 +174,7 @@ int main() {
     test_eval_num_two();
     test_eval_num_add();
     test_eval_num_add_complicated();
+    test_eval_def_store();
     test_eval_literal_name();
     test_eval_unknown();
 

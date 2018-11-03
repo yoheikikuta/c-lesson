@@ -157,6 +157,7 @@ static void test_get_nil_key() {
 }
 
 
+#if 0
 int main () {
     test_one_put();
     test_one_put_one_get();
@@ -167,3 +168,4 @@ int main () {
 
     return 0;
 }
+#endif
