@@ -46,7 +46,13 @@ int dict_get(char* key, struct Data *out_elem){
     }
 };
 
-void dict_print_all(){;};
+void dict_print_all(){
+    printf("All keys in the dict: ");
+    for (int i=0; i < dict_pos; i++) {
+        printf("%s ", dict_array[i].key);
+    }
+    printf("\n");
+};
 
 static int two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
     // Return 1 if two KeyValues are identical.
