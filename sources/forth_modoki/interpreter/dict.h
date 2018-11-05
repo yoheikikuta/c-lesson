@@ -3,13 +3,6 @@
 #include "stack.h"
 
 
-typedef struct KeyValue {
-    char *key;
-    struct Data value;
-} KeyValue;
-
-#define DICT_SIZE 1024
-
 /*
 put {key, value} into the dictionaly, or overwrite the value if the key exists.
 return (0) 1 if a given key (not) exists, and out_elem stores Data of the given key.

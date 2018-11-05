@@ -4,6 +4,13 @@
 #include "stack.h"
 
 
+typedef struct KeyValue {
+    char *key;
+    struct Data value;
+} KeyValue;
+
+#define DICT_SIZE 1024
+
 static int dict_pos = 0;
 
 static void reset_dict() {
