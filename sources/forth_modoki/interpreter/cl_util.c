@@ -12,6 +12,9 @@ int two_data_eq(struct Data *d1, struct Data *d2) {
             return d1->u.number == d2->u.number;
         } else if (d1->dtype == LITERAL_NAME) {
             return streq(d1->u.name, d2->u.name);
+        } else {
+            fprintf(stderr, "Never reached here.\n");
+            return 0;
         }
     } else {
         return 0;
