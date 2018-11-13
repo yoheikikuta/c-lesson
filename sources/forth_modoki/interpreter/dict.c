@@ -9,7 +9,15 @@ typedef struct KeyValue {
     struct Data value;
 } KeyValue;
 
+typedef struct Node {
+    char *key;
+    int value;
+    struct Node *next;
+} Node;
+
+
 #define DICT_SIZE 1024
+#define TABLE_SIZE 1024
 
 static int dict_pos = 0;
 
@@ -17,7 +25,16 @@ static void reset_dict() {
     dict_pos = 0;
 }
 
+static int hash(char *str) {
+    unsigned int val = 0;
+    while(*str) {
+        val += *str++;
+    }
+    return (int)(val%1024);
+}
+
 static struct KeyValue dict_array[DICT_SIZE];
+static struct Node *array[TABLE_SIZE];
 
 static int find_key_index(char* key, int* out_index) {
     *out_index = 0;
@@ -73,6 +90,24 @@ static int two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
 
 static void assert_two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
     assert(two_keyvalue_eq(kv1, kv2));
+}
+
+static void test_hash() {
+    char *input_key = "a";
+    int expect = 97; // 'a' is 97 in decimal ascii code
+
+    int actual = hash(input_key);
+
+    assert(expect == actual);
+}
+
+static void test_hash_longkey() {
+    char *input_key = "aaaaaaaaaaaa";
+    int expect = 140; // 97*12 modulo 1024 = 140
+
+    int actual = hash(input_key);
+
+    assert(expect == actual);
 }
 
 static void test_one_put() {
@@ -170,8 +205,10 @@ static void test_get_nil_key() {
 }
 
 
-#if 0
+#if 1
 int main () {
+    test_hash();
+    test_hash_longkey();
     test_one_put();
     test_one_put_one_get();
     test_two_put();
