@@ -30,7 +30,7 @@ static int hash(char *str) {
     while(*str) {
         val += *str++;
     }
-    return (int)(val%1024);
+    return (int)(val % TABLE_SIZE);
 }
 
 static struct KeyValue dict_array[DICT_SIZE];
