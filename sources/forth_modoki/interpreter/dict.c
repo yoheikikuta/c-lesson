@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include "cl_util.h"
 #include "dict.h"
 #include "stack.h"
@@ -11,7 +12,7 @@ typedef struct KeyValue {
 
 typedef struct Node {
     char *key;
-    int value;
+    struct Data value;
     struct Node *next;
 } Node;
 
@@ -33,13 +34,13 @@ static int hash(char *str) {
     return (int)(val % TABLE_SIZE);
 }
 
-static struct KeyValue dict_array[DICT_SIZE];
-static struct Node *array[TABLE_SIZE];
+//static struct KeyValue dict_array[DICT_SIZE];
+static struct Node *dict_array[TABLE_SIZE];
 
 static int find_key_index(char* key, int* out_index) {
     *out_index = 0;
     for (int i=0; i < dict_pos; i++) {
-        if (streq(dict_array[i].key, key)) {
+        if (streq(dict_array[i]->key, key)) {
             *out_index = i;
             return 1;
         }
@@ -48,19 +49,34 @@ static int find_key_index(char* key, int* out_index) {
 }
 
 void dict_put(char* key, struct Data *elem) {
-    int index = 0;
-    if (find_key_index(key, &index)) {
-        dict_array[index].value = *elem;
-    } else {
-        struct KeyValue key_value_elem = {key, *elem};
-        dict_array[dict_pos++] = key_value_elem;
+    int idx = hash(key);
+    struct Node *head = dict_array[idx];
+    if (head == NULL) {
+       head = malloc(sizeof(Node));
+       head->next = NULL;
+       head->key = key;
+       head->value = *elem;
+       dict_array[idx] = head;
+       return;
     }
-};
+    // WRITE ME
+    // update_or_insert_list(head, key, value);
+}
+
+// void dict_put(char* key, struct Data *elem) {
+//     int index = 0;
+//     if (find_key_index(key, &index)) {
+//         dict_array[index].value = *elem;
+//     } else {
+//         struct KeyValue key_value_elem = {key, *elem};
+//         dict_array[dict_pos++] = key_value_elem;
+//     }
+// };
 
 int dict_get(char* key, struct Data *out_elem) {
     int index = 0;
     if (find_key_index(key, &index)) {
-        *out_elem = dict_array[index].value;
+        *out_elem = dict_array[index]->value;
         return 1;
     } else {
         return 0;
@@ -70,7 +86,7 @@ int dict_get(char* key, struct Data *out_elem) {
 void dict_print_all() {
     printf("All keys in the dict: ");
     for (int i=0; i < dict_pos; i++) {
-        printf("%s ", dict_array[i].key);
+        printf("%s ", dict_array[i]->key);
     }
     printf("\n");
 };
@@ -116,7 +132,9 @@ static void test_one_put() {
     struct KeyValue expect = {"key", {NUMBER, {123}}};
 
     dict_put(input_key, &input_data);
-    struct KeyValue *actual = &dict_array[0];
+    int idx = hash(input_key);
+    struct Node *actual_node = &dict_array[idx];
+    struct KeyValue *actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
