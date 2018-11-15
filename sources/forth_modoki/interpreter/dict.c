@@ -37,16 +37,16 @@ static int hash(char *str) {
 //static struct KeyValue dict_array[DICT_SIZE];
 static struct Node *dict_array[TABLE_SIZE];
 
-static int find_key_index(char* key, int* out_index) {
-    *out_index = 0;
-    for (int i=0; i < dict_pos; i++) {
-        if (streq(dict_array[i]->key, key)) {
-            *out_index = i;
-            return 1;
-        }
-    }
-    return 0;
-}
+// static int find_key_index(char* key, int* out_index) {
+//     *out_index = 0;
+//     for (int i=0; i < dict_pos; i++) {
+//         if (streq(dict_array[i]->key, key)) {
+//             *out_index = i;
+//             return 1;
+//         }
+//     }
+//     return 0;
+// }
 
 void dict_put(char* key, struct Data *elem) {
     int idx = hash(key);
@@ -63,6 +63,17 @@ void dict_put(char* key, struct Data *elem) {
     // update_or_insert_list(head, key, value);
 }
 
+int dict_get(char* key, struct Data *out_elem) {
+    int idx = hash(key);
+    struct Node *head = dict_array[idx];
+    if (head == NULL) {
+        return 0;
+    } else {
+        *out_elem = dict_array[idx]->value;
+        return 1;
+    }
+}
+
 // void dict_put(char* key, struct Data *elem) {
 //     int index = 0;
 //     if (find_key_index(key, &index)) {
@@ -73,15 +84,15 @@ void dict_put(char* key, struct Data *elem) {
 //     }
 // };
 
-int dict_get(char* key, struct Data *out_elem) {
-    int index = 0;
-    if (find_key_index(key, &index)) {
-        *out_elem = dict_array[index]->value;
-        return 1;
-    } else {
-        return 0;
-    }
-};
+// int dict_get(char* key, struct Data *out_elem) {
+//     int index = 0;
+//     if (find_key_index(key, &index)) {
+//         *out_elem = dict_array[index]->value;
+//         return 1;
+//     } else {
+//         return 0;
+//     }
+// };
 
 void dict_print_all() {
     printf("All keys in the dict: ");
