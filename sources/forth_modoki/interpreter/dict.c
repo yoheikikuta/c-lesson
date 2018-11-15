@@ -142,7 +142,9 @@ static void test_two_put() {
 
     dict_put(input_key_1, &input_data_1);
     dict_put(input_key_2, &input_data_2);
-    struct KeyValue *actual = &dict_array[1];
+    int idx_2 = hash(input_key_2);
+    struct Node *actual_node = &dict_array[idx_2];
+    struct KeyValue *actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
