@@ -35,6 +35,11 @@ static int hash(char *str) {
     return (int)(val % TABLE_SIZE);
 }
 
+void update_or_insert_list(struct Node *head, char *key, struct Data *elem) {
+    head->key = key;
+    head->value = *elem;
+}
+
 void dict_put(char* key, struct Data *elem) {
     int idx = hash(key);
     struct Node *head = dict_array[idx];
@@ -47,7 +52,7 @@ void dict_put(char* key, struct Data *elem) {
        return;
     }
     // WRITE ME
-    // update_or_insert_list(head, key, value);
+    update_or_insert_list(head, key, elem);
 }
 
 int dict_get(char* key, struct Data *out_elem) {
@@ -183,7 +188,9 @@ static void test_rewrite_dict() {
 
     dict_put(input_key, &input_data_1);
     dict_put(input_key, &input_data_2);
-    struct KeyValue *actual = &dict_array[0];
+    int idx = hash(input_key);
+    struct Node *actual_node = &dict_array[idx];
+    struct KeyValue *actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
