@@ -18,13 +18,20 @@ typedef struct Node {
 
 
 #define TABLE_SIZE 16
-
-static int dict_pos = 0;
 static struct Node *dict_array[TABLE_SIZE];
 
 
 static void reset_dict() {
-    dict_pos = 0;
+    struct Node *head;
+    for (int i=0; i < TABLE_SIZE; i++) {
+        if (head == NULL) {
+            continue;
+        } else {
+            dict_array[i] = NULL;
+            // This is a tentative implementation.
+            // Need to free previously allocated memory?
+        }
+    }
 }
 
 static int hash(char *str) {
@@ -66,13 +73,13 @@ int dict_get(char* key, struct Data *out_elem) {
     }
 }
 
-void dict_print_all() {
-    printf("All keys in the dict: ");
-    for (int i=0; i < dict_pos; i++) {
-        printf("%s ", dict_array[i]->key);
-    }
-    printf("\n");
-};
+// void dict_print_all() {
+//     printf("All keys in the dict: ");
+//     for (int i=0; i < dict_pos; i++) {
+//         printf("%s ", dict_array[i]->key);
+//     }
+//     printf("\n");
+// };
 
 //
 // TEST
