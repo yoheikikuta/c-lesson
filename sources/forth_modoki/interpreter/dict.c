@@ -17,10 +17,11 @@ typedef struct Node {
 } Node;
 
 
-#define DICT_SIZE 1024
 #define TABLE_SIZE 1024
 
 static int dict_pos = 0;
+static struct Node *dict_array[TABLE_SIZE];
+
 
 static void reset_dict() {
     dict_pos = 0;
@@ -33,20 +34,6 @@ static int hash(char *str) {
     }
     return (int)(val % TABLE_SIZE);
 }
-
-//static struct KeyValue dict_array[DICT_SIZE];
-static struct Node *dict_array[TABLE_SIZE];
-
-// static int find_key_index(char* key, int* out_index) {
-//     *out_index = 0;
-//     for (int i=0; i < dict_pos; i++) {
-//         if (streq(dict_array[i]->key, key)) {
-//             *out_index = i;
-//             return 1;
-//         }
-//     }
-//     return 0;
-// }
 
 void dict_put(char* key, struct Data *elem) {
     int idx = hash(key);
@@ -73,26 +60,6 @@ int dict_get(char* key, struct Data *out_elem) {
         return 1;
     }
 }
-
-// void dict_put(char* key, struct Data *elem) {
-//     int index = 0;
-//     if (find_key_index(key, &index)) {
-//         dict_array[index].value = *elem;
-//     } else {
-//         struct KeyValue key_value_elem = {key, *elem};
-//         dict_array[dict_pos++] = key_value_elem;
-//     }
-// };
-
-// int dict_get(char* key, struct Data *out_elem) {
-//     int index = 0;
-//     if (find_key_index(key, &index)) {
-//         *out_elem = dict_array[index]->value;
-//         return 1;
-//     } else {
-//         return 0;
-//     }
-// };
 
 void dict_print_all() {
     printf("All keys in the dict: ");
