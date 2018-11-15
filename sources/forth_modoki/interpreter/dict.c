@@ -17,7 +17,7 @@ typedef struct Node {
 } Node;
 
 
-#define TABLE_SIZE 1024
+#define TABLE_SIZE 16
 
 static int dict_pos = 0;
 static struct Node *dict_array[TABLE_SIZE];
@@ -88,7 +88,7 @@ static void assert_two_keyvalue_eq(struct KeyValue *kv1, struct KeyValue *kv2) {
 
 static void test_hash() {
     char *input_key = "a";
-    int expect = 97; // 'a' is 97 in decimal ascii code
+    int expect = 1; // 97 (a) module 16 = 1
 
     int actual = hash(input_key);
 
@@ -97,7 +97,7 @@ static void test_hash() {
 
 static void test_hash_longkey() {
     char *input_key = "aaaaaaaaaaaa";
-    int expect = 140; // 97*12 modulo 1024 = 140
+    int expect = 12; // 97*12 modulo 16 = 140
 
     int actual = hash(input_key);
 
