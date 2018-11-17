@@ -93,14 +93,14 @@ void dict_put(char* key, Data_t* elem) {
 int dict_get(char* key, Data_t* out_elem) {
     int idx = hash(key);
     Node_t* head = dict_array[idx];
-    Node_t** curPtr = &head;
+    Node_t* cur = head;
 
-    while (*curPtr != NULL) {
-        if (streq((*curPtr)->key, key)) {
-            *out_elem = (*curPtr)->value;
+    while (cur != NULL) {
+        if (streq(cur->key, key)) {
+            *out_elem = cur->value;
             return 1;
         }
-        curPtr = &((*curPtr)->next);
+        cur = cur->next;
     }
 
     return 0;
@@ -273,7 +273,7 @@ static void test_put_colliding_key() {
 }
 
 
-#if 1
+#if 0
 int main () {
     test_hash();
     test_hash_longkey();
