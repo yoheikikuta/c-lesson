@@ -22,11 +22,22 @@ static Node_t* dict_array[TABLE_SIZE];
 
 
 static void reset_dict() {
+    // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
+    // free each Node to release memory.
+    Node_t** headPtr;
+    Node_t** tailPtr;
+
     for (int i=0; i < TABLE_SIZE; i++) {
         if (dict_array[i] == NULL) {
             continue;
         } else {
-            free(dict_array[i]);
+            headPtr = &dict_array[i];
+            tailPtr = headPtr;
+            while (*tailPtr != NULL) {
+                *headPtr = *tailPtr;
+                tailPtr = &((*tailPtr)->next);
+                free(*headPtr);
+            }
             dict_array[i] = NULL;
         }
     }
