@@ -17,7 +17,7 @@ typedef struct Data {
         int number;
         char *name;
     } u;
-} Data;
+} Data_t;
 
 #define STACK_SIZE 1024
 
@@ -25,5 +25,5 @@ typedef struct Data {
 return 1 if data is successfully pushed into stack.
 return 1 if data is successfully popped from stack.
 */
-int stack_push(struct Data* push_elem);
-int stack_pop(struct Data* out_elem);
+int stack_push(Data_t* push_elem);
+int stack_pop(Data_t* out_elem);
