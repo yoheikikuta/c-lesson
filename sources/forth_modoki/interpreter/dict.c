@@ -22,14 +22,17 @@ static struct Node *dict_array[TABLE_SIZE];
 
 
 static void reset_dict() {
-    struct Node *head;
+    // struct Node *head;
     for (int i=0; i < TABLE_SIZE; i++) {
-        if (head == NULL) {
+        // head = dict_array[i];
+        // if (head == NULL) {
+        if (dict_array[i] == NULL) {
             continue;
         } else {
+            free(dict_array[i]);
             dict_array[i] = NULL;
-            // This is a tentative implementation.
-            // Need to free previously allocated memory?
+            //free(head);
+            //head = NULL;
         }
     }
 }
@@ -58,7 +61,6 @@ void dict_put(char* key, struct Data *elem) {
        dict_array[idx] = head;
        return;
     }
-    // WRITE ME
     update_or_insert_list(head, key, elem);
 }
 
