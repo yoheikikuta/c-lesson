@@ -12,7 +12,7 @@ static void reset_stack() {
     stack_num = 0;
 }
 
-int stack_push(struct Data *push_elem) {
+int stack_push(struct Data* push_elem) {
     if (stack_num == STACK_SIZE) {
         return 0;
     } else {
@@ -22,7 +22,7 @@ int stack_push(struct Data *push_elem) {
     }
 }
 
-int stack_pop(struct Data *out_elem) {
+int stack_pop(struct Data* out_elem) {
     if (stack_num == 0) {
         return 0;
     } else {
@@ -63,7 +63,7 @@ static void test_one_push() {
     int expect = 1;
 
     int actual = stack_push(&input);
-    struct Data *actual_data = &stack[0];
+    struct Data* actual_data = &stack[0];
 
     assert(expect == actual);
     assert_two_data_eq(&expect_data, actual_data);
@@ -94,8 +94,8 @@ static void test_two_push() {
 
     int actual_1 = stack_push(&input_1);
     int actual_2 = stack_push(&input_2);
-    struct Data *actual_data_1 = &stack[0];
-    struct Data *actual_data_2 = &stack[1];
+    struct Data* actual_data_1 = &stack[0];
+    struct Data* actual_data_2 = &stack[1];
 
     assert(expect_1 == actual_1);
     assert(expect_2 == actual_2);
