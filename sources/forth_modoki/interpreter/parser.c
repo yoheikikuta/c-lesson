@@ -36,7 +36,7 @@ static int is_close_curly(int c) {
 }
 
 
-int parse_one(int prev_ch, struct Token* out_token) {
+int parse_one(int prev_ch, Token_t* out_token) {
     int cur_ch = 0;
 
     // Set the head character as cur_ch
@@ -133,7 +133,7 @@ int parse_one(int prev_ch, struct Token* out_token) {
 
 void parser_print_all() {
     int ch = EOF;
-    struct Token token = {
+    Token_t token = {
         UNKNOWN,
         {0}
     };
@@ -177,7 +177,7 @@ static void test_parse_one_number() {
     char* input = "123";
     int expect = 123;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -193,7 +193,7 @@ static void test_parse_one_empty_should_return_END_OF_FILE() {
     char* input = "";
     int expect = END_OF_FILE;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -207,7 +207,7 @@ static void test_parse_one_space() {
     char* input = " 123";
     int expect = ' ';
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -224,7 +224,7 @@ static void test_parse_one_executable_name() {
     char* expect_name = "add";
     int expect_type = EXECUTABLE_NAME;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -240,7 +240,7 @@ static void test_parse_one_literal_name() {
     char* expect_name = "add";
     int expect_type = LITERAL_NAME;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -256,7 +256,7 @@ static void test_parse_one_open_curly() {
     char expect_onechar = '{';
     int expect_type = OPEN_CURLY;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
@@ -272,7 +272,7 @@ static void test_parse_one_close_curly() {
     char expect_onechar = '}';
     int expect_type = CLOSE_CURLY;
 
-    struct Token token = {UNKNOWN, {0}};
+    Token_t token = {UNKNOWN, {0}};
     int ch;
 
     cl_getc_set_src(input);
