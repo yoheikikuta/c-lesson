@@ -8,7 +8,7 @@
 
 int stack_pop_int(){
     // Return the value of popped NUMBER data from the stack.
-    struct Data input = {UNKNOWN, {0}};
+    Data_t input = {UNKNOWN, {0}};
     stack_pop(&input);
     int num = input.u.number;
 
@@ -17,7 +17,7 @@ int stack_pop_int(){
 
 char* stack_pop_str(){
     // Return the value of popped LITERAL_NAME data from the stack.
-    struct Data input = {UNKNOWN, {0}};
+    Data_t input = {UNKNOWN, {0}};
     stack_pop(&input);
     char* str = input.u.name;
 
@@ -45,12 +45,12 @@ void eval() {
                     int v1 = stack_pop_int();
                     int v2 = stack_pop_int();
 
-                    struct Data result = {NUMBER, {v1+v2}};
+                    Data_t result = {NUMBER, {v1+v2}};
                     stack_push(&result);
                 } else if (streq(token.u.name, "def")) {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
                     int val = stack_pop_int();
-                    struct Data elem = {NUMBER, {val}};
+                    Data_t elem = {NUMBER, {val}};
                     char* literal_name = stack_pop_str();
                     dict_put(literal_name, &elem);
                 } else if (dict_get(token.u.name, &token)) {
@@ -138,13 +138,13 @@ static void test_eval_num_add_complicated() {
 
 static void test_eval_def_store() {
     char* input = "/abc 123 def";
-    struct Data expect = {NUMBER, {123}};
+    Data_t expect = {NUMBER, {123}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Data actual = {UNKNOWN, {0}};
+    Data_t actual = {UNKNOWN, {0}};
     dict_get("abc", &actual);
 
     assert_two_data_eq(&expect, &actual);

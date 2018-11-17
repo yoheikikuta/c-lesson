@@ -7,18 +7,18 @@
 
 typedef struct KeyValue {
     char* key;
-    struct Data value;
-} KeyValue;
+    Data_t value;
+} KeyValue_t;
 
 typedef struct Node {
     char* key;
-    struct Data value;
+    Data_t value;
     struct Node* next;
-} Node;
+} Node_t;
 
 
 #define TABLE_SIZE 16
-static struct Node* dict_array[TABLE_SIZE];
+static Node_t* dict_array[TABLE_SIZE];
 
 
 static void reset_dict() {
@@ -45,9 +45,9 @@ static int hash(char* str) {
     return (int)(val % TABLE_SIZE);
 }
 
-static void update_or_insert_list(Node** headPtr, char* key, Data* elem) {
-    Node* head;
-    head = malloc(sizeof(Node));
+static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
+    Node_t* head;
+    head = malloc(sizeof(Node_t));
     head->next = NULL;
     head->key = key;
     head->value = *elem;
@@ -62,12 +62,12 @@ static void update_or_insert_list(Node** headPtr, char* key, Data* elem) {
     *headPtr = head;
 }
 
-void dict_put(char* key, struct Data* elem) {
+void dict_put(char* key, Data_t* elem) {
     int idx = hash(key);
-    Node* head = dict_array[idx];
-    Node** headPtr = &head;
+    Node_t* head = dict_array[idx];
+    Node_t** headPtr = &head;
     if (head == NULL) {
-       head = malloc(sizeof(Node));
+       head = malloc(sizeof(Node_t));
        head->next = NULL;
        head->key = key;
        head->value = *elem;
@@ -77,10 +77,10 @@ void dict_put(char* key, struct Data* elem) {
     update_or_insert_list(headPtr, key, elem);
 }
 
-int dict_get(char* key, struct Data* out_elem) {
+int dict_get(char* key, Data_t* out_elem) {
     int idx = hash(key);
-    Node* head = dict_array[idx];
-    Node** headPtr = &head;
+    Node_t* head = dict_array[idx];
+    Node_t** headPtr = &head;
 
     while (*headPtr != NULL) {
         if (streq((*headPtr)->key, key)) {
@@ -105,7 +105,7 @@ int dict_get(char* key, struct Data* out_elem) {
 // TEST
 //
 
-static int two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
+static int two_keyvalue_eq(KeyValue_t* kv1, KeyValue_t* kv2) {
     // Return 1 if two KeyValues are identical.
     if (kv1->key == kv2->key) {
         return two_data_eq(&kv1->value, &kv2->value);
@@ -114,7 +114,7 @@ static int two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
     }
 }
 
-static void assert_two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
+static void assert_two_keyvalue_eq(KeyValue_t* kv1, KeyValue_t* kv2) {
     assert(two_keyvalue_eq(kv1, kv2));
 }
 
@@ -138,13 +138,13 @@ static void test_hash_longkey() {
 
 static void test_one_put() {
     char* input_key = "key";
-    struct Data input_data = {NUMBER, {123}};
-    struct KeyValue expect = {"key", {NUMBER, {123}}};
+    Data_t input_data = {NUMBER, {123}};
+    KeyValue_t expect = {"key", {NUMBER, {123}}};
 
     dict_put(input_key, &input_data);
     int idx = hash(input_key);
-    struct Node* actual_node = &dict_array[idx];
-    struct KeyValue* actual = {actual_node->key, actual_node->value};
+    Node_t* actual_node = &dict_array[idx];
+    KeyValue_t* actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
@@ -152,12 +152,12 @@ static void test_one_put() {
 
 static void test_one_put_one_get() {
     char* input_key = "key";
-    struct Data input_data = {NUMBER, {123}};
-    struct Data expect_data = {NUMBER, {123}};
+    Data_t input_data = {NUMBER, {123}};
+    Data_t expect_data = {NUMBER, {123}};
     int expect = 1;
 
     dict_put(input_key, &input_data);
-    struct Data actual_data = {UNKNOWN, {0}};
+    Data_t actual_data = {UNKNOWN, {0}};
     int actual = dict_get("key", &actual_data);
 
     assert(expect == actual);
@@ -167,16 +167,16 @@ static void test_one_put_one_get() {
 
 static void test_two_put() {
     char* input_key_1 = "key1";
-    struct Data input_data_1 = {NUMBER, {123}};
+    Data_t input_data_1 = {NUMBER, {123}};
     char* input_key_2 = "key2";
-    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
-    struct KeyValue expect = {"key2", {LITERAL_NAME, .u.name = "abc"}};
+    Data_t input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    KeyValue_t expect = {"key2", {LITERAL_NAME, .u.name = "abc"}};
 
     dict_put(input_key_1, &input_data_1);
     dict_put(input_key_2, &input_data_2);
     int idx_2 = hash(input_key_2);
-    struct Node* actual_node = &dict_array[idx_2];
-    struct KeyValue* actual = {actual_node->key, actual_node->value};
+    Node_t* actual_node = &dict_array[idx_2];
+    KeyValue_t* actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
@@ -184,18 +184,18 @@ static void test_two_put() {
 
 static void test_two_put_two_get() {
     char* input_key_1 = "key1";
-    struct Data input_data_1 = {NUMBER, {123}};
+    Data_t input_data_1 = {NUMBER, {123}};
     char* input_key_2 = "key2";
-    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
-    struct Data expect_data_1 = {NUMBER, {123}};
-    struct Data expect_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    Data_t input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    Data_t expect_data_1 = {NUMBER, {123}};
+    Data_t expect_data_2 = {LITERAL_NAME, .u.name = "abc"};
     int expect_1 = 1;
     int expect_2 = 1;
 
     dict_put(input_key_1, &input_data_1);
     dict_put(input_key_2, &input_data_2);
-    struct Data actual_data_1 = {UNKNOWN, {0}};
-    struct Data actual_data_2 = {UNKNOWN, {0}};
+    Data_t actual_data_1 = {UNKNOWN, {0}};
+    Data_t actual_data_2 = {UNKNOWN, {0}};
     int actual_1 = dict_get("key1", &actual_data_1);
     int actual_2 = dict_get("key2", &actual_data_2);
 
@@ -209,15 +209,15 @@ static void test_two_put_two_get() {
 
 static void test_rewrite_dict() {
     char* input_key = "key";
-    struct Data input_data_1 = {NUMBER, {123}};
-    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
-    struct KeyValue expect = {"key", {LITERAL_NAME, .u.name = "abc"}};
+    Data_t input_data_1 = {NUMBER, {123}};
+    Data_t input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    KeyValue_t expect = {"key", {LITERAL_NAME, .u.name = "abc"}};
 
     dict_put(input_key, &input_data_1);
     dict_put(input_key, &input_data_2);
     int idx = hash(input_key);
-    struct Node* actual_node = &dict_array[idx];
-    struct KeyValue* actual = {actual_node->key, actual_node->value};
+    Node_t* actual_node = &dict_array[idx];
+    KeyValue_t* actual = {actual_node->key, actual_node->value};
 
     assert_two_keyvalue_eq(&expect, actual);
     reset_dict();
@@ -225,11 +225,11 @@ static void test_rewrite_dict() {
 
 static void test_get_nil_key() {
     char* input_key = "key";
-    struct Data input_data = {NUMBER, {123}};
+    Data_t input_data = {NUMBER, {123}};
     int expect = 0;
 
     dict_put(input_key, &input_data);
-    struct Data actual_data = {UNKNOWN, {0}};
+    Data_t actual_data = {UNKNOWN, {0}};
     int actual = dict_get("nil_key", &actual_data);
 
     assert(expect == actual);
@@ -239,17 +239,17 @@ static void test_get_nil_key() {
 static void test_put_colliding_key() {
     char* input_key_1 = "key";
     char* input_key_2 = "yek";
-    struct Data input_data_1 = {NUMBER, {123}};
-    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
-    struct Data expect_data_1 = {NUMBER, {123}};
-    struct Data expect_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    Data_t input_data_1 = {NUMBER, {123}};
+    Data_t input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    Data_t expect_data_1 = {NUMBER, {123}};
+    Data_t expect_data_2 = {LITERAL_NAME, .u.name = "abc"};
 
     dict_put(input_key_1, &input_data_1);
     dict_put(input_key_2, &input_data_2);
     int idx_1 = hash(input_key_1);
     int idx_2 = hash(input_key_2);
-    struct Data actual_data_1 = {UNKNOWN, {0}};
-    struct Data actual_data_2 = {UNKNOWN, {0}};
+    Data_t actual_data_1 = {UNKNOWN, {0}};
+    Data_t actual_data_2 = {UNKNOWN, {0}};
     dict_get("key", &actual_data_1);
     dict_get("yek", &actual_data_2);
 
