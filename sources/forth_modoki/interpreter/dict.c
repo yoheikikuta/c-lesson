@@ -45,13 +45,17 @@ static int hash(char* str) {
     return (int)(val % TABLE_SIZE);
 }
 
-static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
+static int* create_new_node(char* key, Data_t* elem) {
     Node_t* head;
     head = malloc(sizeof(Node_t));
     head->next = NULL;
     head->key = key;
     head->value = *elem;
 
+    return head;
+}
+
+static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
     while (*headPtr != NULL) {
         if (streq((*headPtr)->key, key)) {
             (*headPtr)->value = *elem;
@@ -59,6 +63,9 @@ static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
         }
         headPtr = &((*headPtr)->next);
     }
+
+    Node_t* head;
+    head = create_new_node(key, elem);
     *headPtr = head;
 }
 
@@ -67,10 +74,7 @@ void dict_put(char* key, Data_t* elem) {
     Node_t* head = dict_array[idx];
     Node_t** headPtr = &head;
     if (head == NULL) {
-       head = malloc(sizeof(Node_t));
-       head->next = NULL;
-       head->key = key;
-       head->value = *elem;
+       head = create_new_node(key, elem);
        dict_array[idx] = head;
        return;
     }
