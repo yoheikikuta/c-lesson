@@ -24,19 +24,19 @@ static Node_t* dict_array[TABLE_SIZE];
 static void reset_dict() {
     // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
     // free each Node to release memory.
-    Node_t** headPtr;
-    Node_t** tailPtr;
+    Node_t* cur;
+    Node_t* tail;
 
     for (int i=0; i < TABLE_SIZE; i++) {
         if (dict_array[i] == NULL) {
             continue;
         } else {
-            headPtr = &dict_array[i];
-            tailPtr = headPtr;
-            while (*tailPtr != NULL) {
-                *headPtr = *tailPtr;
-                tailPtr = &((*tailPtr)->next);
-                free(*headPtr);
+            cur = dict_array[i];
+            tail = cur;
+            while (tail != NULL) {
+                cur = tail;
+                tail = tail->next;
+                free(cur);
             }
             dict_array[i] = NULL;
         }
@@ -52,29 +52,31 @@ static int hash(char* str) {
 }
 
 static Node_t* create_new_node(char* key, Data_t* elem) {
-    Node_t* head;
-    head = malloc(sizeof(Node_t));
-    head->next = NULL;
-    head->key = key;
-    head->value = *elem;
+    Node_t* cur;
+    cur = malloc(sizeof(Node_t));
+    cur->next = NULL;
+    cur->key = key;
+    cur->value = *elem;
 
-    return head;
+    return cur;
 }
 
 static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
     // If there is the same key in some node, overwrite value in the node.
     // If there isn't, add a new node in the end of list.
-    while (*headPtr != NULL) {
-        if (streq((*headPtr)->key, key)) {
-            (*headPtr)->value = *elem;
+    Node_t** curPtr = headPtr;
+
+    while (*curPtr != NULL) {
+        if (streq((*curPtr)->key, key)) {
+            (*curPtr)->value = *elem;
             return;
         }
-        headPtr = &((*headPtr)->next);
+        curPtr = &((*curPtr)->next);
     }
 
-    Node_t* head;
-    head = create_new_node(key, elem);
-    *headPtr = head;
+    Node_t* cur;
+    cur = create_new_node(key, elem);
+    *curPtr = cur;
 }
 
 void dict_put(char* key, Data_t* elem) {
@@ -92,14 +94,14 @@ void dict_put(char* key, Data_t* elem) {
 int dict_get(char* key, Data_t* out_elem) {
     int idx = hash(key);
     Node_t* head = dict_array[idx];
-    Node_t** headPtr = &head;
+    Node_t** curPtr = &head;
 
-    while (*headPtr != NULL) {
-        if (streq((*headPtr)->key, key)) {
-            *out_elem = (*headPtr)->value;
+    while (*curPtr != NULL) {
+        if (streq((*curPtr)->key, key)) {
+            *out_elem = (*curPtr)->value;
             return 1;
         }
-        headPtr = &((*headPtr)->next);
+        curPtr = &((*curPtr)->next);
     }
 
     return 0;
@@ -272,7 +274,7 @@ static void test_put_colliding_key() {
 }
 
 
-#if 0
+#if 1
 int main () {
     test_hash();
     test_hash_longkey();
