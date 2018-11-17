@@ -218,6 +218,28 @@ static void test_get_nil_key() {
     reset_dict();
 }
 
+static void test_put_colliding_key() {
+    char *input_key_1 = "key";
+    char *input_key_2 = "yek";
+    struct Data input_data_1 = {NUMBER, {123}};
+    struct Data input_data_2 = {LITERAL_NAME, .u.name = "abc"};
+    struct Data expect_data_1 = {NUMBER, {123}};
+    struct Data expect_data_2 = {LITERAL_NAME, .u.name = "abc"};
+
+    dict_put(input_key_1, &input_data_1);
+    dict_put(input_key_2, &input_data_2);
+    int idx_1 = hash(input_key_1);
+    int idx_2 = hash(input_key_2);
+    struct Data actual_data_1 = {UNKNOWN, {0}};
+    struct Data actual_data_2 = {UNKNOWN, {0}};
+    dict_get("key", &actual_data_1);
+    dict_get("key", &actual_data_2);
+
+    assert_two_data_eq(&expect_data_1, &actual_data_1);
+    assert_two_data_eq(&expect_data_2, &actual_data_2);
+
+    reset_dict();
+}
 
 #if 1
 int main () {
@@ -229,6 +251,7 @@ int main () {
     test_two_put_two_get();
     test_rewrite_dict();
     test_get_nil_key();
+    test_put_colliding_key();
 
     return 0;
 }
