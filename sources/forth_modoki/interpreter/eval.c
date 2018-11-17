@@ -19,7 +19,7 @@ char* stack_pop_str(){
     // Return the value of popped LITERAL_NAME data from the stack.
     struct Data input = {UNKNOWN, {0}};
     stack_pop(&input);
-    char *str = input.u.name;
+    char* str = input.u.name;
 
     return str;
 }
@@ -51,7 +51,7 @@ void eval() {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
                     int val = stack_pop_int();
                     struct Data elem = {NUMBER, {val}};
-                    char *literal_name = stack_pop_str();
+                    char* literal_name = stack_pop_str();
                     dict_put(literal_name, &elem);
                 } else if (dict_get(token.u.name, &token)) {
                     // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
@@ -77,7 +77,7 @@ void eval() {
 //
 
 static void test_eval_num_one() {
-    char *input = "123";
+    char* input = "123";
     int expect = 123;
 
     cl_getc_set_src(input);
@@ -91,7 +91,7 @@ static void test_eval_num_one() {
 }
 
 static void test_eval_num_two() {
-    char *input = "123 456";
+    char* input = "123 456";
     int expect1 = 456;
     int expect2 = 123;
 
@@ -109,7 +109,7 @@ static void test_eval_num_two() {
 }
 
 static void test_eval_num_add() {
-    char *input = "1 2 add";
+    char* input = "1 2 add";
     int expect = 3;
 
     cl_getc_set_src(input);
@@ -123,7 +123,7 @@ static void test_eval_num_add() {
 }
 
 static void test_eval_num_add_complicated() {
-    char *input = "12 34 add 5 6 add add";
+    char* input = "12 34 add 5 6 add add";
     int expect = 57;
 
     cl_getc_set_src(input);
@@ -137,7 +137,7 @@ static void test_eval_num_add_complicated() {
 }
 
 static void test_eval_def_store() {
-    char *input = "/abc 123 def";
+    char* input = "/abc 123 def";
     struct Data expect = {NUMBER, {123}};
 
     cl_getc_set_src(input);
@@ -151,7 +151,7 @@ static void test_eval_def_store() {
 }
 
 static void test_eval_def_pop() {
-    char *input = "/abc 123 def abc";
+    char* input = "/abc 123 def abc";
     int expect = 123;
 
     cl_getc_set_src(input);
@@ -165,7 +165,7 @@ static void test_eval_def_pop() {
 }
 
 static void test_eval_def_add() {
-    char *input = "/abc 123 def 321 abc add";
+    char* input = "/abc 123 def 321 abc add";
     int expect = 444;
 
     cl_getc_set_src(input);
@@ -179,21 +179,21 @@ static void test_eval_def_add() {
 }
 
 static void test_eval_literal_name() {
-    char *input = "/abc";
-    char *expect = "abc";
+    char* input = "/abc";
+    char* expect = "abc";
 
     cl_getc_set_src(input);
 
     eval();
 
-    char *actual;
+    char* actual;
     actual = stack_pop_str();
 
     assert(streq(expect, actual));
 }
 
 static void test_eval_unknown() {
-    char *input = "123 ? 456";
+    char* input = "123 ? 456";
     int expect = 123;
 
     cl_getc_set_src(input);
