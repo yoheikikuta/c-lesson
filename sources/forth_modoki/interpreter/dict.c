@@ -40,7 +40,7 @@ static int hash(char* str) {
     return (int)(val % TABLE_SIZE);
 }
 
-static int* create_new_node(char* key, Data_t* elem) {
+static Node_t* create_new_node(char* key, Data_t* elem) {
     Node_t* head;
     head = malloc(sizeof(Node_t));
     head->next = NULL;
