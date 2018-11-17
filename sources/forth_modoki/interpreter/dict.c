@@ -25,17 +25,16 @@ static void reset_dict() {
     // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
     // free each Node to release memory.
     Node_t* cur;
-    Node_t* tail;
+    Node_t* rest;
 
     for (int i=0; i < TABLE_SIZE; i++) {
         if (dict_array[i] == NULL) {
             continue;
         } else {
-            cur = dict_array[i];
-            tail = cur;
-            while (tail != NULL) {
-                cur = tail;
-                tail = tail->next;
+            rest = dict_array[i];
+            while (rest != NULL) {
+                cur = rest;
+                rest = rest->next;
                 free(cur);
             }
             dict_array[i] = NULL;
@@ -74,9 +73,9 @@ static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
         curPtr = &((*curPtr)->next);
     }
 
-    Node_t* cur;
-    cur = create_new_node(key, elem);
-    *curPtr = cur;
+    Node_t* node;
+    node = create_new_node(key, elem);
+    *curPtr = node;
 }
 
 void dict_put(char* key, Data_t* elem) {
