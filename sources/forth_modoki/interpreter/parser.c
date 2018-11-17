@@ -36,7 +36,7 @@ static int is_close_curly(int c) {
 }
 
 
-int parse_one(int prev_ch, struct Token *out_token) {
+int parse_one(int prev_ch, struct Token* out_token) {
     int cur_ch = 0;
 
     // Set the head character as cur_ch
@@ -81,7 +81,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         }
         buf[i] = '\0';
 
-        char *name;
+        char* name;
         name = (char *)malloc(sizeof(char) * (i+1));
         strcpy(name, buf);
 
@@ -101,7 +101,7 @@ int parse_one(int prev_ch, struct Token *out_token) {
         }
         buf[i] = '\0';
 
-        char *name;
+        char* name;
         name = (char *)malloc(sizeof(char) * (i+1));
         strcpy(name, buf);
 
@@ -174,7 +174,7 @@ void parser_print_all() {
 //
 
 static void test_parse_one_number() {
-    char *input = "123";
+    char* input = "123";
     int expect = 123;
 
     struct Token token = {UNKNOWN, {0}};
@@ -190,7 +190,7 @@ static void test_parse_one_number() {
 }
 
 static void test_parse_one_empty_should_return_END_OF_FILE() {
-    char *input = "";
+    char* input = "";
     int expect = END_OF_FILE;
 
     struct Token token = {UNKNOWN, {0}};
@@ -204,7 +204,7 @@ static void test_parse_one_empty_should_return_END_OF_FILE() {
 }
 
 static void test_parse_one_space() {
-    char *input = " 123";
+    char* input = " 123";
     int expect = ' ';
 
     struct Token token = {UNKNOWN, {0}};
