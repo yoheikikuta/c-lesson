@@ -45,14 +45,27 @@ static int hash(char *str) {
     return (int)(val % TABLE_SIZE);
 }
 
-void update_or_insert_list(struct Node *head, char *key, struct Data *elem) {
+static void update_or_insert_list(Node **headPtr, char *key, Data *elem) {
+    Node *head;
+    head = malloc(sizeof(Node));
+    head->next = NULL;
     head->key = key;
     head->value = *elem;
+
+    while (*headPtr != NULL) {
+        if (streq((*headPtr)->key, key)) {
+            (*headPtr)->value = *elem;
+            return;
+        }
+        headPtr = &((*headPtr)->next);
+    }
+    *headPtr = head;
 }
 
 void dict_put(char* key, struct Data *elem) {
     int idx = hash(key);
-    struct Node *head = dict_array[idx];
+    Node *head = dict_array[idx];
+    Node **headPtr = &head;
     if (head == NULL) {
        head = malloc(sizeof(Node));
        head->next = NULL;
@@ -61,18 +74,23 @@ void dict_put(char* key, struct Data *elem) {
        dict_array[idx] = head;
        return;
     }
-    update_or_insert_list(head, key, elem);
+    update_or_insert_list(headPtr, key, elem);
 }
 
 int dict_get(char* key, struct Data *out_elem) {
     int idx = hash(key);
-    struct Node *head = dict_array[idx];
-    if (head == NULL) {
-        return 0;
-    } else {
-        *out_elem = dict_array[idx]->value;
-        return 1;
+    Node *head = dict_array[idx];
+    Node **headPtr = &head;
+
+    while (*headPtr != NULL) {
+        if (streq((*headPtr)->key, key)) {
+            *out_elem = (*headPtr)->value;
+            return 1;
+        }
+        headPtr = &((*headPtr)->next);
     }
+
+    return 0;
 }
 
 // void dict_print_all() {
@@ -233,13 +251,14 @@ static void test_put_colliding_key() {
     struct Data actual_data_1 = {UNKNOWN, {0}};
     struct Data actual_data_2 = {UNKNOWN, {0}};
     dict_get("key", &actual_data_1);
-    dict_get("key", &actual_data_2);
+    dict_get("yek", &actual_data_2);
 
     assert_two_data_eq(&expect_data_1, &actual_data_1);
     assert_two_data_eq(&expect_data_2, &actual_data_2);
 
     reset_dict();
 }
+
 
 #if 1
 int main () {
