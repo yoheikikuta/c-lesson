@@ -22,17 +22,12 @@ static Node_t* dict_array[TABLE_SIZE];
 
 
 static void reset_dict() {
-    // struct Node* head;
     for (int i=0; i < TABLE_SIZE; i++) {
-        // head = dict_array[i];
-        // if (head == NULL) {
         if (dict_array[i] == NULL) {
             continue;
         } else {
             free(dict_array[i]);
             dict_array[i] = NULL;
-            //free(head);
-            //head = NULL;
         }
     }
 }
@@ -56,6 +51,8 @@ static int* create_new_node(char* key, Data_t* elem) {
 }
 
 static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
+    // If there is the same key in some node, overwrite value in the node.
+    // If there isn't, add a new node in the end of list.
     while (*headPtr != NULL) {
         if (streq((*headPtr)->key, key)) {
             (*headPtr)->value = *elem;
