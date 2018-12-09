@@ -69,8 +69,9 @@ static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
         if (streq((*curPtr)->key, key)) {
             (*curPtr)->value = *elem;
             return;
+        } else {
+            curPtr = &((*curPtr)->next);
         }
-        curPtr = &((*curPtr)->next);
     }
 
     Node_t* node;
@@ -83,11 +84,12 @@ void dict_put(char* key, Data_t* elem) {
     Node_t* head = dict_array[idx];
     Node_t** headPtr = &head;
     if (head == NULL) {
-       head = create_new_node(key, elem);
-       dict_array[idx] = head;
-       return;
+        head = create_new_node(key, elem);
+        dict_array[idx] = head;
+        return;
+    } else {
+        update_or_insert_list(headPtr, key, elem);
     }
-    update_or_insert_list(headPtr, key, elem);
 }
 
 int dict_get(char* key, Data_t* out_elem) {
