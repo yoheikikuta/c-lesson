@@ -133,7 +133,7 @@ static void assert_two_keyvalue_eq(KeyValue_t* kv1, KeyValue_t* kv2) {
 
 static void test_hash() {
     char* input_key = "a";
-    int expect = 1; // 97 (a) module 16 = 1
+    int expect = 1; // 97 (a) modulo 16 = 1
 
     int actual = hash(input_key);
 
