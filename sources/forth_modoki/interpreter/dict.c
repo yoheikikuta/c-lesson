@@ -28,10 +28,10 @@ static void reset_dict() {
     Node_t* rest;
 
     for (int i=0; i < TABLE_SIZE; i++) {
-        if (dict_array[i] == NULL) {
+        rest = dict_array[i];
+        if (rest == NULL) {
             continue;
         } else {
-            rest = dict_array[i];
             while (rest != NULL) {
                 cur = rest;
                 rest = rest->next;
@@ -284,6 +284,7 @@ int main () {
     test_rewrite_dict();
     test_get_nil_key();
     test_put_colliding_key();
+    printf("All unittests are successfully passed.\n");
 
     return 0;
 }
