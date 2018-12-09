@@ -24,18 +24,18 @@ static Node_t* dict_array[TABLE_SIZE];
 static void reset_dict() {
     // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
     // free each Node to release memory.
-    Node_t* cur;
-    Node_t* rest;
+    Node_t* cur_nd;
+    Node_t* nd_to_be_free;
 
     for (int i=0; i < TABLE_SIZE; i++) {
-        rest = dict_array[i];
-        if (rest == NULL) {
+        cur_nd = dict_array[i];
+        if (cur_nd == NULL) {
             continue;
         } else {
-            while (rest != NULL) {
-                cur = rest;
-                rest = rest->next;
-                free(cur);
+            while (cur_nd != NULL) {
+                nd_to_be_free = cur_nd;
+                cur_nd = cur_nd->next;
+                free(nd_to_be_free);
             }
             dict_array[i] = NULL;
         }
@@ -51,58 +51,58 @@ static int hash(char* str) {
 }
 
 static Node_t* create_new_node(char* key, Data_t* elem) {
-    Node_t* cur;
-    cur = malloc(sizeof(Node_t));
-    cur->next = NULL;
-    cur->key = key;
-    cur->value = *elem;
+    Node_t* cur_nd;
+    cur_nd = malloc(sizeof(Node_t));
+    cur_nd->next = NULL;
+    cur_nd->key = key;
+    cur_nd->value = *elem;
 
-    return cur;
+    return cur_nd;
 }
 
-static void update_or_insert_list(Node_t** headPtr, char* key, Data_t* elem) {
+static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem) {
     // If there is the same key in some node, overwrite value in the node.
     // If there isn't, add a new node in the end of list.
-    Node_t** curPtr = headPtr;
+    Node_t** cur_nd_ptr = head_nd_ptr;
 
-    while (*curPtr != NULL) {
-        if (streq((*curPtr)->key, key)) {
-            (*curPtr)->value = *elem;
+    while (*cur_nd_ptr != NULL) {
+        if (streq((*cur_nd_ptr)->key, key)) {
+            (*cur_nd_ptr)->value = *elem;
             return;
         } else {
-            curPtr = &((*curPtr)->next);
+            cur_nd_ptr = &((*cur_nd_ptr)->next);
         }
     }
 
-    Node_t* node;
-    node = create_new_node(key, elem);
-    *curPtr = node;
+    Node_t* tail_nd;
+    tail_nd = create_new_node(key, elem);
+    *cur_nd_ptr = tail_nd;
 }
 
 void dict_put(char* key, Data_t* elem) {
     int idx = hash(key);
-    Node_t* head = dict_array[idx];
-    Node_t** headPtr = &head;
-    if (head == NULL) {
-        head = create_new_node(key, elem);
-        dict_array[idx] = head;
+    Node_t* head_nd = dict_array[idx];
+    Node_t** head_nd_ptr = &head_nd;
+    if (head_nd == NULL) {
+        head_nd = create_new_node(key, elem);
+        dict_array[idx] = head_nd;
         return;
     } else {
-        update_or_insert_list(headPtr, key, elem);
+        update_or_insert_list(head_nd_ptr, key, elem);
     }
 }
 
 int dict_get(char* key, Data_t* out_elem) {
     int idx = hash(key);
-    Node_t* head = dict_array[idx];
-    Node_t* cur = head;
+    Node_t* head_nd = dict_array[idx];
+    Node_t* cur_nd = head_nd;
 
-    while (cur != NULL) {
-        if (streq(cur->key, key)) {
-            *out_elem = cur->value;
+    while (cur_nd != NULL) {
+        if (streq(cur_nd->key, key)) {
+            *out_elem = cur_nd->value;
             return 1;
         }
-        cur = cur->next;
+        cur_nd = cur_nd->next;
     }
 
     return 0;
