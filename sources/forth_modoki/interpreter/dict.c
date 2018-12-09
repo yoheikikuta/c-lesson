@@ -40,13 +40,17 @@ static void reset_dict() {
             dict_array[i] = NULL;
         }
     }
+
+    return;
 }
 
 static int hash(char* str) {
     unsigned int val = 0;
+
     while(*str) {
         val += *str++;
     }
+
     return (int)(val % TABLE_SIZE);
 }
 
@@ -77,19 +81,23 @@ static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem)
     Node_t* tail_nd;
     tail_nd = create_new_node(key, elem);
     *cur_nd_ptr = tail_nd;
+
+    return;
 }
 
 void dict_put(char* key, Data_t* elem) {
     int idx = hash(key);
     Node_t* head_nd = dict_array[idx];
     Node_t** head_nd_ptr = &head_nd;
+
     if (head_nd == NULL) {
         head_nd = create_new_node(key, elem);
         dict_array[idx] = head_nd;
-        return;
     } else {
         update_or_insert_list(head_nd_ptr, key, elem);
     }
+
+    return;
 }
 
 int dict_get(char* key, Data_t* out_elem) {
