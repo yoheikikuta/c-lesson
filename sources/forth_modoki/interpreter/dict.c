@@ -29,9 +29,7 @@ static void reset_dict() {
 
     for (int i=0; i < TABLE_SIZE; i++) {
         cur_nd = dict_array[i];
-        if (cur_nd == NULL) {
-            continue;
-        } else {
+        if (cur_nd != NULL) {
             while (cur_nd != NULL) {
                 nd_to_be_free = cur_nd;
                 cur_nd = cur_nd->next;
