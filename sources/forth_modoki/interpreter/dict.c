@@ -21,9 +21,9 @@ typedef struct Node {
 static Node_t* dict_array[TABLE_SIZE];
 
 
+// dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
+// free each Node to release memory.
 static void reset_dict() {
-    // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
-    // free each Node to release memory.
     Node_t* cur_nd;
     Node_t* nd_to_be_free;
 
@@ -62,13 +62,14 @@ static Node_t* create_new_node(char* key, Data_t* elem) {
     return cur_nd;
 }
 
+// If there is the same key in some node, overwrite value in the node.
+// If there isn't, add a new node in the end of list.
 static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem) {
-    // If there is the same key in some node, overwrite value in the node.
-    // If there isn't, add a new node in the end of list.
     Node_t** cur_nd_ptr = head_nd_ptr;
 
     while (*cur_nd_ptr != NULL) {
         if (streq((*cur_nd_ptr)->key, key)) {
+            // (key of current node) == (input key): replace (value of current node) with (input elem)
             (*cur_nd_ptr)->value = *elem;
             return;
         } else {
