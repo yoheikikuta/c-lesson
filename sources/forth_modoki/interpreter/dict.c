@@ -79,9 +79,7 @@ static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem)
 
     // head node == NULL -> add a head node 
     // head node != NULL and key is new -> add a tail node
-    Node_t* new_nd;
-    new_nd = create_new_node(key, elem);
-    *cur_nd_ptr = new_nd;
+    *cur_nd_ptr = create_new_node(key, elem);
 
     return;
 }
