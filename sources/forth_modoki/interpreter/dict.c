@@ -66,15 +66,6 @@ static Node_t* create_new_node(char* key, Data_t* elem) {
 static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem) {
     Node_t** cur_nd_ptr = head_nd_ptr;
 
-    // head node == NULL -> add a head node 
-    if (*cur_nd_ptr == NULL) {
-        int idx = hash(key);
-        Node_t* new_nd;
-        new_nd = create_new_node(key, elem);
-        dict_array[idx] = new_nd;
-        return;
-    }
-
     // head node != NULL and the key is duplicated -> update the value of the key
     while (*cur_nd_ptr != NULL) {
         if (streq((*cur_nd_ptr)->key, key)) {
@@ -86,18 +77,18 @@ static void update_or_insert_list(Node_t** head_nd_ptr, char* key, Data_t* elem)
         }
     }
 
+    // head node == NULL -> add a head node 
     // head node != NULL and key is new -> add a tail node
-    Node_t* tail_nd;
-    tail_nd = create_new_node(key, elem);
-    *cur_nd_ptr = tail_nd;
+    Node_t* new_nd;
+    new_nd = create_new_node(key, elem);
+    *cur_nd_ptr = new_nd;
 
     return;
 }
 
 void dict_put(char* key, Data_t* elem) {
     int idx = hash(key);
-    Node_t* head_nd = dict_array[idx];
-    Node_t** head_nd_ptr = &head_nd;
+    Node_t** head_nd_ptr = &(dict_array[idx]);
 
     update_or_insert_list(head_nd_ptr, key, elem);
 
