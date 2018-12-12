@@ -109,13 +109,24 @@ int dict_get(char* key, Data_t* out_elem) {
     return 0;
 }
 
-// void dict_print_all() {
-//     printf("All keys in the dict: ");
-//     for (int i=0; i < dict_pos; i++) {
-//         printf("%s ", dict_array[i]->key);
-//     }
-//     printf("\n");
-// };
+void dict_print_all() {
+    printf("All keys : values in the dict are\n");
+    printf("---------------\n");
+    for (int i=0; i < TABLE_SIZE; i++) {
+        Node_t* cur = dict_array[i];
+        while (cur != NULL) {
+            if (cur->value.dtype == NUMBER) {
+                int num = cur->value.u.number;
+                printf("%s : %i\n", cur->key, num);
+            } else if (cur->value.dtype == LITERAL_NAME) {
+                char* name = cur->value.u.name;
+                printf("%s : %s\n", cur->key, name);
+            }
+            cur = cur->next;
+        }
+    }
+    printf("---------------\n");
+};
 
 //
 // TEST
