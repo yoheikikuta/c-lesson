@@ -24,6 +24,15 @@ char* stack_pop_str(){
     return str;
 }
 
+void add_op() {
+    // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    Data_t result = {NUMBER, {v1+v2}};
+    stack_push(&result);
+}
+
 void eval() {
     int ch = EOF;
     struct Token token = {
@@ -41,12 +50,7 @@ void eval() {
                 break;
             case EXECUTABLE_NAME:
                 if (streq(token.u.name, "add")) {
-                    // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
-                    int v1 = stack_pop_int();
-                    int v2 = stack_pop_int();
-
-                    Data_t result = {NUMBER, {v1+v2}};
-                    stack_push(&result);
+                    add_op();
                 } else if (streq(token.u.name, "def")) {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
                     int val = stack_pop_int();
