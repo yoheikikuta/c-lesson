@@ -50,7 +50,10 @@ void eval() {
                 break;
             case EXECUTABLE_NAME:
                 if (streq(token.u.name, "add")) {
-                    add_op();
+                    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = add_op}};
+                    dict_put("add", &opelem);
+                    dict_get(token.u.name, &opelem);
+                    opelem.u.cfunc();
                 } else if (streq(token.u.name, "def")) {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
                     int val = stack_pop_int();
