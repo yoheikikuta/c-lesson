@@ -264,6 +264,7 @@ static void test_get_nil_key() {
 }
 
 static void test_put_colliding_key() {
+    // This test depends on the dictionary algorithm (hash table).
     char* input_key_1 = "key";
     char* input_key_2 = "yek";
     Data_t input_data_1 = {NUMBER, {123}};
