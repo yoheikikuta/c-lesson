@@ -2,6 +2,17 @@
 #include <stdio.h>
 #include "stack.h"
 
+enum ElementType {
+    NO_ELEM_TYPE,
+    ELEMENT_C_FUNC
+};
+
+struct Element {
+    enum ElementType etype;
+    union {
+        void (*cfunc)();
+    } u;
+};
 
 /*
 put {key, value} into the dictionaly, or overwrite the value if the key exists.
