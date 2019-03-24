@@ -33,10 +33,19 @@ void add_op() {
     stack_push(&result);
 }
 
+void register_primitive() {
+    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = add_op}};
+    dict_put("add", &opelem);
+}
+
 void eval() {
     int ch = EOF;
     struct Token token = {
         UNKNOWN,
+        {0}
+    };
+    struct Element opelem = {
+        ELEMENT_C_FUNC,
         {0}
     };
 
@@ -50,8 +59,6 @@ void eval() {
                 break;
             case EXECUTABLE_NAME:
                 if (streq(token.u.name, "add")) {
-                    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = add_op}};
-                    dict_put("add", &opelem);
                     dict_get(token.u.name, &opelem);
                     opelem.u.cfunc();
                 } else if (streq(token.u.name, "def")) {
@@ -215,6 +222,8 @@ static void test_eval_unknown() {
 
 
 int main() {
+    register_primitive();
+    
     test_eval_num_one();
     test_eval_num_two();
     test_eval_num_add();
