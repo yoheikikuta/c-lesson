@@ -58,18 +58,21 @@ void eval() {
             case SPACE:
                 break;
             case EXECUTABLE_NAME:
-                if (streq(token.u.name, "add")) {
-                    dict_get(token.u.name, &opelem);
-                    opelem.u.cfunc();
-                } else if (streq(token.u.name, "def")) {
+                if (streq(token.u.name, "def")) {
                     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
                     int val = stack_pop_int();
                     Data_t elem = {NUMBER, {val}};
                     char* literal_name = stack_pop_str();
                     dict_put(literal_name, &elem);
-                } else if (dict_get(token.u.name, &token)) {
-                    // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
-                    stack_push(&token);
+                } else {
+                    dict_get(token.u.name, &opelem);
+
+                    if (opelem.etype == ELEMENT_C_FUNC) {
+                        opelem.u.cfunc();
+                    } else if (dict_get(token.u.name, &token)) {
+                        // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
+                        stack_push(&token);
+                    }
                 }
                 break;
             case LITERAL_NAME:
@@ -223,7 +226,7 @@ static void test_eval_unknown() {
 
 int main() {
     register_primitive();
-    
+
     test_eval_num_one();
     test_eval_num_two();
     test_eval_num_add();
