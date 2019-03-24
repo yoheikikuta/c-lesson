@@ -42,6 +42,33 @@ void add_op() {
     stack_push(&result);
 }
 
+void sub_op() {
+    // Sub operation: [{NUMBER,5}, {NUMBER,2}] -> [{NUMBER,3}]
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    Data_t result = {NUMBER, {v2-v1}};
+    stack_push(&result);
+}
+
+void mul_op() {
+    // Mul operation: [{NUMBER,2}, {NUMBER,4}] -> [{NUMBER,8}]
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    Data_t result = {NUMBER, {v1*v2}};
+    stack_push(&result);
+}
+
+void div_op() {
+    // Div operation: [{NUMBER,5}, {NUMBER,2}] -> [{NUMBER,2}]
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    Data_t result = {NUMBER, {v2/v1}};
+    stack_push(&result);
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -50,6 +77,9 @@ void register_one_primitive(char* op_name, void (*cfunc)(void)) {
 void register_all_primitive() {
     register_one_primitive("def", def_op);
     register_one_primitive("add", add_op);
+    register_one_primitive("sub", sub_op);
+    register_one_primitive("mul", mul_op);
+    register_one_primitive("div", div_op);
 }
 
 void eval() {
