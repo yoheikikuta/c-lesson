@@ -24,6 +24,15 @@ char* stack_pop_str(){
     return str;
 }
 
+void def_op() {
+    // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
+    int val = stack_pop_int();
+    Data_t elem = {NUMBER, {val}};
+    char* literal_name = stack_pop_str();
+
+    dict_put(literal_name, &elem);
+}
+
 void add_op() {
     // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
     int v1 = stack_pop_int();
@@ -33,9 +42,14 @@ void add_op() {
     stack_push(&result);
 }
 
-void register_primitive() {
-    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = add_op}};
-    dict_put("add", &opelem);
+void register_one_primitive(char* op_name, void (*cfunc)(void)) {
+    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
+    dict_put(op_name, &opelem);
+}
+
+void register_all_primitive() {
+    register_one_primitive("def", def_op);
+    register_one_primitive("add", add_op);
 }
 
 void eval() {
@@ -58,21 +72,13 @@ void eval() {
             case SPACE:
                 break;
             case EXECUTABLE_NAME:
-                if (streq(token.u.name, "def")) {
-                    // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
-                    int val = stack_pop_int();
-                    Data_t elem = {NUMBER, {val}};
-                    char* literal_name = stack_pop_str();
-                    dict_put(literal_name, &elem);
-                } else {
-                    dict_get(token.u.name, &opelem);
+                dict_get(token.u.name, &opelem);
 
-                    if (opelem.etype == ELEMENT_C_FUNC) {
-                        opelem.u.cfunc();
-                    } else if (dict_get(token.u.name, &token)) {
-                        // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
-                        stack_push(&token);
-                    }
+                if (opelem.etype == ELEMENT_C_FUNC) {
+                    opelem.u.cfunc();
+                } else if (dict_get(token.u.name, &token)) {
+                    // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
+                    stack_push(&token);
                 }
                 break;
             case LITERAL_NAME:
@@ -225,7 +231,7 @@ static void test_eval_unknown() {
 
 
 int main() {
-    register_primitive();
+    register_all_primitive();
 
     test_eval_num_one();
     test_eval_num_two();
