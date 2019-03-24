@@ -19,6 +19,18 @@ typedef struct Data {
     } u;
 } Data_t;
 
+enum ElementType {
+    NO_ELEM_TYPE,
+    ELEMENT_C_FUNC
+};
+
+struct Element {
+    enum ElementType etype;
+    union {
+        void (*cfunc)();
+    } u;
+};
+
 #define STACK_SIZE 1024
 
 /*
