@@ -145,6 +145,48 @@ static void test_eval_num_add() {
     assert(expect == actual);
 }
 
+static void test_eval_num_sub() {
+    char* input = "5 3 sub";
+    int expect = 2;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_mul() {
+    char* input = "2 4 mul";
+    int expect = 8;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_div() {
+    char* input = "5 2 div";
+    int expect = 2;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
 static void test_eval_num_add_complicated() {
     char* input = "12 34 add 5 6 add add";
     int expect = 57;
@@ -236,6 +278,9 @@ int main() {
     test_eval_num_one();
     test_eval_num_two();
     test_eval_num_add();
+    test_eval_num_sub();
+    test_eval_num_mul();
+    test_eval_num_div();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
