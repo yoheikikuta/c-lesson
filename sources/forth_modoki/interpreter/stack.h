@@ -46,6 +46,7 @@ typedef struct ElementArray {
 };
 
 #define STACK_SIZE 1024
+#define MAX_NAME_OP_MUMBERS 256
 
 /*
 return 1 if data is successfully pushed into stack.
