@@ -13,18 +13,18 @@ enum LexicalType {
     UNKNOWN
     };
 
-typedef struct Token {
+struct Token {
     enum LexicalType ltype;
     union {
         int number;
         char onechar;
         char *name;
     } u;
-} Token_t;
+};
 
 #define NAME_SIZE 256
 
 /*
 return next character and store one token into Token..
 */
-int parse_one(int prev_ch, Token_t* out_token);
+int parse_one(int prev_ch, struct Token* out_token);
