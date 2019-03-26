@@ -8,7 +8,7 @@
 
 int stack_pop_int(){
     // Return the value of popped NUMBER data from the stack.
-    Data_t input = {UNKNOWN, {0}};
+    struct Data input = {UNKNOWN, {0}};
     stack_pop(&input);
     int num = input.u.number;
 
@@ -17,7 +17,7 @@ int stack_pop_int(){
 
 char* stack_pop_str(){
     // Return the value of popped LITERAL_NAME data from the stack.
-    Data_t input = {UNKNOWN, {0}};
+    struct Data input = {UNKNOWN, {0}};
     stack_pop(&input);
     char* str = input.u.name;
 
@@ -27,7 +27,7 @@ char* stack_pop_str(){
 void def_op() {
     // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
     int val = stack_pop_int();
-    Data_t elem = {NUMBER, {val}};
+    struct Data elem = {NUMBER, {val}};
     char* literal_name = stack_pop_str();
 
     dict_put(literal_name, &elem);
@@ -38,7 +38,7 @@ void add_op() {
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    Data_t result = {NUMBER, {v1+v2}};
+    struct Data result = {NUMBER, {v1+v2}};
     stack_push(&result);
 }
 
@@ -47,7 +47,7 @@ void sub_op() {
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    Data_t result = {NUMBER, {v2-v1}};
+    struct Data result = {NUMBER, {v2-v1}};
     stack_push(&result);
 }
 
@@ -56,7 +56,7 @@ void mul_op() {
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    Data_t result = {NUMBER, {v1*v2}};
+    struct Data result = {NUMBER, {v1*v2}};
     stack_push(&result);
 }
 
@@ -65,7 +65,7 @@ void div_op() {
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    Data_t result = {NUMBER, {v2/v1}};
+    struct Data result = {NUMBER, {v2/v1}};
     stack_push(&result);
 }
 
@@ -346,13 +346,13 @@ static void test_eval_num_add_complicated() {
 
 static void test_eval_def_store() {
     char* input = "/abc 123 def";
-    Data_t expect = {NUMBER, {123}};
+    struct Data expect = {NUMBER, {123}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    Data_t actual = {UNKNOWN, {0}};
+    struct Data actual = {UNKNOWN, {0}};
     dict_get("abc", &actual);
 
     assert_two_data_eq(&expect, &actual);
