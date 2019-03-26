@@ -21,7 +21,7 @@ int two_data_eq(Data_t* d1, Data_t* d2) {
     }
 }
 
-int two_exec_opelem_eq(struct Element* e1, struct Element* e2) {
+int two_exec_opelem_eq(Element_t* e1, Element_t* e2) {
     if (e1->etype == e2->etype) {
         if (e1->etype == ELEMENT_NUMBER) {
             return e1->u.number == e2->u.number;
@@ -40,6 +40,6 @@ void assert_two_data_eq(Data_t* d1, Data_t* d2) {
     assert(two_data_eq(d1, d2));
 }
 
-void assert_two_exec_opelem_eq(struct Element* e1, struct Element* e2) {
+void assert_two_exec_opelem_eq(Element_t* e1, Element_t* e2) {
     assert(two_exec_opelem_eq(e1, e2));
 }

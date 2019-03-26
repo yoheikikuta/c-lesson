@@ -70,7 +70,7 @@ void div_op() {
 }
 
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
-    struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
+    Element_t opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
 }
 
@@ -88,7 +88,7 @@ void eval() {
         UNKNOWN,
         {0}
     };
-    struct Element opelem = {
+    Element_t opelem = {
         ELEMENT_C_FUNC,
         {0}
     };
@@ -163,14 +163,14 @@ static void test_eval_num_two() {
 
 static void test_eval_executable_array_num_one() {
     char* input = "{1}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem = {ELEMENT_NUMBER, {1}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem = {ELEMENT_NUMBER, {1}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual = {NO_ELEM_TYPE, {0}};
+    Element_t actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
@@ -179,15 +179,15 @@ static void test_eval_executable_array_num_one() {
 
 static void test_eval_executable_array_num_two() {
     char* input = "{1 2}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
-    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    Element_t expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual = {NO_ELEM_TYPE, {0}};
+    Element_t actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
@@ -197,16 +197,16 @@ static void test_eval_executable_array_num_two() {
 
 static void test_eval_executable_array_num_two_sep() {
     char* input = "{1} {2}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
-    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    Element_t expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual1 = {NO_ELEM_TYPE, {0}};
-    struct Element actual2 = {NO_ELEM_TYPE, {0}};
+    Element_t actual1 = {NO_ELEM_TYPE, {0}};
+    Element_t actual2 = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual1);
     stack_pop(&actual2);
 
@@ -218,18 +218,18 @@ static void test_eval_executable_array_num_two_sep() {
 
 static void test_eval_executable_array_num_three_nest() {
     char* input = "{1 {2} 3}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
-    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
-    struct Element expect_exec_opelem3 = {ELEMENT_NUMBER, {3}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    Element_t expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+    Element_t expect_exec_opelem3 = {ELEMENT_NUMBER, {3}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual1 = {NO_ELEM_TYPE, {0}};
-    struct Element actual2 = {NO_ELEM_TYPE, {0}};
-    struct Element actual3 = {NO_ELEM_TYPE, {0}};
+    Element_t actual1 = {NO_ELEM_TYPE, {0}};
+    Element_t actual2 = {NO_ELEM_TYPE, {0}};
+    Element_t actual3 = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual1);
     stack_pop(&actual2);
     stack_pop(&actual3);
@@ -244,14 +244,14 @@ static void test_eval_executable_array_num_three_nest() {
 
 static void test_eval_executable_array_literal_name() {
     char* input = "{/abc}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem = {ELEMENT_LITERAL_NAME, {.name="abc"}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem = {ELEMENT_LITERAL_NAME, {.name="abc"}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual = {NO_ELEM_TYPE, {0}};
+    Element_t actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
@@ -260,14 +260,14 @@ static void test_eval_executable_array_literal_name() {
 
 static void test_eval_executable_array_executable_name() {
     char* input = "{abc}";
-    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
-    struct Element expect_exec_opelem = {ELEMENT_EXECUTABLE_NAME, {.name="abc"}};
+    Element_t expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    Element_t expect_exec_opelem = {ELEMENT_EXECUTABLE_NAME, {.name="abc"}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Element actual = {NO_ELEM_TYPE, {0}};
+    Element_t actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
