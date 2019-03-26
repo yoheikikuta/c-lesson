@@ -28,10 +28,7 @@ enum ElementType {
     ELEMENT_LITERAL_NAME
 };
 
-typedef struct ElementArray {
-  int len;
-  struct Element elements[0];
-} ElementArray_t;
+struct ElementArray;
 
 typedef struct Element {
     enum ElementType etype;
@@ -39,9 +36,14 @@ typedef struct Element {
         int number;
         char *name;
         void (*cfunc)();
-        ElementArray_t *exec_array;
+        struct ElementArray *exec_array;
     } u;
-} Element_t;
+};
+
+typedef struct ElementArray {
+  int len;
+  struct Element elements[0];
+};
 
 #define STACK_SIZE 1024
 
