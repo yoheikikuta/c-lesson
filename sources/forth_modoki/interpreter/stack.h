@@ -39,7 +39,7 @@ typedef struct Element {
         int number;
         char *name;
         void (*cfunc)();
-        struct Element *exec_array;
+        struct ElementArray *exec_array;
     } u;
 };
 
