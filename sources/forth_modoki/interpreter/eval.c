@@ -161,6 +161,119 @@ static void test_eval_num_two() {
     assert(expect2 == actual2);
 }
 
+static void test_eval_executable_array_num_one() {
+    char* input = "{1}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem = {ELEMENT_NUMBER, {1}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert(expect_exec.etype == actual.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem, actual.u.exec_array->elements[0]);
+}
+
+static void test_eval_executable_array_num_two() {
+    char* input = "{1 2}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert(expect_exec.etype == actual.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem1, actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(expect_exec_opelem2, actual.u.exec_array->elements[1]);
+}
+
+static void test_eval_executable_array_num_two_sep() {
+    char* input = "{1} {2}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual1 = {NO_ELEM_TYPE, {0}};
+    struct Element actual2 = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual1);
+    stack_pop(&actual2);
+
+    assert(expect_exec.etype == actual1.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem1, actual1.u.exec_array->elements[0]);
+    assert(expect_exec.etype == actual2.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem2, actual2.u.exec_array->elements[0]);
+}
+
+static void test_eval_executable_array_num_three_nest() {
+    char* input = "{1 {2} 3}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
+    struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
+    struct Element expect_exec_opelem3 = {ELEMENT_NUMBER, {3}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual1 = {NO_ELEM_TYPE, {0}};
+    struct Element actual2 = {NO_ELEM_TYPE, {0}};
+    struct Element actual3 = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual1);
+    stack_pop(&actual2);
+    stack_pop(&actual3);
+
+    assert(expect_exec.etype == actual1.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem1, actual1.u.exec_array->elements[0]);
+    assert(expect_exec.etype == actual2.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem2, actual2.u.exec_array->elements[1].u.exec_array->elements[0]);
+    assert(expect_exec.etype == actual3.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem3, actual3.u.exec_array->elements[2]);
+}
+
+static void test_eval_executable_array_literal_name() {
+    char* input = "{/abc}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem = {ELEMENT_LITERAL_NAME, {.name="abc"}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert(expect_exec.etype == actual.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem, actual.u.exec_array->elements[0]);
+}
+
+static void test_eval_executable_array_executable_name() {
+    char* input = "{abc}";
+    struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
+    struct Element expect_exec_opelem = {ELEMENT_EXECUTABLE_NAME, {.name="abc"}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert(expect_exec.etype == actual.etype);
+    assert_two_exec_opelem_eq(expect_exec_opelem, actual.u.exec_array->elements[0]);
+}
+
 static void test_eval_num_add() {
     char* input = "1 2 add";
     int expect = 3;
