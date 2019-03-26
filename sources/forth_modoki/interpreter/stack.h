@@ -21,13 +21,25 @@ typedef struct Data {
 
 enum ElementType {
     NO_ELEM_TYPE,
-    ELEMENT_C_FUNC
+    ELEMENT_C_FUNC,
+    ELEMENT_EXECUTABLE_ARRAY,
+    ELEMENT_NUMBER,
+    ELEMENT_EXECUTABLE_NAME,
+    ELEMENT_LITERAL_NAME
 };
 
-struct Element {
+struct ElementArray {
+  int len;
+  struct Element elements[0];
+};
+
+typedef struct Element {
     enum ElementType etype;
     union {
+        int number;
+        char *name;
         void (*cfunc)();
+        struct Element *exec_array;
     } u;
 };
 

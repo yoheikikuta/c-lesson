@@ -21,6 +21,25 @@ int two_data_eq(Data_t* d1, Data_t* d2) {
     }
 }
 
+int two_exec_opelem_eq(struct Element* e1, struct Element* e2) {
+    if (e1->etype == e2->etype) {
+        if (e1->etype == ELEMENT_NUMBER) {
+            return e1->u.number == e2->u.number;
+        } else if (e1->etype == ELEMENT_LITERAL_NAME || e1->etype == ELEMENT_EXECUTABLE_NAME) {
+            return streq(e1->u.name, e2->u.name);
+        } else {
+            fprintf(stderr, "Never reached here.\n");
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+}
+
 void assert_two_data_eq(Data_t* d1, Data_t* d2) {
     assert(two_data_eq(d1, d2));
+}
+
+void assert_two_exec_opelem_eq(struct Element* e1, struct Element* e2) {
+    assert(two_exec_opelem_eq(e1, e2));
 }
