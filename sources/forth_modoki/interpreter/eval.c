@@ -224,8 +224,8 @@ static void test_eval_executable_array_num_two() {
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem1, actual.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(expect_exec_opelem2, actual.u.exec_array->elements[1]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual.u.exec_array->elements[1]);
 }
 
 static void test_eval_executable_array_num_two_sep() {
@@ -244,9 +244,9 @@ static void test_eval_executable_array_num_two_sep() {
     stack_pop(&actual2);
 
     assert(expect_exec.etype == actual1.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem1, actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual1.u.exec_array->elements[0]);
     assert(expect_exec.etype == actual2.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem2, actual2.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual2.u.exec_array->elements[0]);
 }
 
 static void test_eval_executable_array_num_three_nest() {
@@ -268,11 +268,11 @@ static void test_eval_executable_array_num_three_nest() {
     stack_pop(&actual3);
 
     assert(expect_exec.etype == actual1.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem1, actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual1.u.exec_array->elements[0]);
     assert(expect_exec.etype == actual2.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem2, actual2.u.exec_array->elements[1].u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual2.u.exec_array->elements[1].u.exec_array->elements[0]);
     assert(expect_exec.etype == actual3.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem3, actual3.u.exec_array->elements[2]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem3, &actual3.u.exec_array->elements[2]);
 }
 
 static void test_eval_executable_array_literal_name() {
@@ -288,7 +288,7 @@ static void test_eval_executable_array_literal_name() {
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem, actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem, &actual.u.exec_array->elements[0]);
 }
 
 static void test_eval_executable_array_executable_name() {
@@ -304,7 +304,7 @@ static void test_eval_executable_array_executable_name() {
     stack_pop(&actual);
 
     assert(expect_exec.etype == actual.etype);
-    assert_two_exec_opelem_eq(expect_exec_opelem, actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem, &actual.u.exec_array->elements[0]);
 }
 
 static void test_eval_num_add() {
