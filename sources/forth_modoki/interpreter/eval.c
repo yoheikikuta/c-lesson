@@ -482,11 +482,11 @@ static void test_eval_executable_array_literal_name_bind() {
     struct Element actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
-    assert_two_exec_opelem_eq(&expect, &actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect, &actual);
 }
 
 static void test_eval_executable_array_literal_name_bind_nest() {
-    char* input = "/ZZ {6} def /YY {4 ZZ 5} def /XX {1 2 YY 3} def";
+    char* input = "/ZZ { 6 } def /YY { 4 ZZ 5 } def /XX { 1 2 YY 3 } def XX";
     // Expected output: [1 2 4 6 5 3]
     struct Element expect1 = {ELEMENT_NUMBER, {1}};
     struct Element expect2 = {ELEMENT_NUMBER, {2}};
@@ -512,12 +512,12 @@ static void test_eval_executable_array_literal_name_bind_nest() {
     stack_pop(&actual2);
     stack_pop(&actual1);
 
-    assert_two_exec_opelem_eq(&expect1, &actual1.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(&expect2, &actual1.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(&expect3, &actual1.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(&expect4, &actual1.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(&expect5, &actual1.u.exec_array->elements[0]);
-    assert_two_exec_opelem_eq(&expect6, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect1, &actual1);
+    assert_two_exec_opelem_eq(&expect2, &actual2);
+    assert_two_exec_opelem_eq(&expect3, &actual3);
+    assert_two_exec_opelem_eq(&expect4, &actual4);
+    assert_two_exec_opelem_eq(&expect5, &actual5);
+    assert_two_exec_opelem_eq(&expect6, &actual6);
 }
 
 
