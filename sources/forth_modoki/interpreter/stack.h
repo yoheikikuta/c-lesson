@@ -2,22 +2,6 @@
 #include <stdio.h>
 #include "parser.h"
 
-/*
-enum DataType {
-    NUMBER,
-    LITERAL_NAME,
-    UNKNOWN,
-};
-*/
-
-struct Data {
-    //enum DataType dtype;
-    enum LexicalType dtype;
-    union {
-        int number;
-        char *name;
-    } u;
-};
 
 enum ElementType {
     NO_ELEM_TYPE,
@@ -30,7 +14,7 @@ enum ElementType {
 
 struct ElementArray;
 
-typedef struct Element {
+struct Element {
     enum ElementType etype;
     union {
         int number;
@@ -40,7 +24,7 @@ typedef struct Element {
     } u;
 };
 
-typedef struct ElementArray {
+struct ElementArray {
   int len;
   struct Element elements[0];
 };
@@ -52,5 +36,5 @@ typedef struct ElementArray {
 return 1 if data is successfully pushed into stack.
 return 1 if data is successfully popped from stack.
 */
-int stack_push(struct Data* push_elem);
-int stack_pop(struct Data* out_elem);
+int stack_push(struct Element* push_elem);
+int stack_pop(struct Element* out_elem);
