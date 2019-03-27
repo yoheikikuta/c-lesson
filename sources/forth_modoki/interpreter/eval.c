@@ -133,7 +133,34 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
     out_opelem->u.exec_array = elem_arr;
 }
 
+void eval_exec_array(struct ElementArray *opelems) {
+    struct Element opelem = {NO_ELEM_TYPE, {0}};
+    for(int i = 0; i < opelems->len; i++) {
+        switch (opelems->elements[i].etype) {
+            case ELEMENT_NUMBER:
+                stack_push(&opelems->elements[i]);
+                break;
+            case ELEMENT_LITERAL_NAME:
+                stack_push(&opelems->elements[i]);
+                break;
+            case ELEMENT_EXECUTABLE_NAME:
+                dict_get(opelems->elements[i].u.name, &opelem);
 
+                if (opelem.etype == ELEMENT_C_FUNC) {
+                    opelem.u.cfunc();
+                } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
+                    eval_exec_array(opelem.u.exec_array);
+                } else {
+                    stack_push(&opelem);
+                }
+                break;
+
+            default:
+                printf("Unknown type %d\n", opelems->elements[i].etype);
+                break;
+        }
+    }
+}
 
 void eval() {
     int ch = EOF;
@@ -161,9 +188,11 @@ void eval() {
 
                 if (opelem.etype == ELEMENT_C_FUNC) {
                     opelem.u.cfunc();
-                } else if (dict_get(token.u.name, &token)) {
+                } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
+                    eval_exec_array(opelem.u.exec_array);
+                } else {
                     // use binded var name: dict[{"abc", {ELEMENT_NUMBER,123}}] -> [{ELEMENT_NUMBER, 123}]
-                    stack_push(&token);
+                    stack_push(&opelem);
                 }
                 break;
             case LITERAL_NAME:
@@ -174,8 +203,6 @@ void eval() {
             case OPEN_CURLY:
                 compile_exec_array(ch, &token, &opelem);
                 stack_push(&opelem);
-                // Need one more parse_one to move ch ahead
-                ch = parse_one(ch, &token);
                 break;
             case UNKNOWN:
                 printf("Terminate eval on the way due to the UNKNOWN Type\n");
@@ -542,8 +569,8 @@ int main() {
     test_eval_def_add();
     test_eval_literal_name();
     test_eval_unknown();
-    // test_eval_executable_array_literal_name_bind();
-    // test_eval_executable_array_literal_name_bind_nest();
+    test_eval_executable_array_literal_name_bind();
+    test_eval_executable_array_literal_name_bind_nest();
 
     return 0;
 }
