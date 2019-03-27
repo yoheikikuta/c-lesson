@@ -96,6 +96,11 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 break;
             case SPACE:
                 break;
+            case EXECUTABLE_NAME:
+                arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                arr[elem_num].u.exec_array = token->u.name;
+                elem_num++;
+                break;
             case LITERAL_NAME:
                 arr[elem_num].etype = ELEMENT_LITERAL_NAME;
                 arr[elem_num].u.exec_array = token->u.name;
@@ -467,7 +472,7 @@ int main() {
     test_eval_executable_array_num_two_sep();
     // test_eval_executable_array_num_three_nest();
     test_eval_executable_array_literal_name();
-    // test_eval_executable_array_executable_name();
+    test_eval_executable_array_executable_name();
     test_eval_num_add();
     test_eval_num_sub();
     test_eval_num_mul();
