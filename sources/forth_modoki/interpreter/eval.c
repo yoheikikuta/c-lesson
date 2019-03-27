@@ -84,24 +84,27 @@ void register_all_primitive() {
 
 void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem) {
     struct Element arr[MAX_NAME_OP_MUMBERS];
+    int elem_num = 0;
 
     do {
         ch = parse_one(ch, token);
         switch (token->ltype) {
             case NUMBER:
-                arr[0].etype = ELEMENT_NUMBER;
-                arr[0].u.exec_array = token->u.number;
+                arr[elem_num].etype = ELEMENT_NUMBER;
+                arr[elem_num].u.exec_array = token->u.number;
+                elem_num++;
                 break;
-              
+            case SPACE:
+                break;              
             default:
                 printf("Unknown type %d\n", token->ltype);
                 break;
         }
     } while (ch != '}');
 
-    struct ElementArray *elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element));
-    elem_arr->len = 1;
-    memcpy(elem_arr->elements, arr, sizeof(struct Element));
+    struct ElementArray *elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element)*elem_num);
+    elem_arr->len = elem_num;
+    memcpy(elem_arr->elements, arr, sizeof(struct Element)*elem_num);
 
     out_opelem->etype = ELEMENT_EXECUTABLE_ARRAY;
     out_opelem->u.exec_array = elem_arr;
@@ -454,7 +457,7 @@ int main() {
     test_eval_num_one();
     test_eval_num_two();
     test_eval_executable_array_num_one();
-    // test_eval_executable_array_num_two();
+    test_eval_executable_array_num_two();
     // test_eval_executable_array_num_two_sep();
     // test_eval_executable_array_num_three_nest();
     // test_eval_executable_array_literal_name();
