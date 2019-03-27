@@ -463,6 +463,55 @@ static void test_eval_unknown() {
     assert(expect == actual);
 }
 
+static void test_eval_executable_array_literal_name_bind() {
+    char* input = "/abc { 1 2 add } def abc";
+    struct Element expect = {ELEMENT_NUMBER, {3}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual.u.exec_array->elements[0]);
+}
+
+static void test_eval_executable_array_literal_name_bind_nest() {
+    char* input = "/ZZ {6} def /YY {4 ZZ 5} def /XX {1 2 YY 3} def";
+    // Expected output: [1 2 4 6 5 3]
+    struct Element expect1 = {ELEMENT_NUMBER, {1}};
+    struct Element expect2 = {ELEMENT_NUMBER, {2}};
+    struct Element expect3 = {ELEMENT_NUMBER, {4}};
+    struct Element expect4 = {ELEMENT_NUMBER, {6}};
+    struct Element expect5 = {ELEMENT_NUMBER, {5}};
+    struct Element expect6 = {ELEMENT_NUMBER, {3}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual1 = {NO_ELEM_TYPE, {0}};
+    struct Element actual2 = {NO_ELEM_TYPE, {0}};
+    struct Element actual3 = {NO_ELEM_TYPE, {0}};
+    struct Element actual4 = {NO_ELEM_TYPE, {0}};
+    struct Element actual5 = {NO_ELEM_TYPE, {0}};
+    struct Element actual6 = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual6);
+    stack_pop(&actual5);
+    stack_pop(&actual4);
+    stack_pop(&actual3);
+    stack_pop(&actual2);
+    stack_pop(&actual1);
+
+    assert_two_exec_opelem_eq(&expect1, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect2, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect3, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect4, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect5, &actual1.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect6, &actual1.u.exec_array->elements[0]);
+}
+
 
 int main() {
     register_all_primitive();
@@ -485,6 +534,8 @@ int main() {
     test_eval_def_add();
     test_eval_literal_name();
     test_eval_unknown();
+    // test_eval_executable_array_literal_name_bind();
+    // test_eval_executable_array_literal_name_bind_nest();
 
     return 0;
 }
