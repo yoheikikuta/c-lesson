@@ -6,11 +6,11 @@ int streq(char* s1, char* s2) {
     return strcmp(s1, s2) == 0;
 }
 
-int two_data_eq(struct Data* d1, struct Data* d2) {
-    if (d1->dtype == d2->dtype) {
-        if (d1->dtype == NUMBER) {
+int two_data_eq(struct Element* d1, struct Element* d2) {
+    if (d1->etype == d2->etype) {
+        if (d1->etype == ELEMENT_NUMBER) {
             return d1->u.number == d2->u.number;
-        } else if (d1->dtype == LITERAL_NAME) {
+        } else if (d1->etype == ELEMENT_LITERAL_NAME) {
             return streq(d1->u.name, d2->u.name);
         } else {
             fprintf(stderr, "Never reached here.\n");
@@ -36,7 +36,7 @@ int two_exec_opelem_eq(struct Element* e1, struct Element* e2) {
     }
 }
 
-void assert_two_data_eq(struct Data* d1, struct Data* d2) {
+void assert_two_data_eq(struct Element* d1, struct Element* d2) {
     assert(two_data_eq(d1, d2));
 }
 
