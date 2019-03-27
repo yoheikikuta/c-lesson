@@ -106,6 +106,14 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 arr[elem_num].u.exec_array = token->u.name;
                 elem_num++;
                 break;
+            case OPEN_CURLY: {
+                struct Element nested_arr = {NO_ELEM_TYPE, {0}};
+                compile_exec_array(ch, token, &nested_arr);
+                arr[elem_num].etype = nested_arr.etype;
+                arr[elem_num].u.exec_array = nested_arr.u.exec_array;
+                elem_num++;
+                break;
+            }
              
             default:
                 printf("Unknown type %d\n", token->ltype);
