@@ -274,19 +274,13 @@ static void test_eval_executable_array_num_three_nest() {
 
     eval();
 
-    struct Element actual1 = {NO_ELEM_TYPE, {0}};
-    struct Element actual2 = {NO_ELEM_TYPE, {0}};
-    struct Element actual3 = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual1);
-    stack_pop(&actual2);
-    stack_pop(&actual3);
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
 
-    assert(expect_exec.etype == actual1.etype);
-    assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual1.u.exec_array->elements[0]);
-    assert(expect_exec.etype == actual2.etype);
-    assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual2.u.exec_array->elements[1].u.exec_array->elements[0]);
-    assert(expect_exec.etype == actual3.etype);
-    assert_two_exec_opelem_eq(&expect_exec_opelem3, &actual3.u.exec_array->elements[2]);
+    assert(expect_exec.etype == actual.etype);
+    assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual.u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual.u.exec_array->elements[1].u.exec_array->elements[0]);
+    assert_two_exec_opelem_eq(&expect_exec_opelem3, &actual.u.exec_array->elements[2]);
 }
 
 static void test_eval_executable_array_literal_name() {
@@ -470,7 +464,7 @@ int main() {
     test_eval_executable_array_num_one();
     test_eval_executable_array_num_two();
     test_eval_executable_array_num_two_sep();
-    // test_eval_executable_array_num_three_nest();
+    test_eval_executable_array_num_three_nest();
     test_eval_executable_array_literal_name();
     test_eval_executable_array_executable_name();
     test_eval_num_add();
