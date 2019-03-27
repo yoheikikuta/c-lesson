@@ -95,7 +95,13 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 elem_num++;
                 break;
             case SPACE:
-                break;              
+                break;
+            case LITERAL_NAME:
+                arr[elem_num].etype = ELEMENT_LITERAL_NAME;
+                arr[elem_num].u.exec_array = token->u.name;
+                elem_num++;
+                break;
+             
             default:
                 printf("Unknown type %d\n", token->ltype);
                 break;
@@ -198,7 +204,7 @@ static void test_eval_num_two() {
 }
 
 static void test_eval_executable_array_num_one() {
-    char* input = "{12}";
+    char* input = "{ 12 }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem = {ELEMENT_NUMBER, {12}};
 
@@ -214,7 +220,7 @@ static void test_eval_executable_array_num_one() {
 }
 
 static void test_eval_executable_array_num_two() {
-    char* input = "{1 2}";
+    char* input = "{ 1 2 }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
     struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
@@ -232,7 +238,7 @@ static void test_eval_executable_array_num_two() {
 }
 
 static void test_eval_executable_array_num_two_sep() {
-    char* input = "{1} {2}";
+    char* input = "{ 1 } { 2 }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
     struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
@@ -253,7 +259,7 @@ static void test_eval_executable_array_num_two_sep() {
 }
 
 static void test_eval_executable_array_num_three_nest() {
-    char* input = "{1 {2} 3}";
+    char* input = "{ 1 { 2 } 3 }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem1 = {ELEMENT_NUMBER, {1}};
     struct Element expect_exec_opelem2 = {ELEMENT_NUMBER, {2}};
@@ -279,7 +285,7 @@ static void test_eval_executable_array_num_three_nest() {
 }
 
 static void test_eval_executable_array_literal_name() {
-    char* input = "{/abc}";
+    char* input = "{ /abc }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem = {ELEMENT_LITERAL_NAME, {.name="abc"}};
 
@@ -295,7 +301,7 @@ static void test_eval_executable_array_literal_name() {
 }
 
 static void test_eval_executable_array_executable_name() {
-    char* input = "{abc}";
+    char* input = "{ abc }";
     struct Element expect_exec = {ELEMENT_EXECUTABLE_ARRAY, {0}};
     struct Element expect_exec_opelem = {ELEMENT_EXECUTABLE_NAME, {.name="abc"}};
 
@@ -460,7 +466,7 @@ int main() {
     test_eval_executable_array_num_two();
     test_eval_executable_array_num_two_sep();
     // test_eval_executable_array_num_three_nest();
-    // test_eval_executable_array_literal_name();
+    test_eval_executable_array_literal_name();
     // test_eval_executable_array_executable_name();
     test_eval_num_add();
     test_eval_num_sub();
