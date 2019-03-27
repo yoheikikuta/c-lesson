@@ -8,7 +8,7 @@
 
 int stack_pop_int(){
     // Return the value of popped NUMBER data from the stack.
-    struct Data input = {UNKNOWN, {0}};
+    struct Element input = {NO_ELEM_TYPE, {0}};
     stack_pop(&input);
     int num = input.u.number;
 
@@ -17,7 +17,7 @@ int stack_pop_int(){
 
 char* stack_pop_str(){
     // Return the value of popped LITERAL_NAME data from the stack.
-    struct Data input = {UNKNOWN, {0}};
+    struct Element input = {NO_ELEM_TYPE, {0}};
     stack_pop(&input);
     char* str = input.u.name;
 
@@ -25,47 +25,51 @@ char* stack_pop_str(){
 }
 
 void def_op() {
-    // def operation: [{LITERAL_NAME,"abc"}, {NUMBER,123}] -> dict[{"abc", {NUMBER,123}}]
-    int val = stack_pop_int();
-    struct Data elem = {NUMBER, {val}};
-    char* literal_name = stack_pop_str();
+    // def operation: [{ELEMENT_LITERAL_NAME,"abc"}, {ELEMENT_NUMBER,123}] -> dict[{"abc", {ELEMENT_NUMBER,123}}]
+    struct Element elem = {NO_ELEM_TYPE,{0}};
+	struct Element elem_val = {NO_ELEM_TYPE,{0}};
+	char* literal_name;
+	stack_pop(&elem);
+	elem_val = elem;
+	stack_pop(&elem);
+	literal_name = elem.u.name;
 
-    dict_put(literal_name, &elem);
+    dict_put(literal_name, &elem_val);
 }
 
 void add_op() {
-    // Add operation: [{NUMBER,1}, {NUMBER,2}] -> [{NUMBER,3}]
+    // Add operation: [{ELEMENT_NUMBER,1}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,3}]
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    struct Data result = {NUMBER, {v1+v2}};
+    struct Element result = {ELEMENT_NUMBER, {v1+v2}};
     stack_push(&result);
 }
 
 void sub_op() {
-    // Sub operation: [{NUMBER,5}, {NUMBER,2}] -> [{NUMBER,3}]
+    // Sub operation: [{ELEMENT_NUMBER,5}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,3}]
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    struct Data result = {NUMBER, {v2-v1}};
+    struct Element result = {ELEMENT_NUMBER, {v2-v1}};
     stack_push(&result);
 }
 
 void mul_op() {
-    // Mul operation: [{NUMBER,2}, {NUMBER,4}] -> [{NUMBER,8}]
+    // Mul operation: [{ELEMENT_NUMBER,2}, {ELEMENT_NUMBER,4}] -> [{ELEMENT_NUMBER,8}]
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    struct Data result = {NUMBER, {v1*v2}};
+    struct Element result = {ELEMENT_NUMBER, {v1*v2}};
     stack_push(&result);
 }
 
 void div_op() {
-    // Div operation: [{NUMBER,5}, {NUMBER,2}] -> [{NUMBER,2}]
+    // Div operation: [{ELEMENT_NUMBER,5}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,2}]
     int v1 = stack_pop_int();
     int v2 = stack_pop_int();
 
-    struct Data result = {NUMBER, {v2/v1}};
+    struct Element result = {ELEMENT_NUMBER, {v2/v1}};
     stack_push(&result);
 }
 
@@ -138,7 +142,7 @@ void eval() {
         {0}
     };
     struct Element opelem = {
-        ELEMENT_C_FUNC,
+    NO_ELEM_TYPE,
         {0}
     };
 
@@ -146,7 +150,9 @@ void eval() {
         ch = parse_one(ch, &token);
         switch (token.ltype) {
             case NUMBER:
-                stack_push(&token);
+                opelem.etype = ELEMENT_NUMBER;
+                opelem.u.number = token.u.number;
+                stack_push(&opelem);
                 break;
             case SPACE:
                 break;
@@ -156,12 +162,14 @@ void eval() {
                 if (opelem.etype == ELEMENT_C_FUNC) {
                     opelem.u.cfunc();
                 } else if (dict_get(token.u.name, &token)) {
-                    // use binded var name: dict[{"abc", {NUMBER,123}}] -> [{NUMBER, 123}]
+                    // use binded var name: dict[{"abc", {ELEMENT_NUMBER,123}}] -> [{ELEMENT_NUMBER, 123}]
                     stack_push(&token);
                 }
                 break;
             case LITERAL_NAME:
-                stack_push(&token);
+                opelem.etype = ELEMENT_LITERAL_NAME;
+                opelem.u.name = token.u.name;
+                stack_push(&opelem);
                 break;
             case OPEN_CURLY:
                 compile_exec_array(ch, &token, &opelem);
@@ -395,13 +403,13 @@ static void test_eval_num_add_complicated() {
 
 static void test_eval_def_store() {
     char* input = "/abc 123 def";
-    struct Data expect = {NUMBER, {123}};
+    struct Element expect = {ELEMENT_NUMBER, {123}};
 
     cl_getc_set_src(input);
 
     eval();
 
-    struct Data actual = {UNKNOWN, {0}};
+    struct Element actual = {NO_ELEM_TYPE, {0}};
     dict_get("abc", &actual);
 
     assert_two_data_eq(&expect, &actual);
