@@ -243,8 +243,8 @@ static void test_eval_executable_array_num_two_sep() {
 
     struct Element actual1 = {NO_ELEM_TYPE, {0}};
     struct Element actual2 = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual1);
     stack_pop(&actual2);
+    stack_pop(&actual1);
 
     assert(expect_exec.etype == actual1.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual1.u.exec_array->elements[0]);
@@ -458,7 +458,7 @@ int main() {
     test_eval_num_two();
     test_eval_executable_array_num_one();
     test_eval_executable_array_num_two();
-    // test_eval_executable_array_num_two_sep();
+    test_eval_executable_array_num_two_sep();
     // test_eval_executable_array_num_three_nest();
     // test_eval_executable_array_literal_name();
     // test_eval_executable_array_executable_name();
