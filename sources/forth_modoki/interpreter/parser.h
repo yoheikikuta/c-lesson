@@ -25,6 +25,8 @@ struct Token {
 #define NAME_SIZE 256
 
 /*
-return next character and store one token into Token..
+return next character and store one token into Token.
+Print all stacked variables on stdout.
 */
 int parse_one(int prev_ch, struct Token* out_token);
+void parser_print_all();
