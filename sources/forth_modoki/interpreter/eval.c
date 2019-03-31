@@ -547,10 +547,7 @@ static void test_eval_executable_array_literal_name_bind_nest() {
     assert_two_exec_opelem_eq(&expect6, &actual6);
 }
 
-
-int main() {
-    register_all_primitive();
-
+static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
     test_eval_executable_array_num_one();
@@ -572,5 +569,12 @@ int main() {
     test_eval_executable_array_literal_name_bind();
     test_eval_executable_array_literal_name_bind_nest();
 
+    printf("All unittests successfully passed.");
+}
+
+
+int main() {
+    register_all_primitive();
+    unit_tests();
     return 0;
 }
