@@ -353,6 +353,89 @@ static void test_eval_num_div() {
     assert(expect == actual);
 }
 
+static void test_eval_num_eq() {
+    char* input = "2 2 eq";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_neq() {
+    char* input = "3 2 neq";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_gt() {
+    char* input = "3 2 gt";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_ge() {
+    char* input = "3 3 ge";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+static void test_eval_num_lt() {
+    char* input = "2 3 lt";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_le() {
+    char* input = "3 3 le";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
 static void test_eval_num_add_complicated() {
     char* input = "12 34 add 5 6 add add";
     int expect = 57;
@@ -503,6 +586,12 @@ static void unit_tests() {
     test_eval_num_sub();
     test_eval_num_mul();
     test_eval_num_div();
+    // test_eval_num_eq();
+    // test_eval_num_neq();
+    // test_eval_num_gt();
+    // test_eval_num_ge();
+    // test_eval_num_lt();
+    // test_eval_num_le();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
@@ -512,7 +601,7 @@ static void unit_tests() {
     test_eval_executable_array_literal_name_bind();
     test_eval_executable_array_literal_name_bind_nest();
 
-    printf("All unittests successfully passed.");
+    printf("All unittests successfully passed.\n");
 }
 
 
