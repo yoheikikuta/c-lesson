@@ -490,6 +490,7 @@ static void test_eval_num_index() {
     char* input = "10 20 30 1 index";
     // Expected output: [10,20,30,20]
     int expect = 20;
+    reset_stack();
 
     cl_getc_set_src(input);
 
@@ -507,6 +508,7 @@ static void test_eval_num_roll() {
     int expect1 = 20;
     int expect2 = 40;
     int expect3 = 30;
+    reset_stack();
 
     cl_getc_set_src(input);
 
@@ -680,11 +682,11 @@ static void unit_tests() {
     test_eval_num_ge();
     test_eval_num_lt();
     test_eval_num_le();
-    // test_eval_num_pop();
-    // test_eval_num_exch();
-    // test_eval_num_dup();
-    // test_eval_num_index();
-    // test_eval_num_roll();
+    test_eval_num_pop();
+    test_eval_num_exch();
+    test_eval_num_dup();
+    test_eval_num_index();
+    test_eval_num_roll();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();

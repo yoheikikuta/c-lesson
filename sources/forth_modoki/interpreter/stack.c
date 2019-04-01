@@ -8,7 +8,7 @@
 static struct Element stack[STACK_SIZE];
 static int stack_num = 0;
 
-static void reset_stack() {
+void reset_stack() {
     stack_num = 0;
 }
 
@@ -27,6 +27,16 @@ int stack_pop(struct Element* out_elem) {
         return 0;
     } else {
         *out_elem = stack[--stack_num];
+
+        return 1;
+    }
+}
+
+int stack_copy(struct Element* out_elem, int idx) {
+    if (stack_num == 0) {
+        return 0;
+    } else {
+        *out_elem = stack[idx];
 
         return 1;
     }
