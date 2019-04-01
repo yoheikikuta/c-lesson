@@ -570,6 +570,70 @@ static void test_eval_num_roll() {
     reset_stack();
 }
 
+static void test_eval_exec() {
+    char* input = "{ 2 3 add } exec";
+    int expect = 5;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_if() {
+    char* input = "1 { 2 3 add } if";
+    int expect = 5;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_ifelse() {
+    char* input = "0 { 1 } { 2 3 add } ifelse";
+    int expect = 5;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_while() {
+    char* input = "1 { dup 5 gt } { 2 add } while";
+    int expect = 7;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
 static void test_eval_num_add_complicated() {
     char* input = "12 34 add 5 6 add add";
     int expect = 57;
@@ -743,6 +807,10 @@ static void unit_tests() {
     test_eval_num_dup();
     test_eval_num_index();
     test_eval_num_roll();
+    // test_eval_exec();
+    // test_eval_if();
+    // test_eval_ifelse();
+    // test_eval_while();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
