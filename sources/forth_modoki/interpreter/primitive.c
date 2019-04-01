@@ -105,6 +105,63 @@ void le_op() {
     stack_push(&result);
 }
 
+void pop_op() {
+    // Pop operation: [{TYPE1,v1}, {TYPE2,v2}] -> [{TYPE1,v1}]
+    struct Element to_be_discarded = {NO_ELEM_TYPE, {0}};
+    stack_pop(&to_be_discarded);
+}
+
+void exch_op() {
+    // Exchenge operation: [{TYPE1,v1}, {TYPE2,v2}] -> [{TYPE2,v2}, {TYPE1,v1}]
+    struct Element elem1 = {NO_ELEM_TYPE, {0}};
+    struct Element elem2 = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&elem1);
+    stack_pop(&elem2);
+    stack_push(&elem1);
+    stack_push(&elem2);
+}
+
+void dup_op() {
+    // Duplication operation: [{TYPE1,v1}] -> [{TYPE!,v1}, {TYPE1,v1}]
+    struct Element elem = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&elem);
+    stack_push(&elem);
+    stack_push(&elem);
+}
+
+void index_op() {
+    // Index operation: [{TYPE1,v1}, {TYPE2,v2}, {TYPE3,v3}, {ELEMENT_NUMBER,1}]
+    // -> [{TYPE1,v1}, {TYPE2,v2}, {TYPE3,v3}, {TYPE2,v2}]
+    struct Element elem_idx = {NO_ELEM_TYPE, {0}};
+    struct Element elem = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&elem_idx);
+    stack_copy(&elem, elem_idx.u.number);
+    stack_push(&elem);
+}
+
+void roll_op() {
+    // Roll operation: [{TYPE1,v1}, {TYPE2,v2}, {TYPE3,v3}, {ELEMENT_NUMBER,2}, {ELEMENT_NUMBER,1}]
+    // -> [{TYPE1,v1}, {TYPE3,v3}, {TYPE2,v2}]
+    struct Element elem_roll_num = {NO_ELEM_TYPE, {0}};
+    struct Element elem_roll_times = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&elem_roll_times);
+    stack_pop(&elem_roll_num);
+    struct Element elem_arr[elem_roll_num.u.number];
+    for (int i = 0; i < elem_roll_num.u.number; i++) {
+        struct Element elem = {NO_ELEM_TYPE, {0}};
+        stack_pop(&elem);
+        elem_arr[i] = elem;
+    }
+    for (int i = 0; i < elem_roll_num.u.number; i++) {
+        int stack_idx = (elem_roll_num.u.number - 1 - i + elem_roll_times.u.number) % 3;
+        stack_push(&elem_arr[stack_idx]);
+    }
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -122,5 +179,10 @@ void register_all_primitive() {
     register_one_primitive("ge", ge_op);
     register_one_primitive("lt", lt_op);
     register_one_primitive("le", le_op);
+    register_one_primitive("pop", pop_op);
+    register_one_primitive("exch", exch_op);
+    register_one_primitive("dup", dup_op);
+    register_one_primitive("index", index_op);
+    register_one_primitive("roll", roll_op);
 }
 
