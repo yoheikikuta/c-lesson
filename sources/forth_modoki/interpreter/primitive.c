@@ -162,6 +162,60 @@ void roll_op() {
     }
 }
 
+void exec_op() {
+    // Execution operation: execute executable arrays on the stack top
+    struct Element opelem = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&opelem);
+    eval_exec_array(opelem.u.exec_array);
+}
+
+void if_op() {
+    // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+    // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+    struct Element opelem = {NO_ELEM_TYPE, {0}};
+    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&opelem);
+    stack_pop(&boolean_flg);
+    if (boolean_flg.u.number == 1) {
+        eval_exec_array(opelem.u.exec_array);
+    }
+}
+
+void ifelse_op() {
+    // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
+    // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
+    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
+    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
+    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&opelem_false);
+    stack_pop(&opelem_true);
+    stack_pop(&boolean_flg);
+    if (boolean_flg.u.number == 1) {
+        eval_exec_array(opelem_true.u.exec_array);
+    } else if (boolean_flg.u.number == 0) {
+        eval_exec_array(opelem_false.u.exec_array);
+    }
+}
+
+void while_op() {
+    // While operation: { exec_array1 } { exec_array2 } while
+    // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
+    struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
+    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
+    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&opelem_body);
+    stack_pop(&opelem_cond);
+    do {
+        eval_exec_array(opelem_cond.u.exec_array);
+        stack_pop(&boolean_flg);
+    } while (boolean_flg.u.number == 1);
+    eval_exec_array(opelem_body.u.exec_array);
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -184,5 +238,9 @@ void register_all_primitive() {
     register_one_primitive("dup", dup_op);
     register_one_primitive("index", index_op);
     register_one_primitive("roll", roll_op);
+    register_one_primitive("exec", exec_op);
+    register_one_primitive("if", if_op);
+    register_one_primitive("ifelse", ifelse_op);
+    register_one_primitive("while", while_op);
 }
 

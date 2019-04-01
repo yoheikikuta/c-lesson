@@ -619,8 +619,9 @@ static void test_eval_ifelse() {
 }
 
 static void test_eval_while() {
-    char* input = "1 { dup 5 gt } { 2 add } while";
-    int expect = 7;
+    char* input = "1 { 2 add dup 4 lt } { 10 add } while";
+    // Expected output: [1] -> [3 3] -> (3 < 4) -> [5 5] -> (5 not less than 4) -> [15]
+    int expect = 15;
 
     cl_getc_set_src(input);
 
@@ -807,10 +808,10 @@ static void unit_tests() {
     test_eval_num_dup();
     test_eval_num_index();
     test_eval_num_roll();
-    // test_eval_exec();
-    // test_eval_if();
-    // test_eval_ifelse();
-    // test_eval_while();
+    test_eval_exec();
+    test_eval_if();
+    test_eval_ifelse();
+    test_eval_while();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
