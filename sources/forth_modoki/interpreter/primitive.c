@@ -51,6 +51,60 @@ void div_op() {
     stack_push(&result);
 }
 
+void eq_op() {
+    // Equal operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,3}] -> [{ELEMENT_NUMBER,1}], 0 if not equal
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2==v1}};
+    stack_push(&result);
+}
+
+void neq_op() {
+    // Not equal operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,1}], 0 if equal
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2!=v1}};
+    stack_push(&result);
+}
+
+void gt_op() {
+    // Greater than operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,1}], 0 if not
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2>v1}};
+    stack_push(&result);
+}
+
+void ge_op() {
+    // Greater or euall operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,3}] -> [{ELEMENT_NUMBER,1}], 0 if not
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2>=v1}};
+    stack_push(&result);
+}
+
+void lt_op() {
+    // Lower than operation: [{ELEMENT_NUMBER,2}, {ELEMENT_NUMBER,3}] -> [{ELEMENT_NUMBER,1}], 0 if not
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2<v1}};
+    stack_push(&result);
+}
+
+void le_op() {
+    // Lower or equal operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,3}] -> [{ELEMENT_NUMBER,1}], 0 if not
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2<=v1}};
+    stack_push(&result);
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -62,5 +116,11 @@ void register_all_primitive() {
     register_one_primitive("sub", sub_op);
     register_one_primitive("mul", mul_op);
     register_one_primitive("div", div_op);
+    register_one_primitive("eq", eq_op);
+    register_one_primitive("neq", neq_op);
+    register_one_primitive("gt", gt_op);
+    register_one_primitive("ge", ge_op);
+    register_one_primitive("lt", lt_op);
+    register_one_primitive("le", le_op);
 }
 

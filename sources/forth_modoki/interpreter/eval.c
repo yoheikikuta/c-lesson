@@ -586,12 +586,12 @@ static void unit_tests() {
     test_eval_num_sub();
     test_eval_num_mul();
     test_eval_num_div();
-    // test_eval_num_eq();
-    // test_eval_num_neq();
-    // test_eval_num_gt();
-    // test_eval_num_ge();
-    // test_eval_num_lt();
-    // test_eval_num_le();
+    test_eval_num_eq();
+    test_eval_num_neq();
+    test_eval_num_gt();
+    test_eval_num_ge();
+    test_eval_num_lt();
+    test_eval_num_le();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
