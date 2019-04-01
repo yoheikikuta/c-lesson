@@ -436,6 +436,94 @@ static void test_eval_num_le() {
     assert(expect == actual);
 }
 
+static void test_eval_num_pop() {
+    char* input = "1 2 pop";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_exch() {
+    char* input = "1 2 3 exch";
+    int expect1 = 2;
+    int expect2 = 3;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual1 = 0;
+    int actual2 = 0;
+    actual1 = stack_pop_int();
+    actual2 = stack_pop_int();
+
+    assert(expect1 == actual1);
+    assert(expect2 == actual2);
+}
+
+static void test_eval_num_dup() {
+    char* input = "1 2 dup";
+    int expect1 = 2;
+    int expect2 = 2;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual1 = 0;
+    int actual2 = 0;
+    actual1 = stack_pop_int();
+    actual2 = stack_pop_int();
+
+    assert(expect1 == actual1);
+    assert(expect2 == actual2);
+}
+
+static void test_eval_num_index() {
+    char* input = "10 20 30 1 index";
+    // Expected output: [10,20,30,20]
+    int expect = 20;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+}
+
+static void test_eval_num_roll() {
+    char* input = "10 20 30 40 3 2 roll";
+    // Expected output: [10,30,40,20]
+    int expect1 = 20;
+    int expect2 = 40;
+    int expect3 = 30;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual1 = 0;
+    int actual2 = 0;
+    int actual3 = 0;
+    actual1 = stack_pop_int();
+    actual2 = stack_pop_int();
+    actual3 = stack_pop_int();
+
+    assert(expect1 == actual1);
+    assert(expect2 == actual2);
+    assert(expect3 == actual3);
+}
+
 static void test_eval_num_add_complicated() {
     char* input = "12 34 add 5 6 add add";
     int expect = 57;
@@ -592,6 +680,11 @@ static void unit_tests() {
     test_eval_num_ge();
     test_eval_num_lt();
     test_eval_num_le();
+    // test_eval_num_pop();
+    // test_eval_num_exch();
+    // test_eval_num_dup();
+    // test_eval_num_index();
+    // test_eval_num_roll();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
