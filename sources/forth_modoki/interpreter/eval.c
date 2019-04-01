@@ -170,6 +170,8 @@ static void test_eval_num_one() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_two() {
@@ -188,6 +190,8 @@ static void test_eval_num_two() {
 
     assert(expect1 == actual1);
     assert(expect2 == actual2);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_num_one() {
@@ -204,6 +208,8 @@ static void test_eval_executable_array_num_one() {
 
     assert(expect_exec.etype == actual.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem, &actual.u.exec_array->elements[0]);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_num_two() {
@@ -222,6 +228,8 @@ static void test_eval_executable_array_num_two() {
     assert(expect_exec.etype == actual.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual.u.exec_array->elements[0]);
     assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual.u.exec_array->elements[1]);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_num_two_sep() {
@@ -243,6 +251,8 @@ static void test_eval_executable_array_num_two_sep() {
     assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual1.u.exec_array->elements[0]);
     assert(expect_exec.etype == actual2.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual2.u.exec_array->elements[0]);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_num_three_nest() {
@@ -263,6 +273,8 @@ static void test_eval_executable_array_num_three_nest() {
     assert_two_exec_opelem_eq(&expect_exec_opelem1, &actual.u.exec_array->elements[0]);
     assert_two_exec_opelem_eq(&expect_exec_opelem2, &actual.u.exec_array->elements[1].u.exec_array->elements[0]);
     assert_two_exec_opelem_eq(&expect_exec_opelem3, &actual.u.exec_array->elements[2]);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_literal_name() {
@@ -279,6 +291,8 @@ static void test_eval_executable_array_literal_name() {
 
     assert(expect_exec.etype == actual.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem, &actual.u.exec_array->elements[0]);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_executable_name() {
@@ -295,6 +309,8 @@ static void test_eval_executable_array_executable_name() {
 
     assert(expect_exec.etype == actual.etype);
     assert_two_exec_opelem_eq(&expect_exec_opelem, &actual.u.exec_array->elements[0]);
+
+    reset_stack();
 }
 
 static void test_eval_num_add() {
@@ -309,6 +325,8 @@ static void test_eval_num_add() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_sub() {
@@ -323,6 +341,8 @@ static void test_eval_num_sub() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_mul() {
@@ -337,6 +357,8 @@ static void test_eval_num_mul() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_div() {
@@ -351,6 +373,8 @@ static void test_eval_num_div() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_eq() {
@@ -365,6 +389,8 @@ static void test_eval_num_eq() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_neq() {
@@ -379,6 +405,8 @@ static void test_eval_num_neq() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_gt() {
@@ -393,6 +421,8 @@ static void test_eval_num_gt() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_ge() {
@@ -407,6 +437,8 @@ static void test_eval_num_ge() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 static void test_eval_num_lt() {
     char* input = "2 3 lt";
@@ -420,6 +452,8 @@ static void test_eval_num_lt() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_le() {
@@ -434,6 +468,8 @@ static void test_eval_num_le() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_pop() {
@@ -448,6 +484,8 @@ static void test_eval_num_pop() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_exch() {
@@ -466,6 +504,8 @@ static void test_eval_num_exch() {
 
     assert(expect1 == actual1);
     assert(expect2 == actual2);
+
+    reset_stack();
 }
 
 static void test_eval_num_dup() {
@@ -484,13 +524,14 @@ static void test_eval_num_dup() {
 
     assert(expect1 == actual1);
     assert(expect2 == actual2);
+
+    reset_stack();
 }
 
 static void test_eval_num_index() {
     char* input = "10 20 30 1 index";
     // Expected output: [10,20,30,20]
     int expect = 20;
-    reset_stack();
 
     cl_getc_set_src(input);
 
@@ -500,6 +541,8 @@ static void test_eval_num_index() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_num_roll() {
@@ -508,7 +551,6 @@ static void test_eval_num_roll() {
     int expect1 = 20;
     int expect2 = 40;
     int expect3 = 30;
-    reset_stack();
 
     cl_getc_set_src(input);
 
@@ -524,6 +566,8 @@ static void test_eval_num_roll() {
     assert(expect1 == actual1);
     assert(expect2 == actual2);
     assert(expect3 == actual3);
+
+    reset_stack();
 }
 
 static void test_eval_num_add_complicated() {
@@ -538,6 +582,8 @@ static void test_eval_num_add_complicated() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_def_store() {
@@ -552,6 +598,8 @@ static void test_eval_def_store() {
     dict_get("abc", &actual);
 
     assert_two_data_eq(&expect, &actual);
+
+    reset_stack();
 }
 
 static void test_eval_def_pop() {
@@ -566,6 +614,8 @@ static void test_eval_def_pop() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_def_add() {
@@ -580,6 +630,8 @@ static void test_eval_def_add() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_literal_name() {
@@ -594,6 +646,8 @@ static void test_eval_literal_name() {
     actual = stack_pop_str();
 
     assert(streq(expect, actual));
+
+    reset_stack();
 }
 
 static void test_eval_unknown() {
@@ -608,6 +662,8 @@ static void test_eval_unknown() {
     actual = stack_pop_int();
 
     assert(expect == actual);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_literal_name_bind() {
@@ -622,6 +678,8 @@ static void test_eval_executable_array_literal_name_bind() {
     stack_pop(&actual);
 
     assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
 }
 
 static void test_eval_executable_array_literal_name_bind_nest() {
@@ -657,10 +715,8 @@ static void test_eval_executable_array_literal_name_bind_nest() {
     assert_two_exec_opelem_eq(&expect4, &actual4);
     assert_two_exec_opelem_eq(&expect5, &actual5);
     assert_two_exec_opelem_eq(&expect6, &actual6);
-}
 
-static void test_eval_eq() {
-    return;
+    reset_stack();
 }
 
 static void unit_tests() {
