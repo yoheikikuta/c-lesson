@@ -39,6 +39,10 @@ static int is_line_break(int c) {
     return c == '\n';
 }
 
+static int is_parcent(int c) {
+    return c == '%';
+}
+
 int parse_one(int prev_ch, struct Token* out_token) {
     int cur_ch = 0;
 
@@ -129,6 +133,21 @@ int parse_one(int prev_ch, struct Token* out_token) {
     } else if (is_line_break(cur_ch)) {
         // Parse line break: "\na" -> " " + cur_ch='a'
         // Interpret the line break character as a space
+        cur_ch = cl_getc();
+        out_token->ltype = SPACE;
+        out_token->u.onechar = ' ';
+        return cur_ch;
+    } else if (is_parcent(cur_ch)) {
+        // Parse %: "%this is a comment\na" -> " " + cur_ch='a'
+        // Interpret a line starting with '%' as a space
+        do
+        {
+            cur_ch = cl_getc();
+            if (cur_ch == EOF) {
+                out_token->ltype = END_OF_FILE;
+                return cur_ch;
+            }
+        } while (!is_line_break(cur_ch));
         cur_ch = cl_getc();
         out_token->ltype = SPACE;
         out_token->u.onechar = ' ';
@@ -309,6 +328,35 @@ static void test_parse_one_line_break() {
     assert(expect_onechar == token.u.onechar);
 }
 
+static void test_parse_one_comment_prev() {
+    char* input = "%test\na";
+    char expect_onechar = ' ';
+    int expect_type = SPACE;
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+    ch = parse_one(EOF, &token);
+    printf("%i\n", ch);
+
+    assert('a' == ch);
+    assert(expect_type == token.ltype);
+    assert(expect_onechar == token.u.onechar);
+}
+
+static void test_parse_one_comment_following() {
+    char* input = "a%test";
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+    ch = parse_one(EOF, &token);
+
+    assert(EOF == ch);
+}
+
 static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
     test_parse_one_number();
@@ -318,6 +366,8 @@ static void unit_tests() {
     test_parse_one_open_curly();
     test_parse_one_close_curly();
     test_parse_one_line_break();
+    test_parse_one_comment_prev();
+    test_parse_one_comment_following();
 }
 
 
@@ -325,7 +375,7 @@ static void unit_tests() {
 int main() {
     unit_tests();
 
-    cl_getc_set_src("123 45 add /some { 2 3 add } def\n");
+    cl_getc_set_src("123 45 add /some { 2 3 add } def %comment\n");
     parser_print_all();
     return 0;
 }
