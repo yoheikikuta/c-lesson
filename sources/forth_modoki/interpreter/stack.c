@@ -42,6 +42,20 @@ int stack_copy(struct Element* out_elem, int idx) {
     }
 }
 
+void stack_print_all() {
+	struct Element elem = {UNKNOWN,{0}};
+	while(stack_pop(&elem)) {
+		switch(elem.etype) {
+			case ELEMENT_NUMBER:
+				printf("Number: %d\n", elem.u.number);
+				break;
+			default:
+				printf("Unknown type: %d\n", elem.etype);
+				break;
+		}
+	}
+}
+
 //
 // TEST
 //
