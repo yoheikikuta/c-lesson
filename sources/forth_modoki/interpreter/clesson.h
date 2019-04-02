@@ -3,7 +3,9 @@
 
 /*
 return one character and move cursor.
-return EOF if end of file.
+set a string pointer as input and pos as 0,
+set a file pointer as input_fp.
 */
 int cl_getc();
 void cl_getc_set_src(char* str);
+void cl_getc_set_file(FILE* input_fp);
