@@ -861,8 +861,20 @@ static void unit_tests() {
 }
 
 
-int main() {
+int main(int argc, char* argv[]) {
     register_all_primitive();
-    unit_tests();
+    if (argc > 1) {
+        FILE *fp = NULL;
+        char *fname = argv[1];
+        if((fp = fopen(fname, "r")) == NULL) {
+			printf("ERROR: cannot read the given file.\n");
+		}
+        cl_getc_set_file(fp);
+        eval();
+        fclose(fp);
+        stack_print_all();
+    } else {
+        unit_tests();
+    }
     return 0;
 }
