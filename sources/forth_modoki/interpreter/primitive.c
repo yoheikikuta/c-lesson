@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "dict.h"
+#include "primitive.h"
 
 
 void def_op() {
