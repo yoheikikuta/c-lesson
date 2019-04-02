@@ -146,6 +146,8 @@ void eval() {
             case UNKNOWN:
                 printf("Terminate eval on the way due to the UNKNOWN Type\n");
                 break;
+            case END_OF_FILE:
+                break;
 
             default:
                 printf("Unknown type %d\n", token.ltype);
@@ -800,6 +802,22 @@ static void test_eval_line_break() {
     reset_stack();
 }
 
+static void test_eval_comment() {
+    char* input = "1 2 %comment\nadd %also comment";
+    struct Element expect = {ELEMENT_NUMBER, {3}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -837,6 +855,7 @@ static void unit_tests() {
     test_eval_executable_array_literal_name_bind();
     test_eval_executable_array_literal_name_bind_nest();
     test_eval_line_break();
+    test_eval_comment();
 
     printf("All unittests successfully passed.\n");
 }
