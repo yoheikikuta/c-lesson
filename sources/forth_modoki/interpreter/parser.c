@@ -35,6 +35,9 @@ static int is_close_curly(int c) {
     return c == '}';
 }
 
+static int is_line_break(int c) {
+    return c == '\n';
+}
 
 int parse_one(int prev_ch, struct Token* out_token) {
     int cur_ch = 0;
@@ -123,6 +126,13 @@ int parse_one(int prev_ch, struct Token* out_token) {
         out_token->u.onechar = '}';
         return cur_ch;
 
+    } else if (is_line_break(cur_ch)) {
+        // Parse line break: "\na" -> " " + cur_ch='a'
+        // Interpret the line break character as a space
+        cur_ch = cl_getc();
+        out_token->ltype = SPACE;
+        out_token->u.onechar = ' ';
+        return cur_ch;
     }
 
     out_token->ltype = UNKNOWN;
@@ -283,6 +293,21 @@ static void test_parse_one_close_curly() {
     assert(expect_onechar == token.u.onechar);
 }
 
+static void test_parse_one_line_break() {
+    char* input = "\na";
+    char expect_onechar = ' ';
+    int expect_type = SPACE;
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+    ch = parse_one(EOF, &token);
+
+    assert('a' == ch);
+    assert(expect_type == token.ltype);
+    assert(expect_onechar == token.u.onechar);
+}
 
 static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
@@ -292,6 +317,7 @@ static void unit_tests() {
     test_parse_one_literal_name();
     test_parse_one_open_curly();
     test_parse_one_close_curly();
+    test_parse_one_line_break();
 }
 
 
@@ -299,7 +325,7 @@ static void unit_tests() {
 int main() {
     unit_tests();
 
-    cl_getc_set_src("123 45 add /some { 2 3 add } def");
+    cl_getc_set_src("123 45 add /some { 2 3 add } def\n");
     parser_print_all();
     return 0;
 }
