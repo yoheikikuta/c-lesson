@@ -1,0 +1,16 @@
+/fizzbuzz {
+  /loop_count 1 def
+  { dup loop_count ge }
+  {  
+    loop_count 15 mod 0 eq { /fizzbuzz exch } {
+      loop_count 5 mod 0 eq { /buzz exch } {
+        loop_count 3 mod 0 eq { /fizz exch } {
+          loop_count exch
+        } ifelse
+      } ifelse
+    } ifelse
+    /loop_count loop_count 1 add def
+  } while
+  pop
+} def
+15 fizzbuzz
