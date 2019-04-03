@@ -382,6 +382,22 @@ static void test_eval_num_div() {
     reset_stack();
 }
 
+static void test_eval_num_mod() {
+    char* input = "5 2 mod";
+    int expect = 1;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
 static void test_eval_num_eq() {
     char* input = "2 2 eq";
     int expect = 1;
@@ -851,6 +867,7 @@ static void unit_tests() {
     test_eval_num_sub();
     test_eval_num_mul();
     test_eval_num_div();
+    test_eval_num_mod();
     test_eval_num_eq();
     test_eval_num_neq();
     test_eval_num_gt();
