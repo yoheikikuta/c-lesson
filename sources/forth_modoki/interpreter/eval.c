@@ -93,6 +93,9 @@ void eval_exec_array(struct ElementArray *opelems) {
                     stack_push(&opelem);
                 }
                 break;
+            case ELEMENT_EXECUTABLE_ARRAY:
+                eval_exec_array(opelems->elements[i].u.exec_array);
+                break;
 
             default:
                 printf("Unknown type %d\n", opelems->elements[i].etype);
@@ -786,6 +789,23 @@ static void test_eval_executable_array_literal_name_bind_nest() {
     reset_stack();
 }
 
+static void test_eval_executable_array_literal_name_bind_nest_inner() {
+    char* input = "/abc { 1 2 add { 1 2 add } add } def abc";
+    struct Element expect = {ELEMENT_NUMBER, {6}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
+
 static void test_eval_line_break() {
     char* input = "1\n2 \nadd\n";
     struct Element expect = {ELEMENT_NUMBER, {3}};
@@ -854,6 +874,7 @@ static void unit_tests() {
     test_eval_unknown();
     test_eval_executable_array_literal_name_bind();
     test_eval_executable_array_literal_name_bind_nest();
+    test_eval_executable_array_literal_name_bind_nest_inner();
     test_eval_line_break();
     test_eval_comment();
 
