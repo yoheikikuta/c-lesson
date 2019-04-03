@@ -1,0 +1,13 @@
+/square_sum_k { 
+    % [x] -> [x x^2] -> [x^2 x]
+    % Then repeat [x^2 x-1] -> [x^2 (x-1)^2 x-1] -> [x-1 x^2 (x-1)^2] -> [x^2+(x-1)^2 x-1] -> ...
+    dup dup mul exch
+    { 1 sub dup 1 ge }
+    { 
+      dup dup mul exch
+      3 1 roll
+      add exch
+    } while
+    pop
+  } def
+5 square_sum_k
