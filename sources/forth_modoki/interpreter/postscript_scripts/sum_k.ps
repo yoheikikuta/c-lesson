@@ -1,0 +1,16 @@
+/sum_k {
+  dup
+  { 
+    1 sub 
+    dup 
+    0 gt 
+  }
+  { 
+    exch 
+    1 index 
+    add 
+    exch 
+  } while
+  pop
+} def 
+10 sum_k
