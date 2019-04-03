@@ -36,7 +36,8 @@ int stack_copy(struct Element* out_elem, int idx) {
     if (stack_num == 0) {
         return 0;
     } else {
-        *out_elem = stack[idx];
+        // PostScript's index starts with 0 from the stack top.
+        *out_elem = stack[stack_num - idx - 1];
 
         return 1;
     }
