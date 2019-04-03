@@ -1,0 +1,13 @@
+/repeat {
+  % Define repeat_count as the first argument (integer)
+  exch
+  /repeat_count exch def
+  % Define exec_block as the second argument (executable array)
+  /exec_block exch def
+  { 
+    /repeat_count repeat_count 1 sub def 
+    repeat_count 0 ge 
+  }
+  { exec_block } while
+} def
+3 { 1 2 } repeat
