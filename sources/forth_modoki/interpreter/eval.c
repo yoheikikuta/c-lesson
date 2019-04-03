@@ -534,9 +534,9 @@ static void test_eval_num_dup() {
 }
 
 static void test_eval_num_index() {
-    char* input = "10 20 30 1 index";
-    // Expected output: [10,20,30,20]
-    int expect = 20;
+    char* input = "10 20 30 40 1 index";
+    // Expected output: [10,20,30,40,30]
+    int expect = 30;
 
     cl_getc_set_src(input);
 
