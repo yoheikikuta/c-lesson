@@ -45,16 +45,21 @@ int stack_copy(struct Element* out_elem, int idx) {
 
 void stack_print_all() {
 	struct Element elem = {UNKNOWN,{0}};
+	printf("----- STACK  TOP -----\n");
 	while(stack_pop(&elem)) {
 		switch(elem.etype) {
 			case ELEMENT_NUMBER:
 				printf("Number: %d\n", elem.u.number);
+				break;
+			case ELEMENT_LITERAL_NAME:
+				printf("Literal name: %s\n", elem.u.name);
 				break;
 			default:
 				printf("Unknown type: %d\n", elem.etype);
 				break;
 		}
 	}
+	printf("-----STACK BOTTOM-----\n");
 }
 
 //
