@@ -158,7 +158,7 @@ void roll_op() {
         elem_arr[i] = elem;
     }
     for (int i = 0; i < elem_roll_num.u.number; i++) {
-        int stack_idx = (elem_roll_num.u.number - 1 - i + elem_roll_times.u.number) % 3;
+        int stack_idx = (elem_roll_num.u.number - 1 - i + elem_roll_times.u.number) % elem_roll_num.u.number;
         stack_push(&elem_arr[stack_idx]);
     }
 }
