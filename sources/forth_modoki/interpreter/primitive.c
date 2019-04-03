@@ -52,6 +52,15 @@ void div_op() {
     stack_push(&result);
 }
 
+void mod_op() {
+    // Mod operation: [{ELEMENT_NUMBER,5}, {ELEMENT_NUMBER,2}] -> [{ELEMENT_NUMBER,1}]
+    int v1 = stack_pop_int();
+    int v2 = stack_pop_int();
+
+    struct Element result = {ELEMENT_NUMBER, {v2%v1}};
+    stack_push(&result);
+}
+
 void eq_op() {
     // Equal operation: [{ELEMENT_NUMBER,3}, {ELEMENT_NUMBER,3}] -> [{ELEMENT_NUMBER,1}], 0 if not equal
     int v1 = stack_pop_int();
@@ -230,6 +239,7 @@ void register_all_primitive() {
     register_one_primitive("sub", sub_op);
     register_one_primitive("mul", mul_op);
     register_one_primitive("div", div_op);
+    register_one_primitive("mod", mod_op);
     register_one_primitive("eq", eq_op);
     register_one_primitive("neq", neq_op);
     register_one_primitive("gt", gt_op);
