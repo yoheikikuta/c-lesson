@@ -94,7 +94,7 @@ void eval_exec_array(struct ElementArray *opelems) {
                 }
                 break;
             case ELEMENT_EXECUTABLE_ARRAY:
-                eval_exec_array(opelems->elements[i].u.exec_array);
+                stack_push(&opelems->elements[i]);
                 break;
 
             default:
@@ -790,7 +790,7 @@ static void test_eval_executable_array_literal_name_bind_nest() {
 }
 
 static void test_eval_executable_array_literal_name_bind_nest_inner() {
-    char* input = "/abc { 1 2 add { 1 2 add } add } def abc";
+    char* input = "/abc { 1 2 add 1 { 1 2 add } if add } def abc";
     struct Element expect = {ELEMENT_NUMBER, {6}};
 
     cl_getc_set_src(input);

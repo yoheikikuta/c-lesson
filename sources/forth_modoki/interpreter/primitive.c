@@ -213,8 +213,10 @@ void while_op() {
     do {
         eval_exec_array(opelem_cond.u.exec_array);
         stack_pop(&boolean_flg);
-    } while (boolean_flg.u.number == 1);
-    eval_exec_array(opelem_body.u.exec_array);
+        if (boolean_flg.u.number) {
+            eval_exec_array(opelem_body.u.exec_array);
+        }
+    } while (boolean_flg.u.number);
 }
 
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
