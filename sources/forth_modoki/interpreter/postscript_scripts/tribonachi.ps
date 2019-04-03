@@ -1,0 +1,22 @@
+/tribo { 
+  dup 3 le
+  { dup 3 eq { 2 } { 1 } ifelse exch pop }
+  { 
+    1 1 2 %[x 1 1 2]
+    4 3 roll 4 sub %[1 1 2 x-4]
+    { dup 0 neq }
+    { 
+      4 1 roll %[idx i_2 i_1 i]
+      dup 3 index add 2 index add %[idx i_2 i_1 i i+i_2+i_1]
+      4 3 roll pop %[idx i_1 i i+i_2+i_1]
+      4 3 roll 1 sub %[i_1 i i+i_2+i_1 idx-1]
+    }
+    while
+    pop
+    add
+    add
+  }
+  ifelse
+} def
+20 tribo
+%EXPECTED: 66012
