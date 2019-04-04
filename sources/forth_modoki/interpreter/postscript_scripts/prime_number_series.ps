@@ -1,0 +1,34 @@
+%USAGE: 7 isprmie -> 1, 4 isprime -> 0
+/isprime { 
+  /loop_count 2 def
+  dup
+  dup
+  { 2 div loop_count ge }
+  { 
+    loop_count mod 0 eq
+    %If prime, escape the loop and stack 0
+    { 0 0 }
+    %If not prime, contine the loop and finally return the input integer
+    { 
+      /loop_count loop_count 1 add def 
+      dup dup 
+    }
+    ifelse
+  } while
+  neq %Here's stack: [x 0] for prime [x x] for not
+  { 0 }
+  { 1 }
+  ifelse
+} def
+
+/primeseries { 
+  /input exch def
+  /target 2 def
+  { target input le }
+  { 
+    target isprime { target } if
+    /target target 1 add def
+  } while
+ } def
+
+100 primeseries
