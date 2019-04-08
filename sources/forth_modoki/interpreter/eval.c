@@ -1021,6 +1021,25 @@ static void test_eval_exec_array_lazy_eval() {
     reset_stack();
 }
 
+static void test_eval_exec_array_nested_exec() {
+    char* input = "/f { { 1 3 add } exec 3 } def f";
+    struct Element expect1 = {ELEMENT_NUMBER, {3}};
+    struct Element expect2 = {ELEMENT_NUMBER, {4}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual1 = {NO_ELEM_TYPE, {0}};
+    struct Element actual2 = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual1);
+    stack_pop(&actual2);
+
+    assert_two_exec_opelem_eq(&expect1, &actual1);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1071,6 +1090,7 @@ static void unit_tests() {
     test_eval_line_break();
     test_eval_comment();
     test_eval_exec_array_lazy_eval();
+    test_eval_exec_array_nested_exec();
 
     printf("All unittests successfully passed.\n");
 }
