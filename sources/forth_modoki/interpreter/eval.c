@@ -1040,6 +1040,22 @@ static void test_eval_exec_array_nested_exec() {
     reset_stack();
 }
 
+static void test_eval_factorial() {
+    char* input = "/factorial { dup { dup 1 gt } { 1 sub exch 1 index mul exch } while pop } def 10 factorial";
+    struct Element expect = {ELEMENT_NUMBER, {3628800}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual = {NO_ELEM_TYPE, {3628800}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1091,6 +1107,7 @@ static void unit_tests() {
     test_eval_comment();
     test_eval_exec_array_lazy_eval();
     test_eval_exec_array_nested_exec();
+    test_eval_factorial();
 
     printf("All unittests successfully passed.\n");
 }
