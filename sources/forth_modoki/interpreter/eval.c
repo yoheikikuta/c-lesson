@@ -656,6 +656,22 @@ static void test_eval_while() {
     reset_stack();
 }
 
+static void test_eval_repeat() {
+    char* input = "1 3 { 2 add } repeat";
+    int expect = 7;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
 static void test_eval_num_add_complicated() {
     char* input = "12 34 add 5 6 add add";
     int expect = 57;
@@ -883,6 +899,7 @@ static void unit_tests() {
     test_eval_if();
     test_eval_ifelse();
     test_eval_while();
+    test_eval_repeat();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
