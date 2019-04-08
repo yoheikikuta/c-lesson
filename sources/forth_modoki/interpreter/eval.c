@@ -607,6 +607,44 @@ static void test_eval_exec() {
     reset_stack();
 }
 
+static void test_eval_exec_continue() {
+    char* input = "{ 2 3 add } exec 5 add";
+    int expect = 10;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_exec_nested() {
+    char* input = "{ 3 { 123 } repeat } exec";
+    int expect = 123;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual1 = 0;
+    int actual2 = 0;
+    int actual3 = 0;
+    actual1 = stack_pop_int();
+    actual2 = stack_pop_int();
+    actual3 = stack_pop_int();
+
+    assert(expect == actual1);
+    assert(expect == actual2);
+    assert(expect == actual3);
+
+    reset_stack();
+}
+
 static void test_eval_if() {
     char* input = "1 { 2 3 add } if";
     int expect = 5;
@@ -639,6 +677,38 @@ static void test_eval_ifelse() {
     reset_stack();
 }
 
+static void test_eval_ifelse_continue() {
+    char* input = "0 { 1 } { 2 3 add } ifelse 5 add";
+    int expect = 10;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_ifelse_nested() {
+    char* input = "0 { 1 } { 1 { 2 3 add } { } ifelse } ifelse";
+    int expect = 5;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
 static void test_eval_while() {
     char* input = "1 { 2 add dup 4 lt } { 10 add } while";
     // Expected output: [1] -> [3 3] -> (3 < 4) -> [5 5] -> (5 not less than 4) -> [15]
@@ -656,9 +726,74 @@ static void test_eval_while() {
     reset_stack();
 }
 
+static void test_eval_while_continue() {
+    char* input = "1 { 2 add dup 4 lt } { 10 add } while 5 add";
+    int expect = 20;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_while_nested() {
+    char* input = "1 { dup 5 lt } { { dup 6 lt } { 2 add } while } while";
+    // Expected: 1 > 3 > 5 > 7
+    int expect = 7;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
 static void test_eval_repeat() {
     char* input = "1 3 { 2 add } repeat";
     int expect = 7;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_repeat_continue() {
+    char* input = "1 3 { 2 add } repeat 3 add";
+    int expect = 10;
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    int actual = 0;
+    actual = stack_pop_int();
+
+    assert(expect == actual);
+
+    reset_stack();
+}
+
+static void test_eval_repeat_nested() {
+    char* input = "1 3 { 2 { 2 add } repeat } repeat";
+    int expect = 13;
 
     cl_getc_set_src(input);
 
@@ -892,14 +1027,22 @@ static void unit_tests() {
     test_eval_num_le();
     test_eval_num_pop();
     test_eval_num_exch();
+    test_eval_exec_continue();
+    test_eval_exec_nested();
     test_eval_num_dup();
     test_eval_num_index();
     test_eval_num_roll();
     test_eval_exec();
     test_eval_if();
     test_eval_ifelse();
+    test_eval_ifelse_continue();
+    test_eval_ifelse_nested();
     test_eval_while();
+    test_eval_while_continue();
+    test_eval_while_nested();
     test_eval_repeat();
+    test_eval_repeat_continue();
+    test_eval_repeat_nested();
     test_eval_num_add_complicated();
     test_eval_def_store();
     test_eval_def_pop();
