@@ -228,6 +228,19 @@ void while_op() {
     } while (boolean_flg.u.number);
 }
 
+void repeat_op() {
+    // Repeat operation: 3 { exec_array } repeat -> execute exec_array 3 times
+    struct Element opelem_num = {NO_ELEM_TYPE, {0}};
+    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
+
+    stack_pop(&opelem_body);
+    stack_pop(&opelem_num);
+    int i = opelem_num.u.number;
+    for (i; i > 0; i--) {
+        eval_exec_array(opelem_body.u.exec_array);
+    }
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -255,5 +268,6 @@ void register_all_primitive() {
     register_one_primitive("if", if_op);
     register_one_primitive("ifelse", ifelse_op);
     register_one_primitive("while", while_op);
+    register_one_primitive("repeat", repeat_op);
 }
 
