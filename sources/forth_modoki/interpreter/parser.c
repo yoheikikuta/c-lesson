@@ -20,7 +20,8 @@ static int is_alphabet(int c) {
 }
 
 static int is_non_space_char(int c) {
-    return ('!' <= c) && (c <= '~');
+    // return ('!' <= c) && (c <= '~');
+    return ('!' <= c) && (c < '}');
 }
 
 static int is_slash(int c) {
