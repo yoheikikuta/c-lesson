@@ -55,6 +55,7 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 arr[elem_num].etype = nested_arr.etype;
                 arr[elem_num].u.exec_array = nested_arr.u.exec_array;
                 elem_num++;
+                ch = parse_one(ch, token);
                 break;
             }
              
@@ -145,6 +146,9 @@ void eval() {
             case OPEN_CURLY:
                 compile_exec_array(ch, &token, &opelem);
                 stack_push(&opelem);
+                // E.g., {1 2}3 case ch = 1 token = 2
+                // Call one more parse_one, then get ch = 3 token = 1
+                ch = parse_one(ch, &token);
                 break;
             case UNKNOWN:
                 printf("Terminate eval on the way due to the UNKNOWN Type\n");
@@ -1056,6 +1060,22 @@ static void test_eval_factorial() {
     reset_stack();
 }
 
+static void test_eval_factorial_without_space_in_curly_brace() {
+    char* input = "/factorial {dup {dup 1 gt} {1 sub exch 1 index mul exch} while pop} def 10 factorial";
+    struct Element expect = {ELEMENT_NUMBER, {3628800}};
+
+    cl_getc_set_src(input);
+
+    eval(); 
+
+    struct Element actual = {NO_ELEM_TYPE, {3628800}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1108,6 +1128,7 @@ static void unit_tests() {
     test_eval_exec_array_lazy_eval();
     test_eval_exec_array_nested_exec();
     test_eval_factorial();
+    test_eval_factorial_without_space_in_curly_brace();
 
     printf("All unittests successfully passed.\n");
 }
