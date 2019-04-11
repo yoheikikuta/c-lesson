@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "stack.h"
 #include "primitive.h"
+#include "continuation.h"
 
 
 int stack_pop_int(){
@@ -75,32 +76,49 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
 
 void eval_exec_array(struct ElementArray *opelems) {
     struct Element opelem = {NO_ELEM_TYPE, {0}};
-    for(int i = 0; i < opelems->len; i++) {
-        switch (opelems->elements[i].etype) {
-            case ELEMENT_NUMBER:
-                stack_push(&opelems->elements[i]);
-                break;
-            case ELEMENT_LITERAL_NAME:
-                stack_push(&opelems->elements[i]);
-                break;
-            case ELEMENT_EXECUTABLE_NAME:
-                dict_get(opelems->elements[i].u.name, &opelem);
+    struct Continuation cont = {{0}, 0};
+    cont.exec_array = opelems;
+    cont.pc = 0;
+    int i = 0;
 
-                if (opelem.etype == ELEMENT_C_FUNC) {
+    co_stack_push(&cont);
+
+    while (co_stack_pop(&cont)) {
+        for (i = cont.pc; i < cont.exec_array->len; i++) {
+            if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
+                dict_get(cont.exec_array->elements[i].u.name, &opelem);
+                if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
+                    // Nested ELEMENT_EXECUTABLE_ARRAY case, e.g., {1 {3 4} 2}:
+                    // co_stack -> [ ({1 {3 4} 2}, pc=2), ({3 4}, pc=0) ] 
+                    // Breaks the loop and restart the loop again with i = cont.pc
+                    cont.pc = ++i;
+                    co_stack_push(&cont);
+                    cont.pc = 0;
+                    cont.exec_array = opelem.u.exec_array;
+                    co_stack_push(&cont);
+                    break;
+                } else if (opelem.etype == ELEMENT_C_FUNC) {
                     opelem.u.cfunc();
-                } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
-                    eval_exec_array(opelem.u.exec_array);
                 } else {
                     stack_push(&opelem);
                 }
-                break;
-            case ELEMENT_EXECUTABLE_ARRAY:
-                stack_push(&opelems->elements[i]);
-                break;
 
-            default:
-                printf("Unknown type %d\n", opelems->elements[i].etype);
-                break;
+            } else {
+                switch (cont.exec_array->elements[i].etype) {
+                    case ELEMENT_NUMBER:
+                        stack_push(&cont.exec_array->elements[i]);
+                        break;
+                    case ELEMENT_LITERAL_NAME:
+                        stack_push(&cont.exec_array->elements[i]);
+                        break;
+                    case ELEMENT_EXECUTABLE_ARRAY:
+                        stack_push(&cont.exec_array->elements[i]);
+                        break;
+                    default:
+                        printf("Unknown type %d\n", cont.exec_array->elements[i].etype);
+                        break;
+                }
+            }
         }
     }
 }
