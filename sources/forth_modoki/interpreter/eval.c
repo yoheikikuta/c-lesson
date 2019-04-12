@@ -110,6 +110,22 @@ void eval_exec_array(struct ElementArray *opelems) {
                         cont.exec_array = opelem.u.exec_array;
                         co_stack_push(&cont);
                         break;
+                    } else if (streq(cont.exec_array->elements[i].u.name, "if")) {
+                        // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+                        // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+                        struct Element opelem = {NO_ELEM_TYPE, {0}};
+                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                        stack_pop(&opelem);
+                        stack_pop(&boolean_flg);
+                        if (boolean_flg.u.number == 1) {
+                            cont.pc = ++i;
+                            co_stack_push(&cont);
+                            cont.pc = 0;
+                            cont.exec_array = opelem.u.exec_array;
+                            co_stack_push(&cont);
+                            break;
+                        }
                     } else {
                         opelem.u.cfunc();
                     }
@@ -168,6 +184,17 @@ void eval() {
 
                         stack_pop(&opelem_exec);
                         eval_exec_array(opelem_exec.u.exec_array);
+                    } else if (streq(token.u.name, "if")) {
+                        // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+                        // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+                        struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
+                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                        stack_pop(&opelem_exec);
+                        stack_pop(&boolean_flg);
+                        if (boolean_flg.u.number == 1) {
+                            eval_exec_array(opelem_exec.u.exec_array);
+                        }
                     } else {
                         opelem.u.cfunc();
                     }
