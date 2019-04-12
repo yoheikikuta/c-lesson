@@ -173,11 +173,11 @@ void roll_op() {
 }
 
 void exec_op() {
-    // Execution operation: execute executable arrays on the stack top
-    struct Element opelem = {NO_ELEM_TYPE, {0}};
+    // // Execution operation: execute executable arrays on the stack top
+    // struct Element opelem = {NO_ELEM_TYPE, {0}};
 
-    stack_pop(&opelem);
-    eval_exec_array(opelem.u.exec_array);
+    // stack_pop(&opelem);
+    // eval_exec_array(opelem.u.exec_array);
 }
 
 void if_op() {
