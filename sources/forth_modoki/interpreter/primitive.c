@@ -181,16 +181,16 @@ void exec_op() {
 }
 
 void if_op() {
-    // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
-    // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
-    struct Element opelem = {NO_ELEM_TYPE, {0}};
-    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+    // // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+    // // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+    // struct Element opelem = {NO_ELEM_TYPE, {0}};
+    // struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
 
-    stack_pop(&opelem);
-    stack_pop(&boolean_flg);
-    if (boolean_flg.u.number == 1) {
-        eval_exec_array(opelem.u.exec_array);
-    }
+    // stack_pop(&opelem);
+    // stack_pop(&boolean_flg);
+    // if (boolean_flg.u.number == 1) {
+    //     eval_exec_array(opelem.u.exec_array);
+    // }
 }
 
 void ifelse_op() {
