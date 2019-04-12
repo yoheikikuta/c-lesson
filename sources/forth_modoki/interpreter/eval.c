@@ -98,7 +98,21 @@ void eval_exec_array(struct ElementArray *opelems) {
                     co_stack_push(&cont);
                     break;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
-                    opelem.u.cfunc();
+                    // Direct implementations of exec, if, ifelse, while, repeat.
+                    if (streq(cont.exec_array->elements[i].u.name, "exec")) {
+                        // Execution operation: execute executable arrays on the stack top
+                        struct Element opelem = {NO_ELEM_TYPE, {0}};
+
+                        stack_pop(&opelem);
+                        cont.pc = ++i;
+                        co_stack_push(&cont);
+                        cont.pc = 0;
+                        cont.exec_array = opelem.u.exec_array;
+                        co_stack_push(&cont);
+                        break;
+                    } else {
+                        opelem.u.cfunc();
+                    }
                 } else {
                     stack_push(&opelem);
                 }
@@ -148,14 +162,22 @@ void eval() {
                 dict_get(token.u.name, &opelem);
 
                 if (opelem.etype == ELEMENT_C_FUNC) {
-                    opelem.u.cfunc();
+                    if (streq(token.u.name, "exec")) {
+                        // Execution operation: execute executable arrays on the stack top
+                        struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
+
+                        stack_pop(&opelem_exec);
+                        eval_exec_array(opelem_exec.u.exec_array);
+                    } else {
+                        opelem.u.cfunc();
+                    }
                 } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     eval_exec_array(opelem.u.exec_array);
                 } else {
                     // use binded var name: dict[{"abc", {ELEMENT_NUMBER,123}}] -> [{ELEMENT_NUMBER, 123}]
                     stack_push(&opelem);
                 }
-                break;
+                break;            
             case LITERAL_NAME:
                 opelem.etype = ELEMENT_LITERAL_NAME;
                 opelem.u.name = token.u.name;
