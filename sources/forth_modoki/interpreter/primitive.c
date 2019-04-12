@@ -194,20 +194,20 @@ void if_op() {
 }
 
 void ifelse_op() {
-    // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
-    // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
-    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
-    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
-    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+    // // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
+    // // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
+    // struct Element opelem_true = {NO_ELEM_TYPE, {0}};
+    // struct Element opelem_false = {NO_ELEM_TYPE, {0}};
+    // struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
 
-    stack_pop(&opelem_false);
-    stack_pop(&opelem_true);
-    stack_pop(&boolean_flg);
-    if (boolean_flg.u.number == 1) {
-        eval_exec_array(opelem_true.u.exec_array);
-    } else if (boolean_flg.u.number == 0) {
-        eval_exec_array(opelem_false.u.exec_array);
-    }
+    // stack_pop(&opelem_false);
+    // stack_pop(&opelem_true);
+    // stack_pop(&boolean_flg);
+    // if (boolean_flg.u.number == 1) {
+    //     eval_exec_array(opelem_true.u.exec_array);
+    // } else if (boolean_flg.u.number == 0) {
+    //     eval_exec_array(opelem_false.u.exec_array);
+    // }
 }
 
 void while_op() {
