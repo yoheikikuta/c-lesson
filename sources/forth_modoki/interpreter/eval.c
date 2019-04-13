@@ -87,7 +87,71 @@ void eval_exec_array(struct ElementArray *opelems) {
         for (i = cont.pc; i < cont.exec_array->len; i++) {
             if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
                 dict_get(cont.exec_array->elements[i].u.name, &opelem);
-                if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
+
+                if (streq(cont.exec_array->elements[i].u.name, "exec")) {
+                    // Execution operation: execute executable arrays on the stack top
+                    struct Element opelem = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem);
+                    cont.pc = ++i;
+                    co_stack_push(&cont);
+                    cont.pc = 0;
+                    cont.exec_array = opelem.u.exec_array;
+                    co_stack_push(&cont);
+                    break;
+                } else if (streq(cont.exec_array->elements[i].u.name, "if")) {
+                    // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+                    // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+                    struct Element opelem = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem);
+                    stack_pop(&boolean_flg);
+                    if (boolean_flg.u.number == 1) {
+                        cont.pc = ++i;
+                        co_stack_push(&cont);
+                        cont.pc = 0;
+                        cont.exec_array = opelem.u.exec_array;
+                        co_stack_push(&cont);
+                        break;
+                    }
+                } else if (streq(cont.exec_array->elements[i].u.name, "ifelse")) {
+                    // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
+                    // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
+                    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
+                    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem_false);
+                    stack_pop(&opelem_true);
+                    stack_pop(&boolean_flg);
+                    cont.pc = ++i;
+                    co_stack_push(&cont);
+                    cont.pc = 0;
+                    if (boolean_flg.u.number == 1) {
+                        cont.exec_array = opelem_true.u.exec_array;
+                    } else if (boolean_flg.u.number == 0) {
+                        cont.exec_array = opelem_false.u.exec_array;
+                    }
+                    co_stack_push(&cont);
+                    break;
+                } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
+                    // Jmp operation: {3 jmp 1 2 3} -> skip 1,2, {1 2 3 -3 jmp} -> back to 1
+                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                    stack_pop(&jmp_num);
+                    jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
+                    continue;
+                } else if (streq(cont.exec_array->elements[i].u.name, "jmp_not_if")) {
+                    // Jmp operation: {0 3 jmp_not_if 1 2 3} -> skip 1,2, {1 2 3 0 -3 jmp_not_if} -> back to 1
+                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+                    stack_pop(&jmp_num);
+                    stack_pop(&boolean_flg);
+                    if (!boolean_flg.u.number) {
+                        jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
+                    }
+                    continue;
+                } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     // Nested ELEMENT_EXECUTABLE_ARRAY case, e.g., {1 {3 4} 2}:
                     // co_stack -> [ ({1 {3 4} 2}, pc=2), ({3 4}, pc=0) ] 
                     // Breaks the loop and restart the loop again with i = cont.pc
@@ -97,74 +161,8 @@ void eval_exec_array(struct ElementArray *opelems) {
                     cont.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
-                } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
-                        // Jmp operation: {3 jmp 1 2 3} -> skip 1,2, {1 2 3 -3 jmp} -> back to 1
-                        struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                        stack_pop(&jmp_num);
-                        jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
-                        continue;
-                } else if (streq(cont.exec_array->elements[i].u.name, "jmp_not_if")) {
-                        // Jmp operation: {0 3 jmp_not_if 1 2 3} -> skip 1,2, {1 2 3 0 -3 jmp_not_if} -> back to 1
-                        struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-                        stack_pop(&jmp_num);
-                        stack_pop(&boolean_flg);
-                        if (!boolean_flg.u.number) {
-                            jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
-                        }
-                        continue;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
-                    // Direct implementations of exec, if, ifelse, while, repeat.
-                    if (streq(cont.exec_array->elements[i].u.name, "exec")) {
-                        // Execution operation: execute executable arrays on the stack top
-                        struct Element opelem = {NO_ELEM_TYPE, {0}};
-
-                        stack_pop(&opelem);
-                        cont.pc = ++i;
-                        co_stack_push(&cont);
-                        cont.pc = 0;
-                        cont.exec_array = opelem.u.exec_array;
-                        co_stack_push(&cont);
-                        break;
-                    } else if (streq(cont.exec_array->elements[i].u.name, "if")) {
-                        // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
-                        // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
-                        struct Element opelem = {NO_ELEM_TYPE, {0}};
-                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                        stack_pop(&opelem);
-                        stack_pop(&boolean_flg);
-                        if (boolean_flg.u.number == 1) {
-                            cont.pc = ++i;
-                            co_stack_push(&cont);
-                            cont.pc = 0;
-                            cont.exec_array = opelem.u.exec_array;
-                            co_stack_push(&cont);
-                            break;
-                        }
-                    } else if (streq(cont.exec_array->elements[i].u.name, "ifelse")) {
-                        // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
-                        // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
-                        struct Element opelem_true = {NO_ELEM_TYPE, {0}};
-                        struct Element opelem_false = {NO_ELEM_TYPE, {0}};
-                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                        stack_pop(&opelem_false);
-                        stack_pop(&opelem_true);
-                        stack_pop(&boolean_flg);
-                        cont.pc = ++i;
-                        co_stack_push(&cont);
-                        cont.pc = 0;
-                        if (boolean_flg.u.number == 1) {
-                            cont.exec_array = opelem_true.u.exec_array;
-                        } else if (boolean_flg.u.number == 0) {
-                            cont.exec_array = opelem_false.u.exec_array;
-                        }
-                        co_stack_push(&cont);
-                        break;
-                    } else {
-                        opelem.u.cfunc();
-                    }
+                    opelem.u.cfunc();
                 } else {
                     stack_push(&opelem);
                 }
@@ -212,43 +210,41 @@ void eval() {
                 break;
             case EXECUTABLE_NAME:
                 dict_get(token.u.name, &opelem);
+                
+                if (streq(token.u.name, "exec")) {
+                    // Execution operation: execute executable arrays on the stack top
+                    struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
 
-                if (opelem.etype == ELEMENT_C_FUNC) {
-                    if (streq(token.u.name, "exec")) {
-                        // Execution operation: execute executable arrays on the stack top
-                        struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
+                    stack_pop(&opelem_exec);
+                    eval_exec_array(opelem_exec.u.exec_array);
+                } else if (streq(token.u.name, "if")) {
+                    // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
+                    // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
+                    struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
 
-                        stack_pop(&opelem_exec);
+                    stack_pop(&opelem_exec);
+                    stack_pop(&boolean_flg);
+                    if (boolean_flg.u.number == 1) {
                         eval_exec_array(opelem_exec.u.exec_array);
-                    } else if (streq(token.u.name, "if")) {
-                        // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
-                        // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
-                        struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
-                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                        stack_pop(&opelem_exec);
-                        stack_pop(&boolean_flg);
-                        if (boolean_flg.u.number == 1) {
-                            eval_exec_array(opelem_exec.u.exec_array);
-                        }
-                    } else if (streq(token.u.name, "ifelse")) {
-                        // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
-                        // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
-                        struct Element opelem_true = {NO_ELEM_TYPE, {0}};
-                        struct Element opelem_false = {NO_ELEM_TYPE, {0}};
-                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                        stack_pop(&opelem_false);
-                        stack_pop(&opelem_true);
-                        stack_pop(&boolean_flg);
-                        if (boolean_flg.u.number == 1) {
-                            eval_exec_array(opelem_true.u.exec_array);
-                        } else if (boolean_flg.u.number == 0) {
-                            eval_exec_array(opelem_false.u.exec_array);
-                        }
-                    } else {
-                        opelem.u.cfunc();
                     }
+                } else if (streq(token.u.name, "ifelse")) {
+                    // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
+                    // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
+                    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
+                    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem_false);
+                    stack_pop(&opelem_true);
+                    stack_pop(&boolean_flg);
+                    if (boolean_flg.u.number == 1) {
+                        eval_exec_array(opelem_true.u.exec_array);
+                    } else if (boolean_flg.u.number == 0) {
+                        eval_exec_array(opelem_false.u.exec_array);
+                    }
+                } else if (opelem.etype == ELEMENT_C_FUNC) {
+                    opelem.u.cfunc();
                 } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     eval_exec_array(opelem.u.exec_array);
                 } else {
