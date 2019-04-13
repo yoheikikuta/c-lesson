@@ -103,6 +103,16 @@ void eval_exec_array(struct ElementArray *opelems) {
                         stack_pop(&jmp_num);
                         jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
                         continue;
+                } else if (streq(cont.exec_array->elements[i].u.name, "jmp_not_if")) {
+                        // Jmp operation: {0 3 jmp_not_if 1 2 3} -> skip 1,2, {1 2 3 0 -3 jmp_not_if} -> back to 1
+                        struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                        struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+                        stack_pop(&jmp_num);
+                        stack_pop(&boolean_flg);
+                        if (!boolean_flg.u.number) {
+                            jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
+                        }
+                        continue;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // Direct implementations of exec, if, ifelse, while, repeat.
                     if (streq(cont.exec_array->elements[i].u.name, "exec")) {
@@ -1233,6 +1243,23 @@ static void test_eval_jmp_not_if() {
     reset_stack();
 }
 
+static void test_eval_jmp_not_if_multiple() {
+    char* input = "0 {0 7 jmp_not_if 1 add 10 jmp 2 add 0 -6 jmp_not_if} exec";
+    // Expected output: [0] -> 0 7 jmp_not_if -> 0 -6 jmp_not_if -> [0 1 add] -> [1]
+    struct Element expect = {ELEMENT_NUMBER, {1}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1288,7 +1315,8 @@ static void unit_tests() {
     test_eval_factorial_without_space_in_curly_brace();
     test_eval_jmp();
     test_eval_jmp_multiple();
-    // test_eval_jmp_not_if();
+    test_eval_jmp_not_if();
+    test_eval_jmp_not_if_multiple();
 
     printf("All unittests successfully passed.\n");
 }
