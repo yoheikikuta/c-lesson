@@ -1200,6 +1200,23 @@ static void test_eval_jmp() {
     reset_stack();
 }
 
+static void test_eval_jmp_multiple() {
+    char* input = "0 {7 jmp 1 add 10 jmp 2 add -6 jmp} exec";
+    // Expected output: [0] -> 7 jmp -> -6 jmp -> [0 1 add] -> [1]
+    struct Element expect = {ELEMENT_NUMBER, {1}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1254,6 +1271,7 @@ static void unit_tests() {
     test_eval_factorial();
     test_eval_factorial_without_space_in_curly_brace();
     test_eval_jmp();
+    // test_eval_jmp_multiple();
 
     printf("All unittests successfully passed.\n");
 }
