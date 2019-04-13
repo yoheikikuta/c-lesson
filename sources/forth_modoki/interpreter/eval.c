@@ -1154,7 +1154,7 @@ static void test_eval_factorial() {
 
     eval(); 
 
-    struct Element actual = {NO_ELEM_TYPE, {3628800}};
+    struct Element actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert_two_exec_opelem_eq(&expect, &actual);
@@ -1170,7 +1170,7 @@ static void test_eval_factorial_without_space_in_curly_brace() {
 
     eval(); 
 
-    struct Element actual = {NO_ELEM_TYPE, {3628800}};
+    struct Element actual = {NO_ELEM_TYPE, {0}};
     stack_pop(&actual);
 
     assert_two_exec_opelem_eq(&expect, &actual);
