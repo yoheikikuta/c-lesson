@@ -97,6 +97,12 @@ void eval_exec_array(struct ElementArray *opelems) {
                     cont.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
+                } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
+                        // Jmp operation: {3 jmp 1 2 3} -> skip 1,2
+                        struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                        stack_pop(&jmp_num);
+                        i += jmp_num.u.number - 1;
+                        continue;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // Direct implementations of exec, if, ifelse, while, repeat.
                     if (streq(cont.exec_array->elements[i].u.name, "exec")) {
@@ -1247,7 +1253,7 @@ static void unit_tests() {
     test_eval_exec_array_nested_exec();
     test_eval_factorial();
     test_eval_factorial_without_space_in_curly_brace();
-    // test_eval_jmp();
+    test_eval_jmp();
 
     printf("All unittests successfully passed.\n");
 }
