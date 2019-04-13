@@ -1178,6 +1178,22 @@ static void test_eval_factorial_without_space_in_curly_brace() {
     reset_stack();
 }
 
+static void test_eval_jmp() {
+    char* input = "0 {3 jmp 1 add 2 add} exec";
+    struct Element expect = {ELEMENT_NUMBER, {2}};
+
+    cl_getc_set_src(input);
+
+    eval();
+
+    struct Element actual = {NO_ELEM_TYPE, {0}};
+    stack_pop(&actual);
+
+    assert_two_exec_opelem_eq(&expect, &actual);
+
+    reset_stack();
+}
+
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1231,6 +1247,7 @@ static void unit_tests() {
     test_eval_exec_array_nested_exec();
     test_eval_factorial();
     test_eval_factorial_without_space_in_curly_brace();
+    // test_eval_jmp();
 
     printf("All unittests successfully passed.\n");
 }
