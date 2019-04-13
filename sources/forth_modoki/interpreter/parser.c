@@ -15,6 +15,10 @@ static int is_digit(int c) {
     return ('0' <= c) && (c <= '9');
 }
 
+static int is_minus_digit(int c) {
+    return c == '-';
+}
+
 static int is_alphabet(int c) {
     return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
 }
@@ -72,6 +76,20 @@ int parse_one(int prev_ch, struct Token* out_token) {
         int num = 0;
         while (is_digit(cur_ch)) {
             num = (10 * num) + (cur_ch - '0');
+            cur_ch=cl_getc();
+        }
+
+        out_token->ltype = NUMBER;
+        out_token->u.number = num;
+        return cur_ch;
+
+    } else if (is_minus_digit(cur_ch)) {
+        // Parse digit(s): "-123 " -> -123 + cur_ch=' '
+        // Assume a token staring with '-' is a negative number.
+        int num = 0;
+        cur_ch=cl_getc();
+        while (is_digit(cur_ch)) {
+            num = (10 * num) - (cur_ch - '0');
             cur_ch=cl_getc();
         }
 
@@ -219,6 +237,22 @@ static void test_parse_one_number() {
     assert(expect == token.u.number);
 }
 
+static void test_parse_one_minus_number() {
+    char* input = "-123";
+    int expect = -123;
+
+    struct Token token = {UNKNOWN, {0}};
+    int ch;
+
+    cl_getc_set_src(input);
+
+    ch = parse_one(EOF, &token);
+
+    assert(EOF == ch);
+    assert(NUMBER == token.ltype);
+    assert(expect == token.u.number);
+}
+
 static void test_parse_one_empty_should_return_END_OF_FILE() {
     char* input = "";
     int expect = END_OF_FILE;
@@ -339,7 +373,6 @@ static void test_parse_one_comment_prev() {
 
     cl_getc_set_src(input);
     ch = parse_one(EOF, &token);
-    printf("%i\n", ch);
 
     assert('a' == ch);
     assert(expect_type == token.ltype);
@@ -361,6 +394,7 @@ static void test_parse_one_comment_following() {
 static void unit_tests() {
     test_parse_one_empty_should_return_END_OF_FILE();
     test_parse_one_number();
+    test_parse_one_minus_number();
     test_parse_one_space();
     test_parse_one_executable_name();
     test_parse_one_literal_name();
