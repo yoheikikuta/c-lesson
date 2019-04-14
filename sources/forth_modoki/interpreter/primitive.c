@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "dict.h"
 #include "primitive.h"
+#include "stack.h"
 
 
 void def_op() {
@@ -203,9 +204,61 @@ void repeat_op() {
     }
 }
 
+void emit_elem(struct Emitter *emitter, struct Element *elem) {
+    emitter->elems[emitter->pos].etype = elem->etype;
+    emitter->elems[emitter->pos].u = elem->u;
+    emitter->pos++;
+}
+
+void ifelse_compile(struct Emitter *emitter) {
+    struct Element elem;
+
+    elem.etype = ELEMENT_NUMBER;
+    elem.u.exec_array = 3;
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_NUMBER;
+    elem.u.exec_array = 2;
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "roll";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_NUMBER;
+    elem.u.exec_array = 5;
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "jmp_not_if";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "pop";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "exec";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_NUMBER;
+    elem.u.exec_array = 4;
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "jmp";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "exch";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "pop";
+    emit_elem(emitter, &elem);
+    elem.etype = ELEMENT_EXECUTABLE_NAME;
+    elem.u.exec_array = "exec";
+    emit_elem(emitter, &elem);
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
+}
+
+void register_one_compile_primitive(char* op_name, void (*compile_func)(struct Emitter* emitter)) {
+    struct Element opelem = {ELEMENT_COMPILE_FUNC, {.compile_func = compile_func}};
+    compile_dict_put(op_name, &opelem);
 }
 
 void register_all_primitive() {
@@ -228,5 +281,7 @@ void register_all_primitive() {
     register_one_primitive("roll", roll_op);
     register_one_primitive("while", while_op);
     register_one_primitive("repeat", repeat_op);
+
+    register_one_compile_primitive("ifelse", ifelse_compile);
 }
 

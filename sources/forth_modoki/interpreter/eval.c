@@ -26,58 +26,6 @@ char* stack_pop_str(){
     return str;
 }
 
-struct Emitter {
-  struct Element *elems;
-  int pos;
-};
-
-void emit_elem(struct Emitter *emitter, struct Element *elem) {
-    emitter->elems[emitter->pos].etype = elem->etype;
-    emitter->elems[emitter->pos].u = elem->u;
-    emitter->pos++;
-}
-
-void ifelse_compile(struct Emitter *emitter) {
-    struct Element elem;
-
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.exec_array = 3;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.exec_array = 2;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "roll";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.exec_array = 5;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "jmp_not_if";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "pop";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "exec";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.exec_array = 4;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "jmp";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "exch";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "pop";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "exec";
-    emit_elem(emitter, &elem);
-}
-
 void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem) {
     struct Element arr[MAX_NAME_OP_MUMBERS];
     int elem_num = 0;
@@ -95,9 +43,11 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
             case EXECUTABLE_NAME:
                 if (streq(token->u.name, "ifelse")) {
                     struct Emitter emitter;
+                    struct Element elem_func;
                     emitter.pos = elem_num;
                     emitter.elems = arr;
-                    ifelse_compile(&emitter);
+                    compile_dict_get(token->u.name, &elem_func);
+                    elem_func.u.compile_func(&emitter);
                     elem_num = emitter.pos;
                 } else {
                     arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
