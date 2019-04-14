@@ -127,13 +127,28 @@ void eval_exec_array(struct ElementArray *opelems) {
                     stack_pop(&boolean_flg);
                     cont.pc = ++i;
                     co_stack_push(&cont);
+
                     cont.pc = 0;
-                    if (boolean_flg.u.number == 1) {
-                        cont.exec_array = opelem_true.u.exec_array;
-                    } else if (boolean_flg.u.number == 0) {
-                        cont.exec_array = opelem_false.u.exec_array;
-                    }
+                    struct ElementArray *ifelse_elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element)*9);
+                    ifelse_elem_arr->len = 9;
+                    ifelse_elem_arr->elements[0] = boolean_flg;
+                    ifelse_elem_arr->elements[1].etype = ELEMENT_NUMBER;
+                    ifelse_elem_arr->elements[1].u.number = 5;
+                    ifelse_elem_arr->elements[2].etype = ELEMENT_EXECUTABLE_NAME;
+                    ifelse_elem_arr->elements[2].u.name = "jmp_not_if";
+                    ifelse_elem_arr->elements[3] = opelem_true;
+                    ifelse_elem_arr->elements[4].etype = ELEMENT_EXECUTABLE_NAME;
+                    ifelse_elem_arr->elements[4].u.name = "exec";
+                    ifelse_elem_arr->elements[5].etype = ELEMENT_NUMBER;
+                    ifelse_elem_arr->elements[5].u.number = 3;
+                    ifelse_elem_arr->elements[6].etype = ELEMENT_EXECUTABLE_NAME;
+                    ifelse_elem_arr->elements[6].u.name = "jmp";
+                    ifelse_elem_arr->elements[7] = opelem_false;
+                    ifelse_elem_arr->elements[8].etype = ELEMENT_EXECUTABLE_NAME;
+                    ifelse_elem_arr->elements[8].u.name = "exec";
+                    cont.exec_array = ifelse_elem_arr;
                     co_stack_push(&cont);
+
                     break;
                 } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
                     // Jmp operation: {3 jmp 1 2 3} -> skip 1,2, {1 2 3 -3 jmp} -> back to 1
