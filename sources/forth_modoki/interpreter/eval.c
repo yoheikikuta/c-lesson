@@ -41,9 +41,48 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
             case SPACE:
                 break;
             case EXECUTABLE_NAME:
-                arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
-                arr[elem_num].u.exec_array = token->u.name;
-                elem_num++;
+                if (streq(token->u.name, "ifelse")) {
+                    arr[elem_num].etype = ELEMENT_NUMBER;
+                    arr[elem_num].u.exec_array = 3;
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_NUMBER;
+                    arr[elem_num].u.exec_array = 2;
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "roll";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_NUMBER;
+                    arr[elem_num].u.exec_array = 5;
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "jmp_not_if";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "pop";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "exec";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_NUMBER;
+                    arr[elem_num].u.exec_array = 4;
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "jmp";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "exch";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "pop";
+                    elem_num++;
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = "exec";
+                    elem_num++;
+                } else {
+                    arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
+                    arr[elem_num].u.exec_array = token->u.name;
+                    elem_num++;
+                }
                 break;
             case LITERAL_NAME:
                 arr[elem_num].etype = ELEMENT_LITERAL_NAME;
@@ -115,41 +154,6 @@ void eval_exec_array(struct ElementArray *opelems) {
                         co_stack_push(&cont);
                         break;
                     }
-                } else if (streq(cont.exec_array->elements[i].u.name, "ifelse")) {
-                    // Ifelse operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY1, exec_array1}, {ELEMENT_EXECUTABLE_ARRAY2, exec_array2}] 
-                    // -> execute exec_array1. Execute exec_array2 if ELEMENT_NUMBER is 0
-                    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
-                    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                    stack_pop(&opelem_false);
-                    stack_pop(&opelem_true);
-                    stack_pop(&boolean_flg);
-                    cont.pc = ++i;
-                    co_stack_push(&cont);
-
-                    cont.pc = 0;
-                    struct ElementArray *ifelse_elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element)*9);
-                    ifelse_elem_arr->len = 9;
-                    ifelse_elem_arr->elements[0] = boolean_flg;
-                    ifelse_elem_arr->elements[1].etype = ELEMENT_NUMBER;
-                    ifelse_elem_arr->elements[1].u.number = 5;
-                    ifelse_elem_arr->elements[2].etype = ELEMENT_EXECUTABLE_NAME;
-                    ifelse_elem_arr->elements[2].u.name = "jmp_not_if";
-                    ifelse_elem_arr->elements[3] = opelem_true;
-                    ifelse_elem_arr->elements[4].etype = ELEMENT_EXECUTABLE_NAME;
-                    ifelse_elem_arr->elements[4].u.name = "exec";
-                    ifelse_elem_arr->elements[5].etype = ELEMENT_NUMBER;
-                    ifelse_elem_arr->elements[5].u.number = 3;
-                    ifelse_elem_arr->elements[6].etype = ELEMENT_EXECUTABLE_NAME;
-                    ifelse_elem_arr->elements[6].u.name = "jmp";
-                    ifelse_elem_arr->elements[7] = opelem_false;
-                    ifelse_elem_arr->elements[8].etype = ELEMENT_EXECUTABLE_NAME;
-                    ifelse_elem_arr->elements[8].u.name = "exec";
-                    cont.exec_array = ifelse_elem_arr;
-                    co_stack_push(&cont);
-
-                    break;
                 } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
                     // Jmp operation: {3 jmp 1 2 3} -> skip 1,2, {1 2 3 -3 jmp} -> back to 1
                     struct Element jmp_num = {NO_ELEM_TYPE, {0}};
