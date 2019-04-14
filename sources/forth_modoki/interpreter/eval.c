@@ -36,7 +36,7 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
         switch (token->ltype) {
             case NUMBER:
                 arr[elem_num].etype = ELEMENT_NUMBER;
-                arr[elem_num].u.exec_array = token->u.number;
+                arr[elem_num].u.number = token->u.number;
                 elem_num++;
                 break;
             case SPACE:
@@ -57,13 +57,13 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                     }
                 } else {
                     arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
-                    arr[elem_num].u.exec_array = token->u.name;
+                    arr[elem_num].u.name = token->u.name;
                     elem_num++;
                 }
                 break;
             case LITERAL_NAME:
                 arr[elem_num].etype = ELEMENT_LITERAL_NAME;
-                arr[elem_num].u.exec_array = token->u.name;
+                arr[elem_num].u.name = token->u.name;
                 elem_num++;
                 break;
             case OPEN_CURLY: {
