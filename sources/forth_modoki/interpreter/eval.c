@@ -116,7 +116,11 @@ void eval_exec_array(struct ElementArray *opelems) {
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP) {
                     struct Element jmp_num = {NO_ELEM_TYPE, {0}};
                     stack_pop(&jmp_num);
-                    jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
+                    if (jmp_num.u.number >= 0) {
+                        i += jmp_num.u.number - 1;
+                    } else {
+                        i += jmp_num.u.number - 2;
+                    }
                     continue;
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
                     struct Element jmp_num = {NO_ELEM_TYPE, {0}};
@@ -124,7 +128,11 @@ void eval_exec_array(struct ElementArray *opelems) {
                     stack_pop(&jmp_num);
                     stack_pop(&boolean_flg);
                     if (!boolean_flg.u.number) {
-                        jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
+                        if (jmp_num.u.number >= 0) {
+                            i += jmp_num.u.number - 1;
+                        } else {
+                            i += jmp_num.u.number - 3;
+                        }
                     }
                     continue;
                 }
