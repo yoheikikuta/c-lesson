@@ -43,17 +43,11 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 break;
             case EXECUTABLE_NAME:
                 if (compile_dict_get(token->u.name, &compile_dict_elem)) {
-                    if (compile_dict_elem.etype == ELEMENT_EXEC_PRIMITIVE) {
-                        arr[elem_num].etype = compile_dict_elem.etype;
-                        arr[elem_num].u.number = compile_dict_elem.u.number;
-                        elem_num++;
-                    } else if (compile_dict_elem.etype == ELEMENT_C_FUNC) {
-                        struct Emitter emitter;
-                        emitter.pos = elem_num;
-                        emitter.elems = arr;
-                        compile_dict_elem.u.compile_func(&emitter);
-                        elem_num = emitter.pos;
-                    }
+                    struct Emitter emitter;
+                    emitter.pos = elem_num;
+                    emitter.elems = arr;
+                    compile_dict_elem.u.compile_func(&emitter);
+                    elem_num = emitter.pos;
                 } else {
                     arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
                     arr[elem_num].u.name = token->u.name;
@@ -1193,72 +1187,6 @@ static void test_eval_factorial_without_space_in_curly_brace() {
     reset_stack();
 }
 
-static void test_eval_jmp() {
-    char* input = "0 {3 jmp 1 add 2 add} exec";
-    struct Element expect = {ELEMENT_NUMBER, {2}};
-
-    cl_getc_set_src(input);
-
-    eval();
-
-    struct Element actual = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual);
-
-    assert_two_exec_opelem_eq(&expect, &actual);
-
-    reset_stack();
-}
-
-static void test_eval_jmp_multiple() {
-    char* input = "0 {7 jmp 1 add 10 jmp 2 add -6 jmp} exec";
-    // Expected output: [0] -> 7 jmp -> -6 jmp -> [0 1 add] -> [1]
-    struct Element expect = {ELEMENT_NUMBER, {1}};
-
-    cl_getc_set_src(input);
-
-    eval();
-
-    struct Element actual = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual);
-
-    assert_two_exec_opelem_eq(&expect, &actual);
-
-    reset_stack();
-}
-
-static void test_eval_jmp_not_if() {
-    char* input = "0 {0 3 jmp_not_if 1 add 2 add} exec";
-    struct Element expect = {ELEMENT_NUMBER, {2}};
-
-    cl_getc_set_src(input);
-
-    eval();
-
-    struct Element actual = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual);
-
-    assert_two_exec_opelem_eq(&expect, &actual);
-
-    reset_stack();
-}
-
-static void test_eval_jmp_not_if_multiple() {
-    char* input = "0 {0 7 jmp_not_if 1 add 10 jmp 2 add 0 -6 jmp_not_if} exec";
-    // Expected output: [0] -> 0 7 jmp_not_if -> 0 -6 jmp_not_if -> [0 1 add] -> [1]
-    struct Element expect = {ELEMENT_NUMBER, {1}};
-
-    cl_getc_set_src(input);
-
-    eval();
-
-    struct Element actual = {NO_ELEM_TYPE, {0}};
-    stack_pop(&actual);
-
-    assert_two_exec_opelem_eq(&expect, &actual);
-
-    reset_stack();
-}
-
 static void unit_tests() {
     test_eval_num_one();
     test_eval_num_two();
@@ -1312,10 +1240,6 @@ static void unit_tests() {
     test_eval_exec_array_nested_exec();
     test_eval_factorial();
     test_eval_factorial_without_space_in_curly_brace();
-    test_eval_jmp();
-    test_eval_jmp_multiple();
-    test_eval_jmp_not_if();
-    test_eval_jmp_not_if_multiple();
 
     printf("All unittests successfully passed.\n");
 }
