@@ -51,7 +51,6 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                         struct Emitter emitter;
                         emitter.pos = elem_num;
                         emitter.elems = arr;
-                        compile_dict_get(token->u.name, &compile_dict_elem);
                         compile_dict_elem.u.compile_func(&emitter);
                         elem_num = emitter.pos;
                     }
