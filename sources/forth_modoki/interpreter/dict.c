@@ -19,7 +19,7 @@ struct Node {
 
 #define TABLE_SIZE 16
 static struct Node* dict_array[TABLE_SIZE];
-struct Element* compile_dict_array[TABLE_SIZE];
+static struct Node* compile_dict_array[TABLE_SIZE];
 
 
 // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
