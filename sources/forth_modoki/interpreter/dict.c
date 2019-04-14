@@ -19,6 +19,7 @@ struct Node {
 
 #define TABLE_SIZE 16
 static struct Node* dict_array[TABLE_SIZE];
+struct Element* compile_dict_array[TABLE_SIZE];
 
 
 // dict_array[Null, Node(next = NULL), Node1(next = Node2), ...] -> dict_array[Null, Null, Null, ...]
@@ -84,18 +85,26 @@ static void update_or_insert_list(struct Node** head_nd_ptr, char* key, struct E
     return;
 }
 
-void dict_put(char* key, struct Element* elem) {
+static void dict_put_commmon(struct Node** table, char* key, struct Element* elem) {
     int idx = hash(key);
-    struct Node** head_nd_ptr = &(dict_array[idx]);
+    struct Node** head_nd_ptr = &(table[idx]);
 
     update_or_insert_list(head_nd_ptr, key, elem);
 
     return;
 }
 
-int dict_get(char* key, struct Element* out_elem) {
+void dict_put(char* key, struct Element* elem) {
+    return dict_put_commmon(dict_array, key, elem);
+}
+
+void compile_dict_put(char* key, struct Element* elem) {
+    return dict_put_commmon(compile_dict_array, key, elem);
+}
+
+static int dict_get_common(struct Node** table, char *key, struct Element *out_elem) {
     int idx = hash(key);
-    struct Node* head_nd = dict_array[idx];
+    struct Node* head_nd = table[idx];
     struct Node* cur_nd = head_nd;
 
     while (cur_nd != NULL) {
@@ -107,6 +116,14 @@ int dict_get(char* key, struct Element* out_elem) {
     }
 
     return 0;
+}
+
+int dict_get(char *key, struct Element *out_elem) {
+    return dict_get_common(dict_array, key, out_elem);
+}
+
+int compile_dict_get(char *key, struct Element *out_elem) {
+    return dict_get_common(compile_dict_array, key, out_elem);
 }
 
 void dict_print_all() {
