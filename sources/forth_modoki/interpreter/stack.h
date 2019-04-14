@@ -7,11 +7,17 @@
 enum ElementType {
     NO_ELEM_TYPE,
     ELEMENT_C_FUNC,
-    ELEMENT_COMPILE_FUNC,
+    ELEMENT_EXEC_PRIMITIVE,
     ELEMENT_EXECUTABLE_ARRAY,
     ELEMENT_NUMBER,
     ELEMENT_EXECUTABLE_NAME,
     ELEMENT_LITERAL_NAME
+};
+
+enum ExecPrimitiveType {
+	OP_EXEC,
+	OP_JMP,
+	OP_JMP_NOT_IF
 };
 
 struct ElementArray;
