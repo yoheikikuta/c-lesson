@@ -261,6 +261,11 @@ void register_one_compile_primitive(char* op_name, void (*compile_func)(struct E
     compile_dict_put(op_name, &opelem);
 }
 
+static void register_one_compile_primitive_type(char *op_name, enum ExecPrimitiveType primitive_type) {
+	struct Element opelem = { ELEMENT_EXEC_PRIMITIVE, {.number = primitive_type} };
+	compile_dict_put(op_name, &opelem); 
+}
+
 void register_all_primitive() {
     register_one_primitive("def", def_op);
     register_one_primitive("add", add_op);
@@ -283,5 +288,9 @@ void register_all_primitive() {
     register_one_primitive("repeat", repeat_op);
 
     register_one_compile_primitive("ifelse", ifelse_compile);
+
+    register_one_compile_primitive_type("exec", OP_EXEC);   
+    register_one_compile_primitive_type("jmp", OP_JMP);   
+    register_one_compile_primitive_type("jmp_not_if", OP_JMP_NOT_IF);   
 }
 

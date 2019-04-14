@@ -29,6 +29,7 @@ char* stack_pop_str(){
 void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem) {
     struct Element arr[MAX_NAME_OP_MUMBERS];
     int elem_num = 0;
+    struct Element compile_dict_elem;
 
     do {
         ch = parse_one(ch, token);
@@ -41,26 +42,19 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
             case SPACE:
                 break;
             case EXECUTABLE_NAME:
-                if (streq(token->u.name, "ifelse")) {
-                    struct Emitter emitter;
-                    struct Element elem_func;
-                    emitter.pos = elem_num;
-                    emitter.elems = arr;
-                    compile_dict_get(token->u.name, &elem_func);
-                    elem_func.u.compile_func(&emitter);
-                    elem_num = emitter.pos;
-                } else if (streq(token->u.name, "exec")) {
-                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
-                    arr[elem_num].u.number = OP_EXEC;
-                    elem_num++;
-                } else if (streq(token->u.name, "jmp")) {
-                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
-                    arr[elem_num].u.number = OP_JMP;
-                    elem_num++;
-                } else if (streq(token->u.name, "jmp_not_if")) {
-                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
-                    arr[elem_num].u.number = OP_JMP_NOT_IF;
-                    elem_num++;
+                if (compile_dict_get(token->u.name, &compile_dict_elem)) {
+                    if (compile_dict_elem.etype == ELEMENT_EXEC_PRIMITIVE) {
+                        arr[elem_num].etype = compile_dict_elem.etype;
+                        arr[elem_num].u.number = compile_dict_elem.u.number;
+                        elem_num++;
+                    } else if (compile_dict_elem.etype == ELEMENT_C_FUNC) {
+                        struct Emitter emitter;
+                        emitter.pos = elem_num;
+                        emitter.elems = arr;
+                        compile_dict_get(token->u.name, &compile_dict_elem);
+                        compile_dict_elem.u.compile_func(&emitter);
+                        elem_num = emitter.pos;
+                    }
                 } else {
                     arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
                     arr[elem_num].u.exec_array = token->u.name;
