@@ -204,51 +204,39 @@ void repeat_op() {
     }
 }
 
-void emit_elem(struct Emitter *emitter, struct Element *elem) {
-    emitter->elems[emitter->pos].etype = elem->etype;
-    emitter->elems[emitter->pos].u = elem->u;
+void emit_elem_number(struct Emitter *emitter, int num) {
+    emitter->elems[emitter->pos].etype = ELEMENT_NUMBER;
+    emitter->elems[emitter->pos].u.number = num;
+    emitter->pos++;
+}
+
+void emit_elem_executable_name(struct Emitter *emitter, char* name) {
+    emitter->elems[emitter->pos].etype = ELEMENT_EXECUTABLE_NAME;
+    emitter->elems[emitter->pos].u.name = name;
+    emitter->pos++;
+}
+
+void emit_elem_exec_primitive(struct Emitter *emitter, int num) {
+    emitter->elems[emitter->pos].etype = ELEMENT_EXEC_PRIMITIVE;
+    emitter->elems[emitter->pos].u.number = num;
     emitter->pos++;
 }
 
 void ifelse_compile(struct Emitter *emitter) {
     struct Element elem;
 
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.number = 3;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.number = 2;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.name = "roll";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.number = 5;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXEC_PRIMITIVE;
-    elem.u.number = OP_JMP_NOT_IF;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.name = "pop";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXEC_PRIMITIVE;
-    elem.u.number = OP_EXEC;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_NUMBER;
-    elem.u.number = 4;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXEC_PRIMITIVE;
-    elem.u.number = OP_JMP;
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.name = "exch";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.name = "pop";
-    emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXEC_PRIMITIVE;
-    elem.u.number = OP_EXEC;
-    emit_elem(emitter, &elem);
+    emit_elem_number(emitter, 3);
+    emit_elem_number(emitter, 2);
+    emit_elem_executable_name(emitter, "roll");
+    emit_elem_number(emitter, 5);
+    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_executable_name(emitter, "pop");
+    emit_elem_exec_primitive(emitter, OP_EXEC);
+    emit_elem_number(emitter, 4);
+    emit_elem_exec_primitive(emitter, OP_JMP);
+    emit_elem_executable_name(emitter, "exch");
+    emit_elem_executable_name(emitter, "pop");
+    emit_elem_exec_primitive(emitter, OP_EXEC);
 }
 
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
