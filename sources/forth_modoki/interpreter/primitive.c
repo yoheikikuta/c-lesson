@@ -225,20 +225,20 @@ void ifelse_compile(struct Emitter *emitter) {
     elem.etype = ELEMENT_NUMBER;
     elem.u.exec_array = 5;
     emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "jmp_not_if";
+    elem.etype = ELEMENT_EXEC_PRIMITIVE;
+    elem.u.number = OP_JMP_NOT_IF;
     emit_elem(emitter, &elem);
     elem.etype = ELEMENT_EXECUTABLE_NAME;
     elem.u.exec_array = "pop";
     emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "exec";
+    elem.etype = ELEMENT_EXEC_PRIMITIVE;
+    elem.u.number = OP_EXEC;
     emit_elem(emitter, &elem);
     elem.etype = ELEMENT_NUMBER;
     elem.u.exec_array = 4;
     emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "jmp";
+    elem.etype = ELEMENT_EXEC_PRIMITIVE;
+    elem.u.number = OP_JMP;
     emit_elem(emitter, &elem);
     elem.etype = ELEMENT_EXECUTABLE_NAME;
     elem.u.exec_array = "exch";
@@ -246,8 +246,8 @@ void ifelse_compile(struct Emitter *emitter) {
     elem.etype = ELEMENT_EXECUTABLE_NAME;
     elem.u.exec_array = "pop";
     emit_elem(emitter, &elem);
-    elem.etype = ELEMENT_EXECUTABLE_NAME;
-    elem.u.exec_array = "exec";
+    elem.etype = ELEMENT_EXEC_PRIMITIVE;
+    elem.u.number = OP_EXEC;
     emit_elem(emitter, &elem);
 }
 
@@ -257,7 +257,7 @@ void register_one_primitive(char* op_name, void (*cfunc)(void)) {
 }
 
 void register_one_compile_primitive(char* op_name, void (*compile_func)(struct Emitter* emitter)) {
-    struct Element opelem = {ELEMENT_COMPILE_FUNC, {.compile_func = compile_func}};
+    struct Element opelem = {ELEMENT_C_FUNC, {.compile_func = compile_func}};
     compile_dict_put(op_name, &opelem);
 }
 

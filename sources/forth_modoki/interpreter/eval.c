@@ -49,6 +49,18 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                     compile_dict_get(token->u.name, &elem_func);
                     elem_func.u.compile_func(&emitter);
                     elem_num = emitter.pos;
+                } else if (streq(token->u.name, "exec")) {
+                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
+                    arr[elem_num].u.number = OP_EXEC;
+                    elem_num++;
+                } else if (streq(token->u.name, "jmp")) {
+                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
+                    arr[elem_num].u.number = OP_JMP;
+                    elem_num++;
+                } else if (streq(token->u.name, "jmp_not_if")) {
+                    arr[elem_num].etype = ELEMENT_EXEC_PRIMITIVE;
+                    arr[elem_num].u.number = OP_JMP_NOT_IF;
+                    elem_num++;
                 } else {
                     arr[elem_num].etype = ELEMENT_EXECUTABLE_NAME;
                     arr[elem_num].u.exec_array = token->u.name;
@@ -95,10 +107,8 @@ void eval_exec_array(struct ElementArray *opelems) {
 
     while (co_stack_pop(&cont)) {
         for (i = cont.pc; i < cont.exec_array->len; i++) {
-            if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
-                dict_get(cont.exec_array->elements[i].u.name, &opelem);
-
-                if (streq(cont.exec_array->elements[i].u.name, "exec")) {
+            if (cont.exec_array->elements[i].etype == ELEMENT_EXEC_PRIMITIVE) {
+                if (cont.exec_array->elements[i].u.number == OP_EXEC) {
                     // Execution operation: execute executable arrays on the stack top
                     struct Element opelem = {NO_ELEM_TYPE, {0}};
 
@@ -109,7 +119,25 @@ void eval_exec_array(struct ElementArray *opelems) {
                     cont.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
-                } else if (streq(cont.exec_array->elements[i].u.name, "if")) {
+                } else if (cont.exec_array->elements[i].u.number == OP_JMP) {
+                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                    stack_pop(&jmp_num);
+                    jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
+                    continue;
+                } else if (cont.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
+                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+                    stack_pop(&jmp_num);
+                    stack_pop(&boolean_flg);
+                    if (!boolean_flg.u.number) {
+                        jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
+                    }
+                    continue;
+                }
+            } else if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
+                dict_get(cont.exec_array->elements[i].u.name, &opelem);
+
+                if (streq(cont.exec_array->elements[i].u.name, "if")) {
                     // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
                     // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
                     struct Element opelem = {NO_ELEM_TYPE, {0}};
@@ -125,22 +153,6 @@ void eval_exec_array(struct ElementArray *opelems) {
                         co_stack_push(&cont);
                         break;
                     }
-                } else if (streq(cont.exec_array->elements[i].u.name, "jmp")) {
-                    // Jmp operation: {3 jmp 1 2 3} -> skip 1,2, {1 2 3 -3 jmp} -> back to 1
-                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                    stack_pop(&jmp_num);
-                    jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 2);
-                    continue;
-                } else if (streq(cont.exec_array->elements[i].u.name, "jmp_not_if")) {
-                    // Jmp operation: {0 3 jmp_not_if 1 2 3} -> skip 1,2, {1 2 3 0 -3 jmp_not_if} -> back to 1
-                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-                    stack_pop(&jmp_num);
-                    stack_pop(&boolean_flg);
-                    if (!boolean_flg.u.number) {
-                        jmp_num.u.number >= 0 ? (i += jmp_num.u.number - 1) : (i += jmp_num.u.number - 3);
-                    }
-                    continue;
                 } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     // Nested ELEMENT_EXECUTABLE_ARRAY case, e.g., {1 {3 4} 2}:
                     // co_stack -> [ ({1 {3 4} 2}, pc=2), ({3 4}, pc=0) ] 
