@@ -1,11 +1,13 @@
 #pragma once
 #include <stdio.h>
 #include "parser.h"
+#include "primitive.h"
 
 
 enum ElementType {
     NO_ELEM_TYPE,
     ELEMENT_C_FUNC,
+    ELEMENT_COMPILE_FUNC,
     ELEMENT_EXECUTABLE_ARRAY,
     ELEMENT_NUMBER,
     ELEMENT_EXECUTABLE_NAME,
@@ -20,6 +22,7 @@ struct Element {
         int number;
         char *name;
         void (*cfunc)();
+        void (*compile_func)(struct Emitter* emitter);
         struct ElementArray *exec_array;
     } u;
 };
