@@ -222,6 +222,17 @@ void emit_elem_exec_primitive(struct Emitter *emitter, int num) {
     emitter->pos++;
 }
 
+void if_compile(struct Emitter *emitter) {
+    struct Element elem;
+
+    // flg {op1} -> {op1} if flg is 1, do nothing if 0
+    // exch 2 jmp_not_if exec
+    emit_elem_executable_name(emitter, "exch");
+    emit_elem_number(emitter, 2);
+    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_exec_primitive(emitter, OP_EXEC);
+}
+
 void ifelse_compile(struct Emitter *emitter) {
     struct Element elem;
 
@@ -272,6 +283,7 @@ void register_all_primitive() {
     register_one_primitive("while", while_op);
     register_one_primitive("repeat", repeat_op);
 
+    register_one_compile_primitive("if", if_compile);
     register_one_compile_primitive("ifelse", ifelse_compile);
 }
 
