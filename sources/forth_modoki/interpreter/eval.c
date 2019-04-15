@@ -178,6 +178,9 @@ void eval() {
     int ch = EOF;
     struct Token token = {UNKNOWN, {0}};
     struct Element opelem = {NO_ELEM_TYPE, {0}};
+    struct Element opelem_if_true = {NO_ELEM_TYPE, {0}};
+    struct Element opelem_if_false = {NO_ELEM_TYPE, {0}};
+    struct Element flg = {NO_ELEM_TYPE, {0}};
 
     do {
         ch = parse_one(ch, &token);
@@ -194,33 +197,24 @@ void eval() {
                 
                 if (streq(token.u.name, "exec")) {
                     // Exec operation: {op1} exec -> evaluate {op1}
-                    struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
-
-                    stack_pop(&opelem_exec);
-                    eval_exec_array(opelem_exec.u.exec_array);
+                    stack_pop(&opelem);
+                    eval_exec_array(opelem.u.exec_array);
                 } else if (streq(token.u.name, "if")) {
                     // If operation: flg {op1} -> {op1} if flg is 1, do nothing if 0
-                    struct Element opelem_exec = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                    stack_pop(&opelem_exec);
-                    stack_pop(&boolean_flg);
-                    if (boolean_flg.u.number == 1) {
-                        eval_exec_array(opelem_exec.u.exec_array);
+                    stack_pop(&opelem_if_true);
+                    stack_pop(&flg);
+                    if (flg.u.number == 1) {
+                        eval_exec_array(opelem_if_true.u.exec_array);
                     }
                 } else if (streq(token.u.name, "ifelse")) {
                     // Ifelse operation: flg {op1} {op2} -> {op1} if flg is 1, {op2} if 0
-                    struct Element opelem_true = {NO_ELEM_TYPE, {0}};
-                    struct Element opelem_false = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-                    stack_pop(&opelem_false);
-                    stack_pop(&opelem_true);
-                    stack_pop(&boolean_flg);
-                    if (boolean_flg.u.number == 1) {
-                        eval_exec_array(opelem_true.u.exec_array);
-                    } else if (boolean_flg.u.number == 0) {
-                        eval_exec_array(opelem_false.u.exec_array);
+                    stack_pop(&opelem_if_false);
+                    stack_pop(&opelem_if_true);
+                    stack_pop(&flg);
+                    if (flg.u.number == 1) {
+                        eval_exec_array(opelem_if_true.u.exec_array);
+                    } else if (flg.u.number == 0) {
+                        eval_exec_array(opelem_if_false.u.exec_array);
                     }
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // add, sub, ...
