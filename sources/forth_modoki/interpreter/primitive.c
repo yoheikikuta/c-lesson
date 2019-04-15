@@ -225,6 +225,8 @@ void emit_elem_exec_primitive(struct Emitter *emitter, int num) {
 void ifelse_compile(struct Emitter *emitter) {
     struct Element elem;
 
+    // flg {op1} {op2} ifelse -> {op1} if flg is 1, {op2} if 0
+    // 3 2 roll 5 jmp_not_if pop exec 4 jmp exch pop exec
     emit_elem_number(emitter, 3);
     emit_elem_number(emitter, 2);
     emit_elem_executable_name(emitter, "roll");
