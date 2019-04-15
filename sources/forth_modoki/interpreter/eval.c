@@ -10,8 +10,10 @@
 
 void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem) {
     struct Element arr[MAX_NAME_OP_MUMBERS];
+    struct Element arr_for_nested = {NO_ELEM_TYPE, {0}};
+    struct Element compile_dict_elem = {NO_ELEM_TYPE, {0}};
+    struct Emitter emitter;
     int elem_num = 0;
-    struct Element compile_dict_elem;
 
     do {
         ch = parse_one(ch, token);
@@ -25,7 +27,6 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 break;
             case EXECUTABLE_NAME:
                 if (compile_dict_get(token->u.name, &compile_dict_elem)) {
-                    struct Emitter emitter;
                     emitter.pos = elem_num;
                     emitter.elems = arr;
                     compile_dict_elem.u.compile_func(&emitter);
@@ -42,10 +43,9 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 elem_num++;
                 break;
             case OPEN_CURLY: {
-                struct Element nested_arr = {NO_ELEM_TYPE, {0}};
-                compile_exec_array(ch, token, &nested_arr);
-                arr[elem_num].etype = nested_arr.etype;
-                arr[elem_num].u.exec_array = nested_arr.u.exec_array;
+                compile_exec_array(ch, token, &arr_for_nested);
+                arr[elem_num].etype = arr_for_nested.etype;
+                arr[elem_num].u.exec_array = arr_for_nested.u.exec_array;
                 elem_num++;
                 ch = parse_one(ch, token);
                 break;
@@ -67,10 +67,11 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
 
 void eval_exec_array(struct ElementArray *opelems) {
     struct Element opelem = {NO_ELEM_TYPE, {0}};
+    struct Element flg = {NO_ELEM_TYPE, {0}};
     struct Continuation cont = {{0}, 0};
+    int i = 0;
     cont.exec_array = opelems;
     cont.pc = 0;
-    int i = 0;
 
     co_stack_push(&cont);
 
@@ -79,8 +80,6 @@ void eval_exec_array(struct ElementArray *opelems) {
             if (cont.exec_array->elements[i].etype == ELEMENT_EXEC_PRIMITIVE) {
                 if (cont.exec_array->elements[i].u.number == OP_EXEC) {
                     // Execution operation: execute executable arrays on the stack top
-                    struct Element opelem = {NO_ELEM_TYPE, {0}};
-
                     stack_pop(&opelem);
                     cont.pc = ++i;
                     co_stack_push(&cont);
@@ -89,24 +88,21 @@ void eval_exec_array(struct ElementArray *opelems) {
                     co_stack_push(&cont);
                     break;
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP) {
-                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                    stack_pop(&jmp_num);
-                    if (jmp_num.u.number >= 0) {
-                        i += jmp_num.u.number - 1;
+                    stack_pop(&opelem);
+                    if (opelem.u.number >= 0) {
+                        i += opelem.u.number - 1;
                     } else {
-                        i += jmp_num.u.number - 2;
+                        i += opelem.u.number - 2;
                     }
                     continue;
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
-                    struct Element jmp_num = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-                    stack_pop(&jmp_num);
-                    stack_pop(&boolean_flg);
-                    if (!boolean_flg.u.number) {
-                        if (jmp_num.u.number >= 0) {
-                            i += jmp_num.u.number - 1;
+                    stack_pop(&opelem);
+                    stack_pop(&flg);
+                    if (!flg.u.number) {
+                        if (opelem.u.number >= 0) {
+                            i += opelem.u.number - 1;
                         } else {
-                            i += jmp_num.u.number - 3;
+                            i += opelem.u.number - 3;
                         }
                     }
                     continue;
@@ -117,12 +113,9 @@ void eval_exec_array(struct ElementArray *opelems) {
                 if (streq(cont.exec_array->elements[i].u.name, "if")) {
                     // If operation: [{ELEMENT_NUMBER, 1}, {ELEMENT_EXECUTABLE_ARRAY, exec_array}] 
                     // -> execute exec_array. Do nothing if ELEMENT_NUMBER is 0
-                    struct Element opelem = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
                     stack_pop(&opelem);
-                    stack_pop(&boolean_flg);
-                    if (boolean_flg.u.number == 1) {
+                    stack_pop(&flg);
+                    if (flg.u.number == 1) {
                         cont.pc = ++i;
                         co_stack_push(&cont);
                         cont.pc = 0;
@@ -168,14 +161,8 @@ void eval_exec_array(struct ElementArray *opelems) {
 
 void eval() {
     int ch = EOF;
-    struct Token token = {
-        UNKNOWN,
-        {0}
-    };
-    struct Element opelem = {
-    NO_ELEM_TYPE,
-        {0}
-    };
+    struct Token token = {UNKNOWN, {0}};
+    struct Element opelem = {NO_ELEM_TYPE, {0}};
 
     do {
         ch = parse_one(ch, &token);
