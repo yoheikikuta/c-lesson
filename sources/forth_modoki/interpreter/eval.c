@@ -31,7 +31,7 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 break;
             case EXECUTABLE_NAME:
                 if (compile_dict_get(token->u.name, &compile_dict_elem)) {
-                    // Compile ifelse operation
+                    // Compile if, ifelse operations
                     emitter.pos = elem_num;
                     emitter.elems = arr;
                     compile_dict_elem.u.compile_func(&emitter);
@@ -124,19 +124,7 @@ void eval_exec_array(struct ElementArray *opelems) {
             } else if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
                 dict_get(cont.exec_array->elements[i].u.name, &opelem);
 
-                if (streq(cont.exec_array->elements[i].u.name, "if")) {
-                    // If operation: flg {op1} -> {op1} if flg is 1, do nothing if 0
-                    stack_pop(&opelem);
-                    stack_pop(&flg);
-                    if (flg.u.number == 1) {
-                        cont.pc = ++i;
-                        co_stack_push(&cont);
-                        cont.pc = 0;
-                        cont.exec_array = opelem.u.exec_array;
-                        co_stack_push(&cont);
-                        break;
-                    }
-                } else if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
+                if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     // Nested ELEMENT_EXECUTABLE_ARRAYs:
                     // ... {1 {3 4} 2} ... -> co_stack [(... {1 {3 4} 2} ...; pc=i+1), ({3 4}, pc=0)] 
                     cont.pc = ++i;
