@@ -226,11 +226,14 @@ void if_compile(struct Emitter *emitter) {
     struct Element elem;
 
     // flg {op1} -> {op1} if flg is 1, do nothing if 0
-    // exch 2 jmp_not_if exec
+    // exch 4 jmp_not_if exec 2 jmp pop
     emit_elem_executable_name(emitter, "exch");
-    emit_elem_number(emitter, 2);
+    emit_elem_number(emitter, 4);
     emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
     emit_elem_exec_primitive(emitter, OP_EXEC);
+    emit_elem_number(emitter, 2);
+    emit_elem_exec_primitive(emitter, OP_JMP);
+    emit_elem_executable_name(emitter, "pop");
 }
 
 void ifelse_compile(struct Emitter *emitter) {
