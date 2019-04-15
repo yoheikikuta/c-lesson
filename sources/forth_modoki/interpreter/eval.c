@@ -8,24 +8,6 @@
 #include "continuation.h"
 
 
-int stack_pop_int(){
-    // Return the value of popped NUMBER data from the stack.
-    struct Element input = {NO_ELEM_TYPE, {0}};
-    stack_pop(&input);
-    int num = input.u.number;
-
-    return num;
-}
-
-char* stack_pop_str(){
-    // Return the value of popped LITERAL_NAME data from the stack.
-    struct Element input = {NO_ELEM_TYPE, {0}};
-    stack_pop(&input);
-    char* str = input.u.name;
-
-    return str;
-}
-
 void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem) {
     struct Element arr[MAX_NAME_OP_MUMBERS];
     int elem_num = 0;

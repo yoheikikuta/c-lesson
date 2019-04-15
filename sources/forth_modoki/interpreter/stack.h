@@ -44,10 +44,14 @@ struct ElementArray {
 /*
 return 1 if data is successfully pushed into stack.
 return 1 if data is successfully popped from stack.
+return number popped from stack.
+return string popped from stack.
 return 1 if data element is successfully copied.
 Print all stacks on stdout. 
 */
 int stack_push(struct Element* push_elem);
 int stack_pop(struct Element* out_elem);
+int stack_pop_int();
+char* stack_pop_str();
 int stack_copy(struct Element* out_elem, int idx);
 void stack_print_all();
