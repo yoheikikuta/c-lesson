@@ -98,25 +98,25 @@ void eval_exec_array(struct ElementArray *opelems) {
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP) {
                     // Primitive jump operation:
                     // (positive case) 3 jmp 1 2 3 -> 3
-                    // (negative case) 1 2 3 -3 jmp -> 1
+                    // (negative case) 1 2 3 -4 jmp -> 1
                     stack_pop(&opelem);
                     if (opelem.u.number >= 0) {
                         i += opelem.u.number - 1;
                     } else {
-                        i += opelem.u.number - 2;
+                        i += opelem.u.number - 1;
                     }
                     continue;
                 } else if (cont.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
                     // Primitive jump_not_if operation:
                     // (positive case) 0 3 jmp_not_if 1 2 3 -> 3
-                    // (negative case) 1 2 3 0 -3 jmp -> 1
+                    // (negative case) 1 2 3 0 -5 jmp -> 1
                     stack_pop(&opelem);
                     stack_pop(&flg);
                     if (!flg.u.number) {
                         if (opelem.u.number >= 0) {
                             i += opelem.u.number - 1;
                         } else {
-                            i += opelem.u.number - 3;
+                            i += opelem.u.number - 1;
                         }
                     }
                     continue;
@@ -156,7 +156,7 @@ void eval_exec_array(struct ElementArray *opelems) {
                     while_elem_arr->elements[5].etype = ELEMENT_EXEC_PRIMITIVE;
                     while_elem_arr->elements[5].u.number = OP_EXEC;
                     while_elem_arr->elements[6].etype = ELEMENT_NUMBER;
-                    while_elem_arr->elements[6].u.number = -6;
+                    while_elem_arr->elements[6].u.number = -7;
                     while_elem_arr->elements[7].etype = ELEMENT_EXEC_PRIMITIVE;
                     while_elem_arr->elements[7].u.number = OP_JMP;
                     cont.exec_array = while_elem_arr;
