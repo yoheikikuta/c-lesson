@@ -124,6 +124,23 @@ void eval_exec_array(struct ElementArray *opelems) {
                         }
                     }
                     continue;
+                } else if (cont.u.exec_array->elements[i].u.number == OP_STORE) {
+                    // Primitive store operation:
+                    // 1 store -> co_stack [1]
+                    stack_pop(&opelem);
+                    struct Continuation local_var;
+                    local_var.ctype = CONT_ELEMENT;
+                    local_var.u.elem = opelem;
+                    co_stack_push(&local_var);
+                    continue;
+                } else if (cont.u.exec_array->elements[i].u.number == OP_LOAD) {
+                    // Primitive load operation:
+                    // co stack [0, 1, 2, 3], 1 load -> stack [2]
+                    stack_pop(&opelem);
+                    struct Element load_var;
+                    co_load_variable(opelem.u.number, &load_var);
+                    stack_push(&load_var);
+                    continue;
                 }
             } else if (cont.u.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
                 dict_get(cont.u.exec_array->elements[i].u.name, &opelem);

@@ -226,14 +226,13 @@ void if_compile(struct Emitter *emitter) {
     struct Element elem;
 
     // flg {op1} -> {op1} if flg is 1, do nothing if 0
-    // exch 4 jmp_not_if exec 2 jmp pop
-    emit_elem_executable_name(emitter, "exch");
+    // store 4 jmp_not_if 0 load exec
+    emit_elem_exec_primitive(emitter, OP_STORE); // stack [flg, {op1}] -> stack [flg], co_stack [{op1}]
     emit_elem_number(emitter, 4);
     emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_number(emitter, 0);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
     emit_elem_exec_primitive(emitter, OP_EXEC);
-    emit_elem_number(emitter, 2);
-    emit_elem_exec_primitive(emitter, OP_JMP);
-    emit_elem_executable_name(emitter, "pop");
 }
 
 void ifelse_compile(struct Emitter *emitter) {
@@ -241,17 +240,16 @@ void ifelse_compile(struct Emitter *emitter) {
 
     // flg {op1} {op2} ifelse -> {op1} if flg is 1, {op2} if 0
     // 3 2 roll 5 jmp_not_if pop exec 4 jmp exch pop exec
-    emit_elem_number(emitter, 3);
-    emit_elem_number(emitter, 2);
-    emit_elem_executable_name(emitter, "roll");
-    emit_elem_number(emitter, 5);
-    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
-    emit_elem_executable_name(emitter, "pop");
-    emit_elem_exec_primitive(emitter, OP_EXEC);
+    // store store 4 jmp_not_if 0 2 jmp 1 load exec
+    emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}]
+    emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}, {op1}]
     emit_elem_number(emitter, 4);
+    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_number(emitter, 0); // If the flg is 1, load {op1}
+    emit_elem_number(emitter, 2);
     emit_elem_exec_primitive(emitter, OP_JMP);
-    emit_elem_executable_name(emitter, "exch");
-    emit_elem_executable_name(emitter, "pop");
+    emit_elem_number(emitter, 1); // If the flg is 0, load {op2}
+    emit_elem_exec_primitive(emitter, OP_LOAD);
     emit_elem_exec_primitive(emitter, OP_EXEC);
 }
 

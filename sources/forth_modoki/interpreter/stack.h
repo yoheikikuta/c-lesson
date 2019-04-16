@@ -17,7 +17,9 @@ enum ElementType {
 enum ExecPrimitiveType {
 	OP_EXEC,
 	OP_JMP,
-	OP_JMP_NOT_IF
+	OP_JMP_NOT_IF,
+    OP_STORE,
+    OP_LOAD
 };
 
 struct ElementArray;
