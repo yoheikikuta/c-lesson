@@ -3,8 +3,17 @@
 #include "stack.h"
 
 
+enum ContType {
+    CONT_ELEMENT,
+    CONT_CONTINUATION
+};
+
 struct Continuation {
-    struct ElementArray *exec_array;
+    enum ContType ctype;
+    union {
+        struct Element elem;
+        struct ElementArray *exec_array;
+    } u;
     int pc;
 };
 

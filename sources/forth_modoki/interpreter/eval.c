@@ -75,27 +75,31 @@ void eval_exec_array(struct ElementArray *opelems) {
     // E.g., opelems->elements [1, 2, {add}, exec] -> stack [3]
     struct Element opelem = {NO_ELEM_TYPE, {0}};
     struct Element flg = {NO_ELEM_TYPE, {0}};
-    struct Continuation cont = {{0}, 0};
+    struct Continuation cont = {0 ,{0}, 0};
     int i = 0;
-    cont.exec_array = opelems;
+    cont.ctype = CONT_CONTINUATION;
+    cont.u.exec_array = opelems;
     cont.pc = 0;
 
     co_stack_push(&cont);
 
     while (co_stack_pop(&cont)) {
-        for (i = cont.pc; i < cont.exec_array->len; i++) {
-            if (cont.exec_array->elements[i].etype == ELEMENT_EXEC_PRIMITIVE) {
-                if (cont.exec_array->elements[i].u.number == OP_EXEC) {
+        // Discard all local variables up to reaching the next CONT_CONTINUATION
+        if (cont.ctype == CONT_ELEMENT) {continue;};
+
+        for (i = cont.pc; i < cont.u.exec_array->len; i++) {
+            if (cont.u.exec_array->elements[i].etype == ELEMENT_EXEC_PRIMITIVE) {
+                if (cont.u.exec_array->elements[i].u.number == OP_EXEC) {
                     // Primitive exec operation:
                     // ... {1 2 add} exec ... -> co_stack [(... {1 2 add} exec ...; pc=i+1), ({1 2 add}; pc=0)] 
                     cont.pc = ++i;
                     co_stack_push(&cont);
                     stack_pop(&opelem);
                     cont.pc = 0;
-                    cont.exec_array = opelem.u.exec_array;
+                    cont.u.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
-                } else if (cont.exec_array->elements[i].u.number == OP_JMP) {
+                } else if (cont.u.exec_array->elements[i].u.number == OP_JMP) {
                     // Primitive jump operation:
                     // (positive case) 3 jmp 1 2 3 -> 3
                     // (negative case) 1 2 3 -4 jmp -> 1
@@ -106,7 +110,7 @@ void eval_exec_array(struct ElementArray *opelems) {
                         i += opelem.u.number - 1;
                     }
                     continue;
-                } else if (cont.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
+                } else if (cont.u.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
                     // Primitive jump_not_if operation:
                     // (positive case) 0 3 jmp_not_if 1 2 3 -> 3
                     // (negative case) 1 2 3 0 -5 jmp -> 1
@@ -121,8 +125,8 @@ void eval_exec_array(struct ElementArray *opelems) {
                     }
                     continue;
                 }
-            } else if (cont.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
-                dict_get(cont.exec_array->elements[i].u.name, &opelem);
+            } else if (cont.u.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
+                dict_get(cont.u.exec_array->elements[i].u.name, &opelem);
 
                 if (opelem.etype == ELEMENT_EXECUTABLE_ARRAY) {
                     // Nested ELEMENT_EXECUTABLE_ARRAYs:
@@ -130,10 +134,10 @@ void eval_exec_array(struct ElementArray *opelems) {
                     cont.pc = ++i;
                     co_stack_push(&cont);
                     cont.pc = 0;
-                    cont.exec_array = opelem.u.exec_array;
+                    cont.u.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
-                } else if (streq(cont.exec_array->elements[i].u.name, "while")) {
+                } else if (streq(cont.u.exec_array->elements[i].u.name, "while")) {
                     struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
                     struct Element opelem_body = {NO_ELEM_TYPE, {0}};
 
@@ -159,7 +163,7 @@ void eval_exec_array(struct ElementArray *opelems) {
                     while_elem_arr->elements[6].u.number = -7;
                     while_elem_arr->elements[7].etype = ELEMENT_EXEC_PRIMITIVE;
                     while_elem_arr->elements[7].u.number = OP_JMP;
-                    cont.exec_array = while_elem_arr;
+                    cont.u.exec_array = while_elem_arr;
                     co_stack_push(&cont);
                     break;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
@@ -170,18 +174,18 @@ void eval_exec_array(struct ElementArray *opelems) {
                     stack_push(&opelem);
                 }
             } else {
-                switch (cont.exec_array->elements[i].etype) {
+                switch (cont.u.exec_array->elements[i].etype) {
                     case ELEMENT_NUMBER:
-                        stack_push(&cont.exec_array->elements[i]);
+                        stack_push(&cont.u.exec_array->elements[i]);
                         break;
                     case ELEMENT_LITERAL_NAME:
-                        stack_push(&cont.exec_array->elements[i]);
+                        stack_push(&cont.u.exec_array->elements[i]);
                         break;
                     case ELEMENT_EXECUTABLE_ARRAY:
-                        stack_push(&cont.exec_array->elements[i]);
+                        stack_push(&cont.u.exec_array->elements[i]);
                         break;
                     default:
-                        printf("Unknown type %d\n", cont.exec_array->elements[i].etype);
+                        printf("Unknown type %d\n", cont.u.exec_array->elements[i].etype);
                         break;
                 }
             }
