@@ -31,7 +31,7 @@ void compile_exec_array(int ch, struct Token* token, struct Element* out_opelem)
                 break;
             case EXECUTABLE_NAME:
                 if (compile_dict_get(token->u.name, &compile_dict_elem)) {
-                    // Compile if, ifelse operations
+                    // Compile if, ifelse, while operations
                     emitter.pos = elem_num;
                     emitter.elems = arr;
                     compile_dict_elem.u.compile_func(&emitter);
@@ -152,35 +152,6 @@ void eval_exec_array(struct ElementArray *opelems) {
                     co_stack_push(&cont);
                     cont.pc = 0;
                     cont.u.exec_array = opelem.u.exec_array;
-                    co_stack_push(&cont);
-                    break;
-                } else if (streq(cont.u.exec_array->elements[i].u.name, "while")) {
-                    struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
-                    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
-
-                    stack_pop(&opelem_body);
-                    stack_pop(&opelem_cond);
-                    cont.pc = ++i;
-                    co_stack_push(&cont);
-
-                    cont.pc = 0;
-                    struct ElementArray *while_elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element)*9);
-                    while_elem_arr->len = 8;
-                    while_elem_arr->elements[0] = opelem_cond;
-                    while_elem_arr->elements[1].etype = ELEMENT_EXEC_PRIMITIVE;
-                    while_elem_arr->elements[1].u.number = OP_EXEC;
-                    while_elem_arr->elements[2].etype = ELEMENT_NUMBER;
-                    while_elem_arr->elements[2].u.number = 5;
-                    while_elem_arr->elements[3].etype = ELEMENT_EXEC_PRIMITIVE;
-                    while_elem_arr->elements[3].u.number = OP_JMP_NOT_IF;
-                    while_elem_arr->elements[4] = opelem_body;
-                    while_elem_arr->elements[5].etype = ELEMENT_EXEC_PRIMITIVE;
-                    while_elem_arr->elements[5].u.number = OP_EXEC;
-                    while_elem_arr->elements[6].etype = ELEMENT_NUMBER;
-                    while_elem_arr->elements[6].u.number = -7;
-                    while_elem_arr->elements[7].etype = ELEMENT_EXEC_PRIMITIVE;
-                    while_elem_arr->elements[7].u.number = OP_JMP;
-                    cont.u.exec_array = while_elem_arr;
                     co_stack_push(&cont);
                     break;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {

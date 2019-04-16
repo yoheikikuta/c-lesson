@@ -173,24 +173,6 @@ void roll_op() {
     }
 }
 
-void while_op() {
-    // // While operation: { exec_array1 } { exec_array2 } while
-    // // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
-    // struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
-    // struct Element opelem_body = {NO_ELEM_TYPE, {0}};
-    // struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
-
-    // stack_pop(&opelem_body);
-    // stack_pop(&opelem_cond);
-    // do {
-    //     eval_exec_array(opelem_cond.u.exec_array);
-    //     stack_pop(&boolean_flg);
-    //     if (boolean_flg.u.number) {
-    //         eval_exec_array(opelem_body.u.exec_array);
-    //     }
-    // } while (boolean_flg.u.number);
-}
-
 void repeat_op() {
     // Repeat operation: 3 { exec_array } repeat -> execute exec_array 3 times
     struct Element opelem_num = {NO_ELEM_TYPE, {0}};
@@ -223,8 +205,6 @@ void emit_elem_exec_primitive(struct Emitter *emitter, int num) {
 }
 
 void if_compile(struct Emitter *emitter) {
-    struct Element elem;
-
     // flg {op1} -> {op1} if flg is 1, do nothing if 0
     // store 4 jmp_not_if 0 load exec
     emit_elem_exec_primitive(emitter, OP_STORE); // stack [flg, {op1}] -> stack [flg], co_stack [{op1}]
@@ -236,10 +216,7 @@ void if_compile(struct Emitter *emitter) {
 }
 
 void ifelse_compile(struct Emitter *emitter) {
-    struct Element elem;
-
     // flg {op1} {op2} ifelse -> {op1} if flg is 1, {op2} if 0
-    // 3 2 roll 5 jmp_not_if pop exec 4 jmp exch pop exec
     // store store 4 jmp_not_if 0 2 jmp 1 load exec
     emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}]
     emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}, {op1}]
@@ -251,6 +228,23 @@ void ifelse_compile(struct Emitter *emitter) {
     emit_elem_number(emitter, 1); // If the flg is 0, load {op2}
     emit_elem_exec_primitive(emitter, OP_LOAD);
     emit_elem_exec_primitive(emitter, OP_EXEC);
+}
+
+void while_compile(struct Emitter *emitter) {
+    // {op1} {op2} while -> do {op2} while {op1} is true
+    // store store 0 load exec 6 jmp_not_if 1 load exec -9 jmp
+    emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}]
+    emit_elem_exec_primitive(emitter, OP_STORE); // co_stack [{op2}, {op1}]
+    emit_elem_number(emitter, 0);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
+    emit_elem_exec_primitive(emitter, OP_EXEC);
+    emit_elem_number(emitter, 6);
+    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_number(emitter, 1);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
+    emit_elem_exec_primitive(emitter, OP_EXEC);
+    emit_elem_number(emitter, -9);
+    emit_elem_exec_primitive(emitter, OP_JMP);
 }
 
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
@@ -281,10 +275,10 @@ void register_all_primitive() {
     register_one_primitive("dup", dup_op);
     register_one_primitive("index", index_op);
     register_one_primitive("roll", roll_op);
-    // register_one_primitive("while", while_op);
     register_one_primitive("repeat", repeat_op);
 
     register_one_compile_primitive("if", if_compile);
     register_one_compile_primitive("ifelse", ifelse_compile);
+    register_one_compile_primitive("while", while_compile);
 }
 
