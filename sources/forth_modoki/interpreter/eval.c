@@ -76,6 +76,7 @@ void eval_exec_array(struct ElementArray *opelems) {
     struct Element opelem = {NO_ELEM_TYPE, {0}};
     struct Element flg = {NO_ELEM_TYPE, {0}};
     struct Continuation cont = {0 ,{0}, 0};
+    struct Continuation local_var = {0 ,{0}, 0};
     int i = 0;
     cont.ctype = CONT_CONTINUATION;
     cont.u.exec_array = opelems;
@@ -109,7 +110,6 @@ void eval_exec_array(struct ElementArray *opelems) {
                     } else {
                         i += opelem.u.number - 1;
                     }
-                    continue;
                 } else if (cont.u.exec_array->elements[i].u.number == OP_JMP_NOT_IF) {
                     // Primitive jump_not_if operation:
                     // (positive case) 0 3 jmp_not_if 1 2 3 -> 3
@@ -123,16 +123,13 @@ void eval_exec_array(struct ElementArray *opelems) {
                             i += opelem.u.number - 1;
                         }
                     }
-                    continue;
                 } else if (cont.u.exec_array->elements[i].u.number == OP_STORE) {
                     // Primitive store operation:
                     // 1 store -> co_stack [1]
                     stack_pop(&opelem);
-                    struct Continuation local_var;
                     local_var.ctype = CONT_ELEMENT;
                     local_var.u.elem = opelem;
                     co_stack_push(&local_var);
-                    continue;
                 } else if (cont.u.exec_array->elements[i].u.number == OP_LOAD) {
                     // Primitive load operation:
                     // co_stack [0, 1, 2, 3], 1 load -> stack [2]
@@ -140,13 +137,10 @@ void eval_exec_array(struct ElementArray *opelems) {
                     struct Element load_var;
                     co_load_variable(opelem.u.number, &load_var);
                     stack_push(&load_var);
-                    continue;
                 } else if (cont.u.exec_array->elements[i].u.number == OP_LPOP) {
                     // Primitive lpop operation:
                     // co_stack [0, 1] -> co_stack [0]
-                    struct Continuation local_var;
                     co_stack_pop(&local_var);
-                    continue;
                 }
             } else if (cont.u.exec_array->elements[i].etype == ELEMENT_EXECUTABLE_NAME) {
                 dict_get(cont.u.exec_array->elements[i].u.name, &opelem);
@@ -235,28 +229,25 @@ void eval() {
                     // While operation: { exec_array1 } { exec_array2 } while
                     // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
                     struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
-                    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
-                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
 
-                    stack_pop(&opelem_body);
+                    stack_pop(&opelem);
                     stack_pop(&opelem_cond);
                     do {
                         eval_exec_array(opelem_cond.u.exec_array);
-                        stack_pop(&boolean_flg);
-                        if (boolean_flg.u.number) {
-                            eval_exec_array(opelem_body.u.exec_array);
+                        stack_pop(&flg);
+                        if (flg.u.number) {
+                            eval_exec_array(opelem.u.exec_array);
                         }
-                    } while (boolean_flg.u.number);
+                    } while (flg.u.number);
                 } else if (streq(token.u.name, "repeat")) {
                     // Repeat operation: 3 { exec_array } repeat -> execute exec_array 3 times
                     struct Element opelem_num = {NO_ELEM_TYPE, {0}};
-                    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
 
-                    stack_pop(&opelem_body);
+                    stack_pop(&opelem);
                     stack_pop(&opelem_num);
                     int i = opelem_num.u.number;
                     for (i; i > 0; i--) {
-                        eval_exec_array(opelem_body.u.exec_array);
+                        eval_exec_array(opelem.u.exec_array);
                     }
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // add, sub, ...
