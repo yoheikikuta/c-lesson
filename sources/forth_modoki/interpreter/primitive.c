@@ -173,19 +173,6 @@ void roll_op() {
     }
 }
 
-void repeat_op() {
-    // Repeat operation: 3 { exec_array } repeat -> execute exec_array 3 times
-    struct Element opelem_num = {NO_ELEM_TYPE, {0}};
-    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
-
-    stack_pop(&opelem_body);
-    stack_pop(&opelem_num);
-    int i = opelem_num.u.number;
-    for (i; i > 0; i--) {
-        eval_exec_array(opelem_body.u.exec_array);
-    }
-}
-
 void emit_elem_number(struct Emitter *emitter, int num) {
     emitter->elems[emitter->pos].etype = ELEMENT_NUMBER;
     emitter->elems[emitter->pos].u.number = num;
@@ -247,6 +234,29 @@ void while_compile(struct Emitter *emitter) {
     emit_elem_exec_primitive(emitter, OP_JMP);
 }
 
+void repeat_compile(struct Emitter *emitter) {
+    // num {op} repeat -> repeat {op} num times
+    // store store 0 load 1 ge 11 jmp_not_if 1 load exec 0 load lpop 1 sub -16 jmp
+    emit_elem_exec_primitive(emitter, OP_STORE); // stack [num] | co_stack [{op}]
+    emit_elem_exec_primitive(emitter, OP_STORE); // stack [] | co_stack [{op}, num]
+    emit_elem_number(emitter, 0);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
+    emit_elem_number(emitter, 1);
+    emit_elem_executable_name(emitter, "ge"); // stack [num, 1, ge] | co_stack [{op}, num]
+    emit_elem_number(emitter, 11);
+    emit_elem_exec_primitive(emitter, OP_JMP_NOT_IF);
+    emit_elem_number(emitter, 1);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
+    emit_elem_exec_primitive(emitter, OP_EXEC); // stack [{op}, exec] | co_stack [{op}, num]
+    emit_elem_number(emitter, 0);
+    emit_elem_exec_primitive(emitter, OP_LOAD);
+    emit_elem_exec_primitive(emitter, OP_LPOP); // stack [num] | co_stack [{op}]
+    emit_elem_number(emitter, 1);
+    emit_elem_executable_name(emitter, "sub"); // stack [num, 1, sub] | co_stack [{op}]
+    emit_elem_number(emitter, -16); // Go back to the second OP_STORE
+    emit_elem_exec_primitive(emitter, OP_JMP);
+}
+
 void register_one_primitive(char* op_name, void (*cfunc)(void)) {
     struct Element opelem = {ELEMENT_C_FUNC, {.cfunc = cfunc}};
     dict_put(op_name, &opelem);
@@ -275,10 +285,10 @@ void register_all_primitive() {
     register_one_primitive("dup", dup_op);
     register_one_primitive("index", index_op);
     register_one_primitive("roll", roll_op);
-    register_one_primitive("repeat", repeat_op);
 
     register_one_compile_primitive("if", if_compile);
     register_one_compile_primitive("ifelse", ifelse_compile);
     register_one_compile_primitive("while", while_compile);
+    register_one_compile_primitive("repeat", repeat_compile);
 }
 
