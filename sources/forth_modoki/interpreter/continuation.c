@@ -29,6 +29,5 @@ int co_stack_pop(struct Continuation* out_cont) {
 
 void co_load_variable(int pos, struct Element* out_elem) {
     // pos = 2, co_stack [co1, co2, co3, co4] -> out_elem = (Element of co2)
-    out_elem->etype = co_stack[co_stack_pos - pos - 1].u.elem.etype;
-    out_elem->u = co_stack[co_stack_pos - pos - 1].u.elem.u;
+    *out_elem = co_stack[co_stack_pos - pos - 1].u.elem;
 }
