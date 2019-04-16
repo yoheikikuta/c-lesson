@@ -174,21 +174,21 @@ void roll_op() {
 }
 
 void while_op() {
-    // While operation: { exec_array1 } { exec_array2 } while
-    // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
-    struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
-    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
-    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+    // // While operation: { exec_array1 } { exec_array2 } while
+    // // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
+    // struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
+    // struct Element opelem_body = {NO_ELEM_TYPE, {0}};
+    // struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
 
-    stack_pop(&opelem_body);
-    stack_pop(&opelem_cond);
-    do {
-        eval_exec_array(opelem_cond.u.exec_array);
-        stack_pop(&boolean_flg);
-        if (boolean_flg.u.number) {
-            eval_exec_array(opelem_body.u.exec_array);
-        }
-    } while (boolean_flg.u.number);
+    // stack_pop(&opelem_body);
+    // stack_pop(&opelem_cond);
+    // do {
+    //     eval_exec_array(opelem_cond.u.exec_array);
+    //     stack_pop(&boolean_flg);
+    //     if (boolean_flg.u.number) {
+    //         eval_exec_array(opelem_body.u.exec_array);
+    //     }
+    // } while (boolean_flg.u.number);
 }
 
 void repeat_op() {
@@ -283,7 +283,7 @@ void register_all_primitive() {
     register_one_primitive("dup", dup_op);
     register_one_primitive("index", index_op);
     register_one_primitive("roll", roll_op);
-    register_one_primitive("while", while_op);
+    // register_one_primitive("while", while_op);
     register_one_primitive("repeat", repeat_op);
 
     register_one_compile_primitive("if", if_compile);

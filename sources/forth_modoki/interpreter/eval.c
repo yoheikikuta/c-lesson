@@ -133,6 +133,35 @@ void eval_exec_array(struct ElementArray *opelems) {
                     cont.exec_array = opelem.u.exec_array;
                     co_stack_push(&cont);
                     break;
+                } else if (streq(cont.exec_array->elements[i].u.name, "while")) {
+                    struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
+                    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem_body);
+                    stack_pop(&opelem_cond);
+                    cont.pc = ++i;
+                    co_stack_push(&cont);
+
+                    cont.pc = 0;
+                    struct ElementArray *while_elem_arr = (struct ElementArray*)malloc(sizeof(struct ElementArray)+sizeof(struct Element)*9);
+                    while_elem_arr->len = 8;
+                    while_elem_arr->elements[0] = opelem_cond;
+                    while_elem_arr->elements[1].etype = ELEMENT_EXEC_PRIMITIVE;
+                    while_elem_arr->elements[1].u.number = OP_EXEC;
+                    while_elem_arr->elements[2].etype = ELEMENT_NUMBER;
+                    while_elem_arr->elements[2].u.number = 5;
+                    while_elem_arr->elements[3].etype = ELEMENT_EXEC_PRIMITIVE;
+                    while_elem_arr->elements[3].u.number = OP_JMP_NOT_IF;
+                    while_elem_arr->elements[4] = opelem_body;
+                    while_elem_arr->elements[5].etype = ELEMENT_EXEC_PRIMITIVE;
+                    while_elem_arr->elements[5].u.number = OP_EXEC;
+                    while_elem_arr->elements[6].etype = ELEMENT_NUMBER;
+                    while_elem_arr->elements[6].u.number = -6;
+                    while_elem_arr->elements[7].etype = ELEMENT_EXEC_PRIMITIVE;
+                    while_elem_arr->elements[7].u.number = OP_JMP;
+                    cont.exec_array = while_elem_arr;
+                    co_stack_push(&cont);
+                    break;
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // add, sub, ...
                     opelem.u.cfunc();
@@ -204,6 +233,22 @@ void eval() {
                     } else if (flg.u.number == 0) {
                         eval_exec_array(opelem_if_false.u.exec_array);
                     }
+                } else if (streq(token.u.name, "while")) {
+                    // While operation: { exec_array1 } { exec_array2 } while
+                    // -> execute exec_array1, then repeat exec_array1 until the stack top is true (==1), then execute exec_array2
+                    struct Element opelem_cond = {NO_ELEM_TYPE, {0}};
+                    struct Element opelem_body = {NO_ELEM_TYPE, {0}};
+                    struct Element boolean_flg = {NO_ELEM_TYPE, {0}};
+
+                    stack_pop(&opelem_body);
+                    stack_pop(&opelem_cond);
+                    do {
+                        eval_exec_array(opelem_cond.u.exec_array);
+                        stack_pop(&boolean_flg);
+                        if (boolean_flg.u.number) {
+                            eval_exec_array(opelem_body.u.exec_array);
+                        }
+                    } while (boolean_flg.u.number);
                 } else if (opelem.etype == ELEMENT_C_FUNC) {
                     // add, sub, ...
                     opelem.u.cfunc();
