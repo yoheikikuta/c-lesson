@@ -14,9 +14,14 @@ _start:
 print_hex:
     lsr r3,r1,r2
     and r3,r3,#0x0F
-    add r3,r3,#0x37 @e.g., 13 + 0x37 -> 0x44 : D
+    cmp r3,#9
+    ble proc_one_hex 
+    add r3,r3,#0x27
+
+proc_one_hex:
+    add r3,r3,#0x30  @E.g., 9 + 0x30 -> 0x39 : 9, 13 + 0x27 + 0x30 -> 0x64 : d
     str r3,[r0]
-    sub r2,r2,#4
+    sub r2,r2,#4  @Reset r2 to move to the next 4 bits
     cmp r2,#0
     bge print_hex
 
