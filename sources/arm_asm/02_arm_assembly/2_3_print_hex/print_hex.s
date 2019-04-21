@@ -15,37 +15,15 @@ print_hex:
     and r3,r3,#0x0F
     add r3,r3,#0x37 @e.g., 13 + 0x37 -> 0x44 : D
     str r3,[r0]
-    lsr r3,r1,#24
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#20
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#16
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#12
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#8
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#4
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
-    lsr r3,r1,#0
-    and r3,r3,#0x0F
-    add r3,r3,#0x37
-    str r3,[r0]
+    cmp r2,#0
+    bne loop
     mov r3,#0x0D
     str r3,[r0]
     mov r3,#0x0A
     str r3,[r0]
 end:
     b end
+
+loop:
+    sub r2,r2,#4
+    bne print_hex
