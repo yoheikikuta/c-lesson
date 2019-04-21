@@ -1,3 +1,7 @@
 *.out
 *.dSYM
 .vscode
+*.bin
+*.elf
+*.o
+info.plist
