@@ -8,22 +8,31 @@
 _start:
     ldr r0,=0x101f1000
     ldr r1,=0xdeadbeaf
-    mov r2,#28  @Initial value of bit rotation
+    mov r2,#32  @ Initial value of bit rotation
     b print_hex
 
+/*
+The offset to convert integer 0-15 to ascii code 0-9 or a-f:
+    number (0-9) case : 0x30
+    alphabet (10-15) case : 0x57 
+E.g.,
+    9 + 0x30 -> 0x39 : 9
+    13 + 0x57 -> 0x64 : d
+*/
+
 print_hex:
+    sub r2,r2,#4  @ Reset r2 to move to the next 4 bits
     lsr r3,r1,r2
     and r3,r3,#0x0F
     cmp r3,#9
-    ble proc_one_hex 
-    add r3,r3,#0x27
+    ble print_one_hex
+    add r3,r3,#0x27  @ For alphabet case
 
-proc_one_hex:
-    add r3,r3,#0x30  @E.g., 9 + 0x30 -> 0x39 : 9, 13 + 0x27 + 0x30 -> 0x64 : d
+print_one_hex:
+    add r3,r3,#0x30
     str r3,[r0]
-    sub r2,r2,#4  @Reset r2 to move to the next 4 bits
     cmp r2,#0
-    bge print_hex
+    bgt print_hex
 
     @Line breaks for the visibility
     mov r3,#0x0D
