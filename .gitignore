@@ -1,1 +1,6 @@
 *.out
+.vscode
+*.bin
+*.elf
+*.o
+info.plist
