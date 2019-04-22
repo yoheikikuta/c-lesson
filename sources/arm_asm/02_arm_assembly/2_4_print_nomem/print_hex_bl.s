@@ -5,6 +5,7 @@ r0  : Input of print_hex
 r1  : UART address
 r2  : Bit rotation number used in lsr (0-32)
 r3  : Each 4 bits of r0 to be printed
+r4  : Offset to convert integers (0-15) to ascii characters (0-9 or a-f)
 r14 : Link register used in bl
 r15 : Program counter
 */
@@ -25,15 +26,21 @@ end:
 
 
 print_hex:
+  mov r4, #0x30  @ Set initial offset for number cases
+
   sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
   lsr r3, r0, r2
-  and r3, r3, #0x0F
+  and r3, r3, #0x0F  @ r3: 0100 1101 -> 0000 1101
+
   cmp r3, #9
-  ble print_one_hex
-  add r3, r3, #0x27  @ For alphabet case
+  ble convert_to_hex_ascii
+  add r4, r4, #0x27  @ Add offset for alphabet cases
+
+convert_to_hex_ascii:
+  add r3, r3, r4
+  b print_one_hex
 
 print_one_hex:
-  add r3, r3, #0x30
   str r3, [r1]
   cmp r2, #0
   bgt print_hex
