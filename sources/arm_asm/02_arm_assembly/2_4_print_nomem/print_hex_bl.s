@@ -3,7 +3,11 @@ _start:
 
   ldr r1,=0x101f1000
 
-  mov r0, r15
+  mov r0, r15  @ 8 bits ahead from the 2nd instruction -> 0x00010004 + 8 = 0x0001000c
+  add r15, r15, #4  @ This will skip the following TWO instructions
+  add r0, r0, #1  @ Skipped
+  add r0, r0, #2  @ Skipped
+  add r0, r0, #3  @ Expected: 0x0001000c + 3 = 0x0001000f
   bl print_hex
 
   mov r0, #0x68
