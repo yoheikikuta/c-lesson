@@ -12,12 +12,11 @@ r15 : Program counter
 _start:
 
   ldr r1,=0x101f1000
-
   mov r2, #32
+
   mov r0, r15
   bl print_hex
 
-  mov r2, #32
   mov r0, #0x68
   bl print_hex
 
@@ -45,5 +44,6 @@ print_one_hex:
   mov r3, #0x0A
   str r3, [r1]
 
-  @ Go to the next address
+  @ Reset r2 and go to the next address
+  mov r2, #32
   mov r15, r14
