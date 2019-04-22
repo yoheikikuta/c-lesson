@@ -1,4 +1,17 @@
 .globl _start
+_start:
+
+  ldr r1,=0x101f1000
+  mov r2, #28
+
+  mov r0, r15
+  bl print_hex
+
+  mov r0, #0x68
+  bl print_hex
+
+end:
+  b end
 
 /*
 r0  : Input of print_hex 
@@ -15,21 +28,6 @@ convert_to_hex_ascii :
   9 + 0x30 = 0x39 (9)
   13 + 0x30 + 0x27 = 0x64 (d)
 */
-
-_start:
-
-  ldr r1,=0x101f1000
-  mov r2, #28
-
-  mov r0, r15
-  bl print_hex
-
-  mov r0, #0x68
-  bl print_hex
-
-end:
-  b end
-
 
 print_hex:
   mov r4, #0x30  @ Set initial offset for number cases
