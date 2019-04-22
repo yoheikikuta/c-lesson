@@ -2,7 +2,6 @@
 _start:
 
   ldr r1,=0x101f1000
-  mov r2, #28
 
   mov r0, r15
   bl print_hex
@@ -30,6 +29,8 @@ convert_to_hex_ascii :
 */
 
 print_hex:
+  mov r2, #28
+_loop:
   mov r4, #0x30  @ Set initial offset for number cases
 
   lsr r3, r0, r2
@@ -45,7 +46,7 @@ convert_to_hex_ascii:
 str r3, [r1]
 sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
 cmp r2, #0
-bge print_hex
+bge _loop
 
 @ Line breaks for the visibility
 mov r3, #0x0D
@@ -53,6 +54,5 @@ str r3, [r1]
 mov r3, #0x0A
 str r3, [r1]
 
-@ Reset r2 as the initial value and go to the next address
-mov r2, #28
+@ Go to the next address
 mov r15, r14
