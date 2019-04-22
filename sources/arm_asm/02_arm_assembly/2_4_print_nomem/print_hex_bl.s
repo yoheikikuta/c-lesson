@@ -8,6 +8,12 @@ r3  : Each 4 bits of r0 to be printed
 r4  : Offset to convert integers (0-15) to ascii characters (0-9 or a-f)
 r14 : Link register used in bl
 r15 : Program counter
+
+print_hex : input 0xabcd1234 -> print abcd1234
+
+convert_to_hex_ascii : 
+  9 + 0x30 = 0x39 (9)
+  13 + 0x30 + 0x27 = 0x64 (d)
 */
 
 _start:
@@ -51,6 +57,6 @@ print_one_hex:
   mov r3, #0x0A
   str r3, [r1]
 
-  @ Reset r2 and go to the next address
+  @ Reset r2 as the initial value and go to the next address
   mov r2, #32
   mov r15, r14
