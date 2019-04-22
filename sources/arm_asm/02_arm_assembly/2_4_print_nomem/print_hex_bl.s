@@ -41,20 +41,18 @@ print_hex:
 
 convert_to_hex_ascii:
   add r3, r3, r4
-  b print_one_hex
 
-print_one_hex:
-  str r3, [r1]
-  sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
-  cmp r2, #0
-  bge print_hex
+str r3, [r1]
+sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
+cmp r2, #0
+bge print_hex
 
-  @ Line breaks for the visibility
-  mov r3, #0x0D
-  str r3, [r1]
-  mov r3, #0x0A
-  str r3, [r1]
+@ Line breaks for the visibility
+mov r3, #0x0D
+str r3, [r1]
+mov r3, #0x0A
+str r3, [r1]
 
-  @ Reset r2 as the initial value and go to the next address
-  mov r2, #28
-  mov r15, r14
+@ Reset r2 as the initial value and go to the next address
+mov r2, #28
+mov r15, r14
