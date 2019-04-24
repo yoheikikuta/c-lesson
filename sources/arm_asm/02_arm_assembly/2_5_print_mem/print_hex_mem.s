@@ -55,8 +55,8 @@ _loop:
         9 + 0x30 = 0x39 ('9')
         13 + 0x30 + 0x27 = 0x64 ('d')
   */
-  _convert_to_hex_ascii:
-    add r3, r3, r4
+_convert_to_hex_ascii:
+  add r3, r3, r4
 
   bl putchar
   sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
