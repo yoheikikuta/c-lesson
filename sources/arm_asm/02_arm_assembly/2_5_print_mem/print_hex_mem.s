@@ -52,8 +52,8 @@ _loop:
   /*
     _convert_to_hex_ascii : 
       e.g.,
-        9 + 0x30 = 0x39 (9)
-        13 + 0x30 + 0x27 = 0x64 (d)
+        9 + 0x30 = 0x39 ('9')
+        13 + 0x30 + 0x27 = 0x64 ('d')
   */
   _convert_to_hex_ascii:
     add r3, r3, r4
