@@ -63,20 +63,9 @@ _loop:
   cmp r2, #0
   bge _loop
 
-  /*
-    _line_break : Print line breas for the visiblity. 
-      used internal registers :
-        r1 : UART.
-        r2 : Char.
-  */
-  _line_break : 
-    stmdb r13!, {r1, r2}
-    ldr r1,=0x101f1000
-    mov r2, #0x0D
-    str r2, [r1]
-    mov r2, #0x0A
-    str r2, [r1]
-    ldmia r13!, {r1, r2}
+  @ Add linebreak for the visibility.
+  mov r3, #0x0a
+  putchar
 
   @ Go to the next instruction.
   ldmia r13!, {r2, r3, r4, r14}
