@@ -49,35 +49,35 @@ _loop:
   ble _convert_to_hex_ascii
   add r4, r4, #0x27  @ Add offset for alphabet cases
 
-/*
-  _convert_to_hex_ascii : 
-    e.g.,
-      9 + 0x30 = 0x39 (9)
-      13 + 0x30 + 0x27 = 0x64 (d)
-*/
-_convert_to_hex_ascii:
-  add r3, r3, r4
+  /*
+    _convert_to_hex_ascii : 
+      e.g.,
+        9 + 0x30 = 0x39 (9)
+        13 + 0x30 + 0x27 = 0x64 (d)
+  */
+  _convert_to_hex_ascii:
+    add r3, r3, r4
 
-bl putchar
-sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
-cmp r2, #0
-bge _loop
+  bl putchar
+  sub r2, r2, #4  @ Reset r2 to move to the next 4 bits
+  cmp r2, #0
+  bge _loop
 
-/*
-  _line_break : Print line breas for the visiblity. 
-    used internal registers :
-      r1 : UART.
-      r2 : Char.
-*/
-_line_break : 
-  stmdb r13!, {r1, r2}
-  ldr r1,=0x101f1000
-  mov r2, #0x0D
-  str r2, [r1]
-  mov r2, #0x0A
-  str r2, [r1]
-  ldmia r13!, {r1, r2}
+  /*
+    _line_break : Print line breas for the visiblity. 
+      used internal registers :
+        r1 : UART.
+        r2 : Char.
+  */
+  _line_break : 
+    stmdb r13!, {r1, r2}
+    ldr r1,=0x101f1000
+    mov r2, #0x0D
+    str r2, [r1]
+    mov r2, #0x0A
+    str r2, [r1]
+    ldmia r13!, {r1, r2}
 
-@ Go to the next instruction.
-ldmia r13!, {r2, r3, r4, r14}
-mov r15, r14
+  @ Go to the next instruction.
+  ldmia r13!, {r2, r3, r4, r14}
+  mov r15, r14
