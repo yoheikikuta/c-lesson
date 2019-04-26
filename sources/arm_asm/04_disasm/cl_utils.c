@@ -68,8 +68,19 @@ static void test_print_asm_mov_0x68() {
     assert(expect == actual);
 }
 
+static void test_print_asm_not_instruction() {
+    int input = 0x64646464;
+    int expect = 0;
+
+    int actual = 0;
+    actual = print_asm(input);
+
+    assert(expect == actual);
+}
+
 static void unit_tests() {
     test_print_asm_mov_0x68();
+    test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 }
 
