@@ -80,6 +80,10 @@ int print_asm(int word) {
         offset_v = abs(offset_v << 2);  // ARM specifications
         cl_printf("b [r15, %s%x]\n", offset_s, offset_v);
         return 1;
+    } else if(word == 0xE59F0038) {
+        // LDR: ldr r0, [r15, 0x40]
+        cl_printf("ldr r0, [r15, #0x40]\n");
+        return 1;
     } else if(0xE5800000 == (word & 0xE5800000)) {
         // STR: str rX, [r0]
         // Breakdown of 32 bits: [4 bits] 01 [10 bits] [dest register 4 bit] [12 bits]
@@ -179,6 +183,18 @@ static void test_print_asm_str_dest_r2() {
     cl_clear_output();
 }
 
+static void test_print_asm_ldr() {
+    int input = 0xE59F0038;
+    char* expect = "ldr r0, [r15, #0x40]\n";
+
+    char* actual;
+    print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -199,6 +215,7 @@ static void unit_tests() {
     test_print_asm_b_positive();
     test_print_asm_str();
     test_print_asm_str_dest_r2();
+    test_print_asm_ldr();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
