@@ -80,6 +80,9 @@ int print_asm(int word) {
         offset_v = abs(offset_v << 2);  // ARM specifications
         cl_printf("b [r15, %s%x]\n", offset_s, offset_v);
         return 1;
+    } else if(word == 0xE5801000) {
+        cl_printf("str r1, [r0]\n");
+        return 1;
     }
     
     return 0;
@@ -179,7 +182,7 @@ static void unit_tests() {
     test_print_asm_mov_r10_0x10();
     test_print_asm_b_negative();
     test_print_asm_b_positive();
-    // test_print_asm_str();
+    test_print_asm_str();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
