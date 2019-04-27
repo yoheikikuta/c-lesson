@@ -56,9 +56,11 @@ void cl_printf(char *fmt, ...) {
 }
 
 int print_asm(int word) {
-    if(word == 0xE3A01068) {
-      cl_printf("mov r1, #0x68\n");
-      return 1;
+    if(0xE3A01000 == (word & 0xE3A01000)) {
+        // MOV: mov r1, 0xXX
+        int immdediate_v = (word & 0x000000FF);
+        cl_printf("mov r1, #0x%x\n", immdediate_v);
+        return 1;
     }
     return 0;
 }
@@ -105,7 +107,7 @@ static void unit_tests() {
     cl_enable_buffer_mode();
 
     test_print_asm_mov_0x68();
-    // test_print_asm_mov_0x65();
+    test_print_asm_mov_0x65();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
