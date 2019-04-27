@@ -59,13 +59,14 @@ void cl_printf(char *fmt, ...) {
 int print_asm(int word) {
     if(0xE3A00000 == (word & 0xE3A00000)) {
         // MOV: mov rX, 0xXX
+        // Breakdown of 32 bits: [16 bits] [dest register 4 bits] [4 bits] [immediate value 8 bits]
         int register_v = (word & 0x0000F000) >> 4*3;
         int immdediate_v = (word & 0x000000FF);
         cl_printf("mov r%i, #0x%x\n", register_v, immdediate_v);
         return 1;
     } else if(0xEA000000 == (word & 0xEA000000)) {
         // BRANCH: b [r15, #0xXX]
-        // Breakdown of 32 bits: [8 bits] [offset 24 bits]
+        // Breakdown of 32 bits: [4 bits] 101 [1 bit] [offset 24 bits]
         int offset_v;
         char* offset_s;
         int is_negative = (word << 8) < 0;
