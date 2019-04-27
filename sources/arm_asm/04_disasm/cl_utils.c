@@ -14,7 +14,7 @@ int streq(char* s1, char* s2) {
 }
 
 void assert_two_str_eq(char* s1, char* s2) {
-    streq(s1, s2);
+    assert(streq(s1, s2));
 }
 
 void cl_clear_output() {
