@@ -93,6 +93,18 @@ static void test_print_asm_mov_0x65() {
     cl_clear_output();
 }
 
+static void test_print_asm_mov_r2_0x10() {
+    int input = 0xE3A02010;
+    char* expect = "mov r2, #0x10\n";
+
+    char* actual;
+    print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -108,6 +120,7 @@ static void unit_tests() {
 
     test_print_asm_mov_0x68();
     test_print_asm_mov_0x65();
+    // test_print_asm_mov_r2_0x10();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
