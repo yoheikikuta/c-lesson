@@ -1,12 +1,21 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 static char buf[100*1024];
 
 static int to_buffer = 0;
 static int pos = 0;
 
+
+int streq(char* s1, char* s2) {
+    return strcmp(s1, s2) == 0;
+}
+
+void assert_two_str_eq(char* s1, char* s2) {
+    streq(s1, s2);
+}
 
 void cl_clear_output() {
     pos = 0;
@@ -60,12 +69,14 @@ int print_asm(int word) {
 
 static void test_print_asm_mov_0x68() {
     int input = 0xE3A01068;
-    int expect = 1;
+    char* expect = "mov r1, #0x68\n";
 
-    int actual = 0;
-    actual = print_asm(input);
+    char* actual;
+    print_asm(input);
+    actual = cl_get_result(0);
 
-    assert(expect == actual);
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
 }
 
 static void test_print_asm_not_instruction() {
@@ -79,9 +90,13 @@ static void test_print_asm_not_instruction() {
 }
 
 static void unit_tests() {
+    cl_enable_buffer_mode();
+
     test_print_asm_mov_0x68();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
+
+    cl_disable_buffer_mode();
 }
 
 
