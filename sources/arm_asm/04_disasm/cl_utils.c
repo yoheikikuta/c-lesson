@@ -56,10 +56,11 @@ void cl_printf(char *fmt, ...) {
 }
 
 int print_asm(int word) {
-    if(0xE3A01000 == (word & 0xE3A01000)) {
-        // MOV: mov r1, 0xXX
+    if(0xE3A00000 == (word & 0xE3A00000)) {
+        // MOV: mov rX, 0xXX
+        int register_v = (word & 0x0000F000) >> 4*3;
         int immdediate_v = (word & 0x000000FF);
-        cl_printf("mov r1, #0x%x\n", immdediate_v);
+        cl_printf("mov r%i, #0x%x\n", register_v, immdediate_v);
         return 1;
     }
     return 0;
@@ -93,9 +94,9 @@ static void test_print_asm_mov_0x65() {
     cl_clear_output();
 }
 
-static void test_print_asm_mov_r2_0x10() {
-    int input = 0xE3A02010;
-    char* expect = "mov r2, #0x10\n";
+static void test_print_asm_mov_r10_0x10() {
+    int input = 0xE3A0A010;
+    char* expect = "mov r10, #0x10\n";
 
     char* actual;
     print_asm(input);
@@ -120,7 +121,7 @@ static void unit_tests() {
 
     test_print_asm_mov_0x68();
     test_print_asm_mov_0x65();
-    // test_print_asm_mov_r2_0x10();
+    test_print_asm_mov_r10_0x10();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
