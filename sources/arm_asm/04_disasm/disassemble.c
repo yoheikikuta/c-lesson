@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include "cl_utils.h"
 
+#define INSTRUCTION_BYTE_SIZE 4
+
+
 int print_asm(int word) {
     if (0xE3A00000 == (word & 0xE3A00000)) {
         // MOV: mov rX, 0xXX
@@ -43,33 +46,35 @@ int print_asm(int word) {
 }
 
 void file_disassemble(FILE* fp) {
-    // Print disassembled binary file contens:
+    // Print disassembled binary file contents:
     //   0x00010000  ldr r0, [r15, #0x40]
     //   0x00010004  mov r1, #0x68
     //   ...
-    int inst_4_bytes[4];
+    int one_inst_bytes[4];
     int pos_byte = 0;
     int word;
     int c;
     int address = 0x00010000;
 
     while ( (c = fgetc(fp)) != EOF) {
-        if (pos_byte > 3) {
-            printf("0x%08X  ", address);
+        if (pos_byte == INSTRUCTION_BYTE_SIZE) {
             word = 0x00000000;
             while (--pos_byte >= 0) {
-                word = word + (inst_4_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
+                word = word + (one_inst_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
             }
+
+            printf("0x%08X  ", address);
             if (!print_asm(word)) {
-                for (int i = 0; i < 4; i++) {
-                    printf("%02X ", inst_4_bytes[i]);
+                for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
+                    printf("%02X ", one_inst_bytes[i]);
                 }
                 printf("\n");
             }
+
             pos_byte = 0;
             address = address + 0x04;
         }
-        inst_4_bytes[pos_byte] = c;
+        one_inst_bytes[pos_byte] = c;
         pos_byte++;
     }
 }
