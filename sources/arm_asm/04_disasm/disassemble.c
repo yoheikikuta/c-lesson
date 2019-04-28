@@ -63,12 +63,12 @@ void file_disassemble(FILE* fp) {
                 word = word + (one_inst_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
             }
 
-            printf("0x%08X  ", address);
+            cl_printf("0x%08X  ", address);
             if (!print_asm(word)) {
                 for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
-                    printf("%02X ", one_inst_bytes[i]);
+                    cl_printf("%02X ", one_inst_bytes[i]);
                 }
-                printf("\n");
+                cl_printf("\n");
             }
 
             pos_byte = 0;
