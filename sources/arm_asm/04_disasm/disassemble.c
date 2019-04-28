@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include "cl_utils.h"
-
 
 int print_asm(int word) {
     if(0xE3A00000 == (word & 0xE3A00000)) {
@@ -171,6 +171,35 @@ static void unit_tests() {
 
 
 int main(int argc, char* argv[]) {
-    unit_tests();
+    if (argc > 1) {
+        FILE *fp = NULL;
+        char *fname = argv[1];
+        if((fp = fopen(fname, "r")) == NULL) {
+			printf("ERROR: cannot read the given file.\n");
+		}
+
+        int inst_4_bytes[4];
+        int pos_byte = 0;
+        int word;
+        int c;
+        while ( (c = fgetc(fp)) != EOF) {
+            if (pos_byte > 3) {
+                word = 0x00000000;
+                while (--pos_byte >= 0) {
+                    word = word + (inst_4_bytes[pos_byte] << pos_byte*4*2);
+                }
+                if(!print_asm(word)) {
+                    printf("UNKNOWN BINARY\n");
+                }
+                pos_byte = 0;
+            }
+            inst_4_bytes[pos_byte] = c;
+            pos_byte++;
+        }
+
+        fclose(fp);
+    } else {
+        unit_tests();
+    }
     return 0;
 }
