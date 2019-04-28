@@ -59,7 +59,10 @@ void file_disassemble(FILE* fp) {
                 word = word + (inst_4_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
             }
             if (!print_asm(word)) {
-                printf("UNKNOWN BINARY\n");
+                for (int i = 0; i < 4; i++) {
+                    printf("%02X ", inst_4_bytes[i]);
+                }
+                printf("\n");
             }
             pos_byte = 0;
         }
