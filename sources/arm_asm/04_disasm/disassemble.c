@@ -12,7 +12,7 @@ int print_asm(int word) {
         // Breakdown of 32 bits: [16 bits] [dest register 4 bits] [4 bits] [immediate value 8 bits]
         int register_v = (word & 0x0000F000) >> 4*3;
         int immdediate_v = (word & 0x000000FF);
-        cl_printf("mov r%i, #0x%x\n", register_v, immdediate_v);
+        cl_printf("mov r%i, #0x%02X\n", register_v, immdediate_v);
         return 1;
     } else if (0xEA000000 == (word & 0xEA000000)) {
         // BRANCH: b [r15, #0xXX]
@@ -28,7 +28,7 @@ int print_asm(int word) {
             offset_s = "#0x";
         }
         offset_v = abs(offset_v << 2);  // ARM specifications
-        cl_printf("b [r15, %s%x]\n", offset_s, offset_v);
+        cl_printf("b [r15, %s%X]\n", offset_s, offset_v);
         return 1;
     } else if (word == 0xE59F0038) {
         // LDR: ldr r0, [r15, 0x40]
