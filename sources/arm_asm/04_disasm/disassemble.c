@@ -45,46 +45,64 @@ int print_asm(int word) {
     return 0;
 }
 
+void print_asm_hex_dump(int word) {
+    // 0x101F1000 -> 00 10 1F 10\n (little endian) 
+    int sub_word;
+    for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
+        sub_word = word >> i*8;
+        sub_word = sub_word & 0x000000FF;
+        cl_printf("%02X ", sub_word);
+    }
+    cl_printf("\n");
+}
+
+int read_one_word(FILE* fp, int* out_word) {
+    // 38009FE5 -> *out_word = 0XE59F0038
+    // If reaching the end of file, cur = EOF.
+    int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
+    int cur;
+    *out_word = 0x00000000;
+
+    for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
+        cur = fgetc(fp);
+        if (cur == EOF) {
+            return cur;
+        }
+        one_inst_bytes[i] = cur;
+    }
+
+    for (int i = INSTRUCTION_BYTE_SIZE-1; i >= 0; i--) {
+        *out_word = *out_word + (one_inst_bytes[i] << i*8);
+    }
+
+    return cur;
+}
+
 void file_disassemble(FILE* fp) {
     // Print disassembled binary file contents:
     //   0x00010000  ldr r0, [r15, #0x40]
     //   0x00010004  mov r1, #0x68
     //   ...
     //   0x00010030  64 64 64 64
-    //   (continue to print hex dumping once encounter an unknown binary)
-    int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
-    int pos_byte = 0;
+    //   (continue to print hex dumping once encountering an unknown binary)
+    int cur = 0;
     int word;
-    int c;
     int address = 0x00010000;
-    int is_known_binary = 1;
+    int hex_dump_flg = 0;
 
-    while ( (c = fgetc(fp)) != EOF) {
-        // Read bytes into one_inst_bytes up to INSTRUCTION_BYTE_SIZE
-        one_inst_bytes[pos_byte++] = c;
-        if (pos_byte < INSTRUCTION_BYTE_SIZE) {
-            continue;
-        }
-        pos_byte = 0;
+    while (1) {
+        cur = read_one_word(fp, &word);
+        if (cur == EOF) {break;}
 
-        // Create one word (little endian)
-        word = 0x00000000;
-        for (int i = INSTRUCTION_BYTE_SIZE; i >= 0; --i) {
-            word = word + (one_inst_bytes[i] << i*8);
-        }
-
-        // Print one line:
         cl_printf("0x%08X  ", address);
-        if (is_known_binary) {
-            is_known_binary *= print_asm(word);
-        }
-        if (!is_known_binary) {
-            for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
-                cl_printf("%02X ", one_inst_bytes[i]);
-            }
-            cl_printf("\n");
-        }
         address = address + 0x04;
+
+        if (!hex_dump_flg) {
+            hex_dump_flg = 1 - print_asm(word);
+        }
+        if (hex_dump_flg) {
+            print_asm_hex_dump(word);
+        }
     }
 }
 
