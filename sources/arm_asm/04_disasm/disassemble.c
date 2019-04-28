@@ -50,11 +50,14 @@ void file_disassemble(FILE* fp) {
     //   0x00010000  ldr r0, [r15, #0x40]
     //   0x00010004  mov r1, #0x68
     //   ...
+    //   0x00010030  64 64 64 64
+    //   (continue to print hex dumping once encounter an unknown binary)
     int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
     int pos_byte = 0;
     int word;
     int c;
     int address = 0x00010000;
+    int is_known_binary = 1;
 
     while ( (c = fgetc(fp)) != EOF) {
         // Read bytes into one_inst_bytes up to INSTRUCTION_BYTE_SIZE
@@ -71,10 +74,11 @@ void file_disassemble(FILE* fp) {
         }
 
         // Print one line:
-        //   known instructions: [address] [mnemonic]
-        //   unknown instructions: [address] [hex dump]
         cl_printf("0x%08X  ", address);
-        if (!print_asm(word)) {
+        if (is_known_binary) {
+            is_known_binary *= print_asm(word);
+        }
+        if (!is_known_binary) {
             for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
                 cl_printf("%02X ", one_inst_bytes[i]);
             }
