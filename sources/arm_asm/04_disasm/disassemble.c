@@ -50,32 +50,37 @@ void file_disassemble(FILE* fp) {
     //   0x00010000  ldr r0, [r15, #0x40]
     //   0x00010004  mov r1, #0x68
     //   ...
-    int one_inst_bytes[4];
+    int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
     int pos_byte = 0;
     int word;
     int c;
     int address = 0x00010000;
 
     while ( (c = fgetc(fp)) != EOF) {
-        if (pos_byte == INSTRUCTION_BYTE_SIZE) {
-            word = 0x00000000;
-            while (--pos_byte >= 0) {
-                word = word + (one_inst_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
-            }
-
-            cl_printf("0x%08X  ", address);
-            if (!print_asm(word)) {
-                for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
-                    cl_printf("%02X ", one_inst_bytes[i]);
-                }
-                cl_printf("\n");
-            }
-
-            pos_byte = 0;
-            address = address + 0x04;
+        // Read bytes into one_inst_bytes up to INSTRUCTION_BYTE_SIZE
+        one_inst_bytes[pos_byte++] = c;
+        if (pos_byte < INSTRUCTION_BYTE_SIZE) {
+            continue;
         }
-        one_inst_bytes[pos_byte] = c;
-        pos_byte++;
+        pos_byte = 0;
+
+        // Create one word (little endian)
+        word = 0x00000000;
+        for (int i = INSTRUCTION_BYTE_SIZE; i >= 0; --i) {
+            word = word + (one_inst_bytes[i] << i*8);
+        }
+
+        // Print one line:
+        //   known instructions: [address] [mnemonic]
+        //   unknown instructions: [address] [hex dump]
+        cl_printf("0x%08X  ", address);
+        if (!print_asm(word)) {
+            for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
+                cl_printf("%02X ", one_inst_bytes[i]);
+            }
+            cl_printf("\n");
+        }
+        address = address + 0x04;
     }
 }
 
