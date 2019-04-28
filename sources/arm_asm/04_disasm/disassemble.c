@@ -4,20 +4,20 @@
 #include "cl_utils.h"
 
 int print_asm(int word) {
-    if(0xE3A00000 == (word & 0xE3A00000)) {
+    if (0xE3A00000 == (word & 0xE3A00000)) {
         // MOV: mov rX, 0xXX
         // Breakdown of 32 bits: [16 bits] [dest register 4 bits] [4 bits] [immediate value 8 bits]
         int register_v = (word & 0x0000F000) >> 4*3;
         int immdediate_v = (word & 0x000000FF);
         cl_printf("mov r%i, #0x%x\n", register_v, immdediate_v);
         return 1;
-    } else if(0xEA000000 == (word & 0xEA000000)) {
+    } else if (0xEA000000 == (word & 0xEA000000)) {
         // BRANCH: b [r15, #0xXX]
         // Breakdown of 32 bits: [4 bits] 101 [1 bit] [offset 24 bits]
         int offset_v;
         char* offset_s;
         int is_negative = (word << 8) < 0;
-        if(is_negative) {
+        if (is_negative) {
             offset_v = (word | 0xFF000000);  // 1111 1111 [offset 24 bits]
             offset_s = "#-0x";
         } else {
@@ -27,11 +27,11 @@ int print_asm(int word) {
         offset_v = abs(offset_v << 2);  // ARM specifications
         cl_printf("b [r15, %s%x]\n", offset_s, offset_v);
         return 1;
-    } else if(word == 0xE59F0038) {
+    } else if (word == 0xE59F0038) {
         // LDR: ldr r0, [r15, 0x40]
         cl_printf("ldr r0, [r15, #0x40]\n");
         return 1;
-    } else if(0xE5800000 == (word & 0xE5800000)) {
+    } else if (0xE5800000 == (word & 0xE5800000)) {
         // STR: str rX, [r0]
         // Breakdown of 32 bits: [4 bits] 01 [10 bits] [dest register 4 bit] [12 bits]
         int register_v = (word & 0x0000F000) >> 4*3;
@@ -43,17 +43,22 @@ int print_asm(int word) {
 }
 
 void file_disassemble(FILE* fp) {
+    // Print disassembled binary file contens:
+    //   ldr r0, [r15, #0x40]
+    //   mov r1, #0x68
+    //   ...
     int inst_4_bytes[4];
     int pos_byte = 0;
     int word;
     int c;
+
     while ( (c = fgetc(fp)) != EOF) {
         if (pos_byte > 3) {
             word = 0x00000000;
             while (--pos_byte >= 0) {
-                word = word + (inst_4_bytes[pos_byte] << pos_byte*4*2);
+                word = word + (inst_4_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
             }
-            if(!print_asm(word)) {
+            if (!print_asm(word)) {
                 printf("UNKNOWN BINARY\n");
             }
             pos_byte = 0;
@@ -195,7 +200,7 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         FILE *fp = NULL;
         char *fname = argv[1];
-        if((fp = fopen(fname, "r")) == NULL) {
+        if ((fp = fopen(fname, "r")) == NULL) {
 			printf("ERROR: cannot read the given file.\n");
 		}
 
