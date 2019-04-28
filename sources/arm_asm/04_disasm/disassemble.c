@@ -44,16 +44,18 @@ int print_asm(int word) {
 
 void file_disassemble(FILE* fp) {
     // Print disassembled binary file contens:
-    //   ldr r0, [r15, #0x40]
-    //   mov r1, #0x68
+    //   0x00010000  ldr r0, [r15, #0x40]
+    //   0x00010004  mov r1, #0x68
     //   ...
     int inst_4_bytes[4];
     int pos_byte = 0;
     int word;
     int c;
+    int address = 0x00010000;
 
     while ( (c = fgetc(fp)) != EOF) {
         if (pos_byte > 3) {
+            printf("0x%08X  ", address);
             word = 0x00000000;
             while (--pos_byte >= 0) {
                 word = word + (inst_4_bytes[pos_byte] << pos_byte*8);  // 1byte = 8bits
@@ -65,6 +67,7 @@ void file_disassemble(FILE* fp) {
                 printf("\n");
             }
             pos_byte = 0;
+            address = address + 0x04;
         }
         inst_4_bytes[pos_byte] = c;
         pos_byte++;
