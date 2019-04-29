@@ -45,8 +45,8 @@ int print_asm(int word) {
     return 0;
 }
 
+// 0x101F1000 -> print 00 10 1F 10\n (little endian) 
 void print_asm_hex_dump(int word) {
-    // 0x101F1000 -> 00 10 1F 10\n (little endian) 
     int word_le;
     for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
         word_le = word >> i*8;
@@ -56,9 +56,9 @@ void print_asm_hex_dump(int word) {
     cl_printf("\n");
 }
 
+// 38009FE5 -> return cur = 0xE5, *out_word = 0xE59F0038
+// When reaching the end of file, return cur = EOF
 int read_one_word(FILE* fp, int* out_word) {
-    // 38009FE5 -> return cur = 0xE5, *out_word = 0xE59F0038
-    // When reaching the end of file, return cur = EOF
     int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
     int cur;
     *out_word = 0x00000000;
@@ -78,13 +78,13 @@ int read_one_word(FILE* fp, int* out_word) {
     return cur;
 }
 
+// Print disassembled binary file contents:
+//   0x00010000  ldr r0, [r15, #0x40]
+//   0x00010004  mov r1, #0x68
+//   ...
+//   0x00010030  64 64 64 64
+//   (continue to print hex dumping once encountering an unknown binary)
 void file_disassemble(FILE* fp) {
-    // Print disassembled binary file contents:
-    //   0x00010000  ldr r0, [r15, #0x40]
-    //   0x00010004  mov r1, #0x68
-    //   ...
-    //   0x00010030  64 64 64 64
-    //   (continue to print hex dumping once encountering an unknown binary)
     int cur = 0;
     int word;
     int address = 0x00010000;
