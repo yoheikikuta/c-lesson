@@ -47,18 +47,18 @@ int print_asm(int word) {
 
 void print_asm_hex_dump(int word) {
     // 0x101F1000 -> 00 10 1F 10\n (little endian) 
-    int sub_word;
+    int word_le;
     for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
-        sub_word = word >> i*8;
-        sub_word = sub_word & 0x000000FF;
-        cl_printf("%02X ", sub_word);
+        word_le = word >> i*8;
+        word_le = word_le & 0x000000FF;
+        cl_printf("%02X ", word_le);
     }
     cl_printf("\n");
 }
 
 int read_one_word(FILE* fp, int* out_word) {
-    // 38009FE5 -> *out_word = 0XE59F0038
-    // If reaching the end of file, cur = EOF.
+    // 38009FE5 -> return cur = 0xE5, *out_word = 0xE59F0038
+    // When reaching the end of file, return cur = EOF
     int one_inst_bytes[INSTRUCTION_BYTE_SIZE];
     int cur;
     *out_word = 0x00000000;
@@ -88,19 +88,16 @@ void file_disassemble(FILE* fp) {
     int cur = 0;
     int word;
     int address = 0x00010000;
-    int hex_dump_flg = 0;
+    int is_known_bin = 1;
 
-    while (1) {
-        cur = read_one_word(fp, &word);
-        if (cur == EOF) {break;}
-
+    while ((cur = read_one_word(fp, &word)) != EOF) {
         cl_printf("0x%08X  ", address);
         address = address + 0x04;
 
-        if (!hex_dump_flg) {
-            hex_dump_flg = 1 - print_asm(word);
+        if (is_known_bin) {
+            is_known_bin = print_asm(word);
         }
-        if (hex_dump_flg) {
+        if (!is_known_bin) {
             print_asm_hex_dump(word);
         }
     }
