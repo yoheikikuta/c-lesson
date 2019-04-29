@@ -66,6 +66,11 @@ int read_one_word(FILE* fp, int* out_word) {
     for (int i = 0; i < INSTRUCTION_BYTE_SIZE; i++) {
         cur = fgetc(fp);
         if (cur == EOF) {
+            // 1~3 bytes case at the end of the file.
+            // 101F -> 00001F10
+            for (int j = i-1; j >= 0; j--) {
+                *out_word = *out_word + (one_inst_bytes[j] << j*8);
+            }
             return cur;
         }
         one_inst_bytes[i] = cur;
@@ -100,6 +105,13 @@ void file_disassemble(FILE* fp) {
         if (exist_unknown_bin) {
             print_asm_hex_dump(word);
         }
+    }
+
+    // 1~3 bytes case at the end of the file.
+    // 101F -> 101F0000
+    if (word != 0x00000000) {
+        cl_printf("0x%08X  ", address);
+        print_asm_hex_dump(word);
     }
 }
 
