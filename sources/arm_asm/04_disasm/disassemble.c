@@ -6,7 +6,7 @@
 #define INSTRUCTION_BYTE_SIZE 4
 
 
-int print_asm(int word) {
+int try_print_asm(int word) {
     if (0xE3A00000 == (word & 0xE3A00000)) {
         // MOV: mov rX, 0xXX
         // Breakdown of 32 bits: [16 bits] [dest register 4 bits] [4 bits] [immediate value 8 bits]
@@ -88,16 +88,16 @@ void file_disassemble(FILE* fp) {
     int cur = 0;
     int word;
     int address = 0x00010000;
-    int is_known_bin = 1;
+    int exist_unknown_bin = 0;
 
     while ((cur = read_one_word(fp, &word)) != EOF) {
         cl_printf("0x%08X  ", address);
         address = address + 0x04;
 
-        if (is_known_bin) {
-            is_known_bin = print_asm(word);
+        if (!exist_unknown_bin) {
+            exist_unknown_bin = !try_print_asm(word);
         }
-        if (!is_known_bin) {
+        if (exist_unknown_bin) {
             print_asm_hex_dump(word);
         }
     }
@@ -112,7 +112,7 @@ static void test_print_asm_mov_0x68() {
     char* expect = "mov r1, #0x68\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -124,7 +124,7 @@ static void test_print_asm_mov_0x65() {
     char* expect = "mov r1, #0x65\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -136,7 +136,7 @@ static void test_print_asm_mov_r10_0x10() {
     char* expect = "mov r10, #0x10\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -148,7 +148,7 @@ static void test_print_asm_b_negative() {
     char* expect = "b [r15, #-0x8]\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -160,7 +160,7 @@ static void test_print_asm_b_positive() {
     char* expect = "b [r15, #0x10]\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -172,7 +172,7 @@ static void test_print_asm_str() {
     char* expect = "str r1, [r0]\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -184,7 +184,7 @@ static void test_print_asm_str_dest_r2() {
     char* expect = "str r2, [r0]\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -196,7 +196,7 @@ static void test_print_asm_ldr() {
     char* expect = "ldr r0, [r15, #0x40]\n";
 
     char* actual;
-    print_asm(input);
+    try_print_asm(input);
     actual = cl_get_result(0);
 
     assert_two_str_eq(expect, actual);
@@ -208,7 +208,7 @@ static void test_print_asm_not_instruction() {
     int expect = 0;
 
     int actual = 0;
-    actual = print_asm(input);
+    actual = try_print_asm(input);
 
     assert(expect == actual);
 }
