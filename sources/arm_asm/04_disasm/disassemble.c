@@ -34,7 +34,7 @@ int try_print_asm(int word) {
         // LDR: ldr r0, [r15, 0x40]
         cl_printf("ldr r0, [r15, #0x40]\n");
         return 1;
-    } else if (0xE5800000 == (word & 0xE5800000)) {
+    } else if ((0xE5800000 == (word & 0xE5800000)) & ((word >> 20 & 0x00000001) == 0)) {
         // STR: str rX, [r0]
         // Breakdown of 32 bits: [4 bits] 01 [10 bits] [dest register 4 bit] [12 bits]
         int register_v = (word & 0x0000F000) >> 4*3;
