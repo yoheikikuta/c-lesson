@@ -49,6 +49,10 @@ int try_print_asm(int word) {
             cl_printf("ldr r%i, [r15, #0x%02X]\n", register_v, offset_v);
             return 1;
         }
+    } else if (word == 0xE2811001) {
+        // ADD: add r1, r1, #1
+        cl_printf("add r1, r1, #1\n");
+        return 1;
     }
     
     return 0;
@@ -307,7 +311,7 @@ static void unit_tests() {
     test_print_asm_ldr();
     test_print_asm_ldr_dest_r1();
     test_print_asm_ldrb();
-    // test_print_asm_add();
+    test_print_asm_add();
     // test_print_asm_cmp();
     // test_print_asm_bne();
     test_print_asm_not_instruction();
