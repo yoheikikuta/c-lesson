@@ -49,13 +49,16 @@ int try_print_asm(int word) {
             cl_printf("ldr r%i, [r15, #0x%02X]\n", register_v, offset_v);
             return 1;
         }
+    } else if (0xE3500000 == (word & 0xE3500000)) {
+        // CMP: cmp rX, #X
+        // Breakdown of 32 bits: [4 bits] 001 1010 [5 bits] [dest register 4 bits] [operand2 12 bits]
+        int register_v = (word & 0x000F0000) >> 4*4;
+        int immediate_v = (word & 0x0000000F);
+        cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
+        return 1;
     } else if (word == 0xE2811001) {
         // ADD: add r1, r1, #1
         cl_printf("add r1, r1, #1\n");
-        return 1;
-    } else if (word == 0xE3530000) {
-        // CMP: cmp r3, #0
-        cl_printf("cmp r3, #0\n");
         return 1;
     } else if (word == 0x1AFFFFFA) {
         // BNE: bne #0xc
