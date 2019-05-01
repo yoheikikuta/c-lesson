@@ -57,6 +57,10 @@ int try_print_asm(int word) {
         // CMP: cmp r3, #0
         cl_printf("cmp r3, #0\n");
         return 1;
+    } else if (word == 0x1AFFFFFA) {
+        // BNE: bne #0xc
+        cl_printf("bne #0xc\n");
+        return 1;
     }
     
     return 0;
@@ -317,7 +321,7 @@ static void unit_tests() {
     test_print_asm_ldrb();
     test_print_asm_add();
     test_print_asm_cmp();
-    // test_print_asm_bne();
+    test_print_asm_bne();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
