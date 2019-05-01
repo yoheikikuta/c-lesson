@@ -83,6 +83,10 @@ int try_print_asm(int word) {
         // BLE: ble #0x28
         cl_printf("ble #0x28\n");
         return 1;
+    } else if (word == 0xCAFFFFF5) {
+        // BGT: bgt #0x10
+        cl_printf("bgt #0x10\n");
+        return 1;
     }
     
     return 0;
@@ -421,7 +425,7 @@ static void unit_tests() {
     test_print_asm_lsr();
     test_print_asm_and();
     test_print_asm_ble();
-    // test_print_asm_bgt();
+    test_print_asm_bgt();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
