@@ -38,23 +38,26 @@ int try_print_asm(int word) {
         }
         return 1;
     } else if (0xE5800000 == (word & 0xE5800000)) {
-        // LDRB: ldrb r3, [r1]
         // STR: str rX, [r0]
+        // LDRB: ldrb rX, [rX]
         // LDR: ldr r0, [r15, #0xXX]
-        // Breakdown of 32 bits: [4 bits] 01 [9 bits] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
-        if (word == 0xE5D13000) {
-            cl_printf("ldrb r3, [r1]\n");
-            return 1;
-        }
-
-        int register_v = (word & 0x0000F000) >> 4*3;
+        // Breakdown of 32 bits: 
+        //   [4 bits] 01 [3 bits] [word/byte bit (0/1)] [1 bit] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
+        int dest_register_v = (word & 0x0000F000) >> 4*3;
         if ((word >> 20 & 0x00000001) == 0) {
-            cl_printf("str r%i, [r0]\n", register_v);
+            cl_printf("str r%i, [r0]\n", dest_register_v);
             return 1;
         } else if ((word >> 20 & 0x00000001) == 1) {
-            int offset_v = (word & 0x00000FFF);
-            cl_printf("ldr r%i, [r15, #0x%02X]\n", register_v, offset_v);
-            return 1;
+            int word_byte_v = (word >> 22) & 1;
+            if (word_byte_v) {
+                int base_register_v = (word & 0x000F0000) >> 4*4;
+                cl_printf("ldrb r%i, [r%i]\n", dest_register_v, base_register_v);
+                return 1;
+            } else {
+                int offset_v = (word & 0x00000FFF);
+                cl_printf("ldr r%i, [r15, #0x%02X]\n", dest_register_v, offset_v);
+                return 1;
+            }
         }
     } else if (0xE3500000 == (word & 0xE3500000)) {
         // CMP: cmp rX, #X
