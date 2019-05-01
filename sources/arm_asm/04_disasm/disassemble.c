@@ -74,8 +74,8 @@ int try_print_asm(int word) {
         cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
         return 1;
     } else if (word == 0x1AFFFFFA) {
-        // BNE: bne #0xc
-        cl_printf("bne #0xc\n");
+        // BNE: bne [r15, #-0x28]
+        cl_printf("bne [r15, #-0x28]\n");
         return 1;
     } else if (word == 0xE2422004) {
         // SUB: sub r2, r2, #4
@@ -248,6 +248,17 @@ static void test_print_asm_bl() {
     cl_clear_output();
 }
 
+static void test_print_asm_bne() {
+    int input = 0x1AFFFFFA;
+    char* expect = "bne [r15, #-0x28]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
 
 static void test_print_asm_str() {
     int input = 0xE5801000;
@@ -336,18 +347,6 @@ static void test_print_asm_add_r3_r3_39() {
 static void test_print_asm_cmp() {
     int input = 0xE3530000;
     char* expect = "cmp r3, #0\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_bne() {
-    int input = 0x1AFFFFFA;
-    char* expect = "bne #0xc\n";
 
     char* actual;
     try_print_asm(input);
