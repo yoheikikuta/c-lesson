@@ -15,11 +15,13 @@ int try_print_asm(int word) {
         cl_printf("mov r%i, #0x%02X\n", register_v, immdediate_v);
         return 1;
     } else if (0xEA000000 == (word & 0xEA000000)) {
+        // BRANCH WITH LINK: bl [r15, #0xXX]
         // BRANCH: b [r15, #0xXX]
-        // Breakdown of 32 bits: [4 bits] 101 [1 bit] [offset 24 bits]
+        // Breakdown of 32 bits: [4 bits] 101 [link 1 bit] [offset 24 bits]
         int offset_v;
         char* offset_s;
         int is_negative = (word << 8) < 0;
+        int link_v;
         if (is_negative) {
             offset_v = (word | 0xFF000000);  // 1111 1111 [offset 24 bits]
             offset_s = "#-0x";
@@ -28,7 +30,12 @@ int try_print_asm(int word) {
             offset_s = "#0x";
         }
         offset_v = abs(offset_v << 2);  // ARM specifications
-        cl_printf("b [r15, %s%X]\n", offset_s, offset_v);
+        link_v = (word >> 24) & 1;
+        if (link_v) {
+            cl_printf("bl [r15, %s%X]\n", offset_s, offset_v);
+        } else {
+            cl_printf("b [r15, %s%X]\n", offset_s, offset_v);            
+        }
         return 1;
     } else if (0xE5800000 == (word & 0xE5800000)) {
         // LDRB: ldrb r3, [r1]
@@ -228,7 +235,7 @@ static void test_print_asm_b_positive() {
 
 static void test_print_asm_bl() {
     int input = 0xEB000002;
-    char* expect = "bl [r15, #0x08]\n";
+    char* expect = "bl [r15, #0x8]\n";
 
     char* actual;
     try_print_asm(input);
@@ -425,7 +432,7 @@ static void unit_tests() {
     test_print_asm_mov_r10_0x10();
     test_print_asm_b_negative();
     test_print_asm_b_positive();
-    // test_print_asm_bl();
+    test_print_asm_bl();
     test_print_asm_str();
     test_print_asm_str_dest_r2();
     test_print_asm_ldr();
