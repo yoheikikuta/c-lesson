@@ -219,7 +219,7 @@ static void test_print_asm_ldr() {
 
 static void test_print_asm_ldr_dest_r1() {
     int input = 0xE59F102C;
-    char* expect = "ldr r1, [r15, #0x38]\n";
+    char* expect = "ldr r1, [r15, #0x34]\n";
 
     char* actual;
     try_print_asm(input);
