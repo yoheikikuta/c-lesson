@@ -226,6 +226,19 @@ static void test_print_asm_b_positive() {
     cl_clear_output();
 }
 
+static void test_print_asm_bl() {
+    int input = 0xEB000002;
+    char* expect = "bl [r15, #0x08]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+
 static void test_print_asm_str() {
     int input = 0xE5801000;
     char* expect = "str r1, [r0]\n";
@@ -412,6 +425,7 @@ static void unit_tests() {
     test_print_asm_mov_r10_0x10();
     test_print_asm_b_negative();
     test_print_asm_b_positive();
+    // test_print_asm_bl();
     test_print_asm_str();
     test_print_asm_str_dest_r2();
     test_print_asm_ldr();
