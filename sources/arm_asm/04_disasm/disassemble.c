@@ -30,16 +30,18 @@ int try_print_asm(int word) {
         offset_v = abs(offset_v << 2);  // ARM specifications
         cl_printf("b [r15, %s%X]\n", offset_s, offset_v);
         return 1;
-    } else if (word == 0xE59F0038) {
-        // LDR: ldr r0, [r15, 0x40]
-        cl_printf("ldr r0, [r15, #0x40]\n");
-        return 1;
-    } else if ((0xE5800000 == (word & 0xE5800000)) & ((word >> 20 & 0x00000001) == 0)) {
+    } else if (0xE5800000 == (word & 0xE5800000)) {
         // STR: str rX, [r0]
+        // LDR: ldr r0, [r15, #0x40]
         // Breakdown of 32 bits: [4 bits] 01 [10 bits] [dest register 4 bit] [12 bits]
-        int register_v = (word & 0x0000F000) >> 4*3;
-        cl_printf("str r%i, [r0]\n", register_v);
-        return 1;
+        if ((word >> 20 & 0x00000001) == 0) {
+            int register_v = (word & 0x0000F000) >> 4*3;
+            cl_printf("str r%i, [r0]\n", register_v);
+            return 1;
+        } else if (word == 0xE59F0038) {
+            cl_printf("ldr r0, [r15, #0x40]\n");
+            return 1;
+        }
     }
     
     return 0;
