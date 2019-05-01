@@ -56,9 +56,12 @@ int try_print_asm(int word) {
         int immediate_v = (word & 0x0000000F);
         cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
         return 1;
-    } else if (word == 0xE2811001) {
-        // ADD: add r1, r1, #1
-        cl_printf("add r1, r1, #1\n");
+    } else if (0xE2800000 == (word & 0xE2800000)) {
+        // ADD: add rX, rX, #X
+        int first_op_register_v = (word & 0x000F0000) >> 4*4;
+        int dest_register_v = (word & 0x0000F000) >> 4*3;
+        int immediate_v = (word & 0x000000FF);
+        cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
         return 1;
     } else if (word == 0x1AFFFFFA) {
         // BNE: bne #0xc
@@ -291,6 +294,18 @@ static void test_print_asm_add() {
     cl_clear_output();
 }
 
+static void test_print_asm_add_r3_r3_39() {
+    int input = 0xE2833027;
+    char* expect = "add r3, r3, #39\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_cmp() {
     int input = 0xE3530000;
     char* expect = "cmp r3, #0\n";
@@ -399,6 +414,7 @@ static void unit_tests() {
     test_print_asm_ldr_dest_r1();
     test_print_asm_ldrb();
     test_print_asm_add();
+    test_print_asm_add_r3_r3_39();
     test_print_asm_cmp();
     test_print_asm_bne();
     test_print_asm_sub();
