@@ -76,6 +76,10 @@ int try_print_asm(int word) {
         // AND: and r3, r3, #15
         cl_printf("and r3, r3, #15\n");
         return 1;
+    } else if (word == 0xDA000000) {
+        // BLE: ble #0x28
+        cl_printf("ble #0x28\n");
+        return 1;
     }
     
     return 0;
@@ -400,7 +404,7 @@ static void unit_tests() {
     test_print_asm_sub();
     test_print_asm_lsr();
     test_print_asm_and();
-    // test_print_asm_ble();
+    test_print_asm_ble();
     // test_print_asm_bgt();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
