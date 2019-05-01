@@ -61,6 +61,18 @@ int try_print_asm(int word) {
         // BNE: bne #0xc
         cl_printf("bne #0xc\n");
         return 1;
+    } else if (word == 0xE2422004) {
+        // SUB: sub r2, r2, #4
+        cl_printf("sub r2, r2, #4\n");
+        return 1;
+    } else if (word == 0xE1A03231) {
+        // LSR: lsr r3, r1, r2
+        cl_printf("lsr r3, r1, r2\n");
+        return 1;
+    } else if (word == 0xE203300F) {
+        // AND: and r3, r3, #15
+        cl_printf("and r3, r3, #15\n");
+        return 1;
     }
     
     return 0;
@@ -382,9 +394,9 @@ static void unit_tests() {
     test_print_asm_add();
     test_print_asm_cmp();
     test_print_asm_bne();
-    // test_print_asm_sub();
-    // test_print_asm_lsr();
-    // test_print_asm_and();
+    test_print_asm_sub();
+    test_print_asm_lsr();
+    test_print_asm_and();
     // test_print_asm_ble();
     // test_print_asm_bgt();
     test_print_asm_not_instruction();
