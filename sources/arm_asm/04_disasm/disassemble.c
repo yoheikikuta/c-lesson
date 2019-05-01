@@ -248,6 +248,42 @@ static void test_print_asm_ldrb() {
     cl_clear_output();
 }
 
+static void test_print_asm_add() {
+    int input = 0xE2811001;
+    char* expect = "add r1, r1, #1\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_cmp() {
+    int input = 0xE3530000;
+    char* expect = "cmp r3, #0\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_bne() {
+    int input = 0x1AFFFFFA;
+    char* expect = "bne #0xc\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -271,6 +307,9 @@ static void unit_tests() {
     test_print_asm_ldr();
     test_print_asm_ldr_dest_r1();
     test_print_asm_ldrb();
+    // test_print_asm_add();
+    // test_print_asm_cmp();
+    // test_print_asm_bne();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
