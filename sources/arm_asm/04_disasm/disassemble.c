@@ -296,6 +296,66 @@ static void test_print_asm_bne() {
     cl_clear_output();
 }
 
+static void test_print_asm_sub() {
+    int input = 0xE2422004;
+    char* expect = "sub r2, r2, #4\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_lsr() {
+    int input = 0xE1A03231;
+    char* expect = "lsr r3, r1, r2\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_and() {
+    int input = 0xE203300F;
+    char* expect = "and r3, r3, #15\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_ble() {
+    int input = 0xDA000000;
+    char* expect = "ble #0x28\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_bgt() {
+    int input = 0xCAFFFFF5;
+    char* expect = "bgt #0x10\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -322,6 +382,11 @@ static void unit_tests() {
     test_print_asm_add();
     test_print_asm_cmp();
     test_print_asm_bne();
+    // test_print_asm_sub();
+    // test_print_asm_lsr();
+    // test_print_asm_and();
+    // test_print_asm_ble();
+    // test_print_asm_bgt();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
