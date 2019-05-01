@@ -215,6 +215,18 @@ static void test_print_asm_ldr() {
     cl_clear_output();
 }
 
+static void test_print_asm_ldr_dest_r1() {
+    int input = 0xE59F102C;
+    char* expect = "ldr r1, [r15, #0x38]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -236,6 +248,7 @@ static void unit_tests() {
     test_print_asm_str();
     test_print_asm_str_dest_r2();
     test_print_asm_ldr();
+    // test_print_asm_ldr_dest_r1();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
