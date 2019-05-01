@@ -33,7 +33,7 @@ int try_print_asm(int word) {
     } else if (0xE5800000 == (word & 0xE5800000)) {
         // LDRB: ldrb r3, [r1]
         // STR: str rX, [r0]
-        // LDR: ldr r0, [r15, #0xXX]  Note that the offset value is 2 bytes shifted to left
+        // LDR: ldr r0, [r15, #0xXX]
         // Breakdown of 32 bits: [4 bits] 01 [9 bits] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
         if (word == 0xE5D13000) {
             cl_printf("ldrb r3, [r1]\n");
@@ -45,7 +45,7 @@ int try_print_asm(int word) {
             cl_printf("str r%i, [r0]\n", register_v);
             return 1;
         } else if ((word >> 20 & 0x00000001) == 1) {
-            int offset_v = (word & 0x00000FFF) + 0x08;
+            int offset_v = (word & 0x00000FFF);
             cl_printf("ldr r%i, [r15, #0x%02X]\n", register_v, offset_v);
             return 1;
         }
@@ -226,7 +226,7 @@ static void test_print_asm_str_dest_r2() {
 
 static void test_print_asm_ldr() {
     int input = 0xE59F0038;
-    char* expect = "ldr r0, [r15, #0x40]\n";
+    char* expect = "ldr r0, [r15, #0x38]\n";
 
     char* actual;
     try_print_asm(input);
@@ -238,7 +238,7 @@ static void test_print_asm_ldr() {
 
 static void test_print_asm_ldr_dest_r1() {
     int input = 0xE59F102C;
-    char* expect = "ldr r1, [r15, #0x34]\n";
+    char* expect = "ldr r1, [r15, #0x2C]\n";
 
     char* actual;
     try_print_asm(input);
