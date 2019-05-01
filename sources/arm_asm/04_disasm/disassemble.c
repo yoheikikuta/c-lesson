@@ -32,14 +32,15 @@ int try_print_asm(int word) {
         return 1;
     } else if (0xE5800000 == (word & 0xE5800000)) {
         // STR: str rX, [r0]
-        // LDR: ldr r0, [r15, #0x40]
-        // Breakdown of 32 bits: [4 bits] 01 [10 bits] [dest register 4 bit] [12 bits]
+        // LDR: ldr r0, [r15, #0xXX]  Note that the offset value is 2 bytes shifted to left
+        // Breakdown of 32 bits: [4 bits] 01 [9 bits] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
+        int register_v = (word & 0x0000F000) >> 4*3;
         if ((word >> 20 & 0x00000001) == 0) {
-            int register_v = (word & 0x0000F000) >> 4*3;
             cl_printf("str r%i, [r0]\n", register_v);
             return 1;
-        } else if (word == 0xE59F0038) {
-            cl_printf("ldr r0, [r15, #0x40]\n");
+        } else if ((word >> 20 & 0x00000001) == 1) {
+            int offset_v = (word & 0x00000FFF) + 0x08;
+            cl_printf("ldr r%i, [r15, #0x%02X]\n", register_v, offset_v);
             return 1;
         }
     }
@@ -250,7 +251,7 @@ static void unit_tests() {
     test_print_asm_str();
     test_print_asm_str_dest_r2();
     test_print_asm_ldr();
-    // test_print_asm_ldr_dest_r1();
+    test_print_asm_ldr_dest_r1();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
