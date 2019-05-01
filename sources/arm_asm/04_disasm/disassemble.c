@@ -97,6 +97,10 @@ int try_print_asm(int word) {
         // BGT: bgt #0x10
         cl_printf("bgt #0x10\n");
         return 1;
+    } else if (word == 0xE1A0F00E) {
+        // MOV: mov r15, r14
+        cl_printf("mov r15, r14\n");
+        return 1;
     }
     
     return 0;
@@ -444,7 +448,7 @@ static void unit_tests() {
     test_print_asm_mov_0x68();
     test_print_asm_mov_0x65();
     test_print_asm_mov_r10_0x10();
-    // test_print_asm_mov_base_register();
+    test_print_asm_mov_base_register();
     test_print_asm_b_negative();
     test_print_asm_b_positive();
     test_print_asm_bl();
