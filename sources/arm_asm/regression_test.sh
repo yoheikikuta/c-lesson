@@ -1,6 +1,6 @@
 gcc -w ./04_disasm/cl_utils.c ./04_disasm/disassemble.c -o ./04_disasm/disassemble.out
 
-TARGETS=("hello_arm" "print_loop" "print_hex" "print_nomem" "print_ng" "putchar_bad")
+TARGETS=("hello_arm" "print_loop" "print_hex" "print_nomem" "print_ng" "putchar_bad" "putchar_mem")
 
 for TARGET in ${TARGETS[@]}; do
 	DIFF=`diff <(cat "./04_disasm/test/test_expect/$TARGET.txt") <(./04_disasm/disassemble.out "./04_disasm/test/test_input/$TARGET.bin")`
