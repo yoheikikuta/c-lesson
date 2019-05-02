@@ -117,6 +117,10 @@ int try_print_asm(int word) {
         // STMDB: stmfd r13! {r1}
         cl_printf("stmfd r13! {r1}\n");
         return 1;
+    } else if (word == 0xE8BD0002) {
+        // LDMIA: ldmfd r13! {r1}
+        cl_printf("ldmfd r13! {r1}\n");
+        return 1;
     }
     
     return 0;
@@ -520,7 +524,7 @@ static void unit_tests() {
     test_print_asm_ble();
     test_print_asm_bgt();
     test_print_asm_stmdb();
-    // test_print_asm_ldmia();
+    test_print_asm_ldmia();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
