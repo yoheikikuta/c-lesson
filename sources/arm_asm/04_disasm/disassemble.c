@@ -456,6 +456,18 @@ static void test_print_asm_bgt() {
     cl_clear_output();
 }
 
+static void test_print_asm_stmdb() {
+    int input = 0xE92D0002;
+    char* expect = "stmfd r13! {r1}\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -491,6 +503,7 @@ static void unit_tests() {
     test_print_asm_and();
     test_print_asm_ble();
     test_print_asm_bgt();
+    // test_print_asm_stmdb();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
