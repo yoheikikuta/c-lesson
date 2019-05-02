@@ -75,8 +75,8 @@ int try_print_asm(int word) {
         cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
         return 1;
     } else if (word == 0x1AFFFFFA) {
-        // BNE: bne [r15, #-0x28]
-        cl_printf("bne [r15, #-0x28]\n");
+        // BNE: bne [r15, #-0x18]
+        cl_printf("bne [r15, #-0x18]\n");
         return 1;
     } else if (word == 0xE2422004) {
         // SUB: sub r2, r2, #4
@@ -267,7 +267,7 @@ static void test_print_asm_bl() {
 
 static void test_print_asm_bne() {
     int input = 0x1AFFFFFA;
-    char* expect = "bne [r15, #-0x28]\n";
+    char* expect = "bne [r15, #-0x18]\n";
 
     char* actual;
     try_print_asm(input);
