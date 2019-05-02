@@ -80,7 +80,7 @@ int try_print_asm(int word) {
             }
         }
     } else if (0xE92D0000 == (word & 0xE92D0000)) {
-        // STMDB: stmfd r13! {r1, r12}
+        // STMDB: stmfd r13! {rX, rX, ...}
         // Breakdown of 32 bits: [16 bits] [register 16 bits]
         char* registers_str = get_registers_str_from_lower_16bits(word);
         cl_printf("stmfd r13! {%s}\n", registers_str);
@@ -98,6 +98,11 @@ int try_print_asm(int word) {
         int dest_register_v = (word & 0x0000F000) >> 4*3;
         int immediate_v = (word & 0x000000FF);
         cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
+        return 1;
+    } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
+        // LDMIA: ldmfd r13! {rX, rX, ...}
+        char* registers_str = get_registers_str_from_lower_16bits(word);
+        cl_printf("ldmfd r13! {%s}\n", registers_str);
         return 1;
     } else if (word == 0x1AFFFFFA) {
         // BNE: bne [r15, #-0x18]
@@ -118,10 +123,6 @@ int try_print_asm(int word) {
     } else if (word == 0xCAFFFFF5) {
         // BGT: bgt #0x10
         cl_printf("bgt #0x10\n");
-        return 1;
-    } else if (word == 0xE8BD0002) {
-        // LDMIA: ldmfd r13! {r1}
-        cl_printf("ldmfd r13! {r1}\n");
         return 1;
     }
     
@@ -552,7 +553,7 @@ static void unit_tests() {
     test_print_asm_stmdb();
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
-    // test_print_asm_ldmia_multi();
+    test_print_asm_ldmia_multi();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
