@@ -54,3 +54,33 @@ void cl_printf(char *fmt, ...) {
     }
     va_end(arg_ptr);
 }
+
+// int expressing [16 bits] [register list 16 bits] ->
+//   one register: "r3"
+//   mutiple registers: "r2, r8, r12"
+char* get_registers_str_from_lower_16bits(int word) {
+    int is_first_register = 1;
+    char registers_str[69] = "";  // Max: r1, r2, .., r15
+
+    for (int i = 0; i < 16; i++) {
+        if (1 == ((word >> i) & 1)) {
+            char register_num_part[3] = "";  // Need 2+1 bytes
+            char register_str[6] = "";
+            snprintf(register_num_part, 3, "%i", i);
+
+            if (is_first_register) {
+                register_str[0] = 'r';
+                strcat(register_str, register_num_part);
+                strcat(registers_str, register_str);
+                is_first_register = 0;
+            } else {
+                register_str[0] = ',';
+                register_str[1] = ' ';
+                register_str[2] = 'r';
+                strcat(register_str, register_num_part);
+                strcat(registers_str, register_str);
+            }
+        }
+    }
+    return &registers_str[0];
+}
