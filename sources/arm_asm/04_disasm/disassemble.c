@@ -7,11 +7,11 @@
 
 
 int try_print_asm(int word) {
-    if (0xE1A00000 == (word & 0xE1A00000)) {
+    if ((0xE1A00000 == (word & 0xE1A00000)) & (0xD == ((word >> 21) & 0xF))) {
         // LSR: lsr r3, r1, r2
         // MOV: mov rX, 0xXX or mov rX, rX
         // Breakdown of 32 bits: 
-        //   [4 bits] 00 [immediate/operand bit (1/0)] 1011 [dest register 4 bits] [operand2 12 bits]
+        //   [4 bits] 00 [immediate/operand bit (1/0)] 1011 [5 bits] [dest register 4 bits] [operand2 12 bits]
 
         if (word == 0xE1A03231) {
             cl_printf("lsr r3, r1, r2\n");
