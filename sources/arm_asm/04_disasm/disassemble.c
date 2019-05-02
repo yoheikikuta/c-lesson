@@ -476,6 +476,18 @@ static void test_print_asm_stmdb() {
     cl_clear_output();
 }
 
+static void test_print_asm_stmdb_multi() {
+    int input = 0xE92D4008;
+    char* expect = "stmfd r13! {r3, r14}\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_ldmia() {
     int input = 0xE8BD0002;
     char* expect = "ldmfd r13! {r1}\n";
@@ -524,6 +536,7 @@ static void unit_tests() {
     test_print_asm_ble();
     test_print_asm_bgt();
     test_print_asm_stmdb();
+    // test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
