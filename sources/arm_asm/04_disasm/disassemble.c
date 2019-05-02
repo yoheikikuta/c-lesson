@@ -8,24 +8,27 @@
 
 int try_print_asm(int word) {
     if (0xE1A00000 == (word & 0xE1A00000)) {
-        // MOV: mov rX, 0xXX
-        // Breakdown of 32 bits: [16 bits] [dest register 4 bits] [4 bits] [immediate value 8 bits]
+        // LSR: lsr r3, r1, r2
+        // MOV: mov rX, 0xXX or mov rX, rX
+        // Breakdown of 32 bits: 
+        //   [4 bits] 00 [immediate/operand bit (1/0)] 1011 [dest register 4 bits] [operand2 12 bits]
 
         if (word == 0xE1A03231) {
-            // LSR: lsr r3, r1, r2
             cl_printf("lsr r3, r1, r2\n");
             return 1;
         }
-        if (word == 0xE1A0F00E) {
-            // MOV: mov r15, r14
-            cl_printf("mov r15, r14\n");
-        return 1;
-        }
 
-        int register_v = (word & 0x0000F000) >> 4*3;
-        int immdediate_v = (word & 0x000000FF);
-        cl_printf("mov r%i, #0x%02X\n", register_v, immdediate_v);
-        return 1;
+        int dest_register_v = (word & 0x0000F000) >> 4*3;
+        int immediate_operand_v = (word >> 25) & 1;
+        if (immediate_operand_v) {
+            int immdediate_v = (word & 0x000000FF);
+            cl_printf("mov r%i, #0x%02X\n", dest_register_v, immdediate_v);
+            return 1;
+        } else {
+            int second_operand_register_v = (word & 0xF);
+            cl_printf("mov r%i, r%i\n", dest_register_v, second_operand_register_v);
+            return 1;
+        }
     } else if (0xEA000000 == (word & 0xEA000000)) {
         // BRANCH WITH LINK: bl [r15, #0xXX]
         // BRANCH: b [r15, #0xXX]
