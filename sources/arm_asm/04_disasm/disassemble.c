@@ -79,6 +79,12 @@ int try_print_asm(int word) {
                 return 1;
             }
         }
+    } else if (0xE92D0000 == (word & 0xE92D0000)) {
+        // STMDB: stmfd r13! {r1, r12}
+        // Breakdown of 32 bits: [16 bits] [register 16 bits]
+        char* registers_str = get_registers_str_from_lower_16bits(word);
+        cl_printf("stmfd r13! {%s}\n", registers_str);
+        return 1;
     } else if (0xE3500000 == (word & 0xE3500000)) {
         // CMP: cmp rX, #X
         // Breakdown of 32 bits: [4 bits] 001 1010 [5 bits] [dest register 4 bits] [operand2 12 bits]
@@ -112,10 +118,6 @@ int try_print_asm(int word) {
     } else if (word == 0xCAFFFFF5) {
         // BGT: bgt #0x10
         cl_printf("bgt #0x10\n");
-        return 1;
-    } else if (word == 0xE92D0002) {
-        // STMDB: stmfd r13! {r1}
-        cl_printf("stmfd r13! {r1}\n");
         return 1;
     } else if (word == 0xE8BD0002) {
         // LDMIA: ldmfd r13! {r1}
@@ -536,7 +538,7 @@ static void unit_tests() {
     test_print_asm_ble();
     test_print_asm_bgt();
     test_print_asm_stmdb();
-    // test_print_asm_stmdb_multi();
+    test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
