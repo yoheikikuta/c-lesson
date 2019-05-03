@@ -553,6 +553,18 @@ static void test_print_asm_ldmia_multi() {
     cl_clear_output();
 }
 
+static void test_print_asm_bge() {
+    int input = 0xAAFFFFF4;
+    char* expect = "bge [r15, #-0x30]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -594,6 +606,7 @@ static void unit_tests() {
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
     test_print_asm_ldmia_multi();
+    // test_print_asm_bge();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
