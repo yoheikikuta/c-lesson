@@ -122,7 +122,7 @@ int try_print_asm(int word) {
         return 1;
     } else if (word == 0xDA000000) {
         // BLE: ble #0x28
-        cl_printf("ble #0x28\n");
+        cl_printf("ble [r15, #0x0]\n");
         return 1;
     } else if (word == 0xCAFFFFF5) {
         // BGT: bgt #0x10
@@ -461,7 +461,7 @@ static void test_print_asm_and() {
 
 static void test_print_asm_ble() {
     int input = 0xDA000000;
-    char* expect = "ble #0x28\n";
+    char* expect = "ble [r15, #0x0]\n";
 
     char* actual;
     try_print_asm(input);
