@@ -96,13 +96,23 @@ int try_print_asm(int word) {
         int immediate_v = (word & 0x0000000F);
         cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
         return 1;
-    } else if (0xE2800000 == (word & 0xE2800000)) {
-        // ADD: add rX, rX, #X
+    } else if ((0xE0800000 == (word & 0xE0800000)) & (0x4 == ((word >> 21) & 0xF))) {
+        // ADD: add rX, rX, #X or add rX, rX, rX 
+        // Breakdown of 32 bits: 
+        //   [4 bits] 00 [immediate/operand 1 bit (1/0)] 0100 [1 bit] [1st operand register 4 bits] [dest register 4 bits] [operand2 12 bits]
         int first_op_register_v = (word & 0x000F0000) >> 4*4;
         int dest_register_v = (word & 0x0000F000) >> 4*3;
-        int immediate_v = (word & 0x000000FF);
-        cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
-        return 1;
+        int immediate_operand_v = (word >> 25) & 1;
+        if (immediate_operand_v) {
+            int immediate_v = (word & 0x000000FF);
+            cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
+            return 1;
+        } else {
+            int operand2_register_v = (word & 0x0000000F);
+            cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
+            return 1;
+        }
+
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
         // LDMIA: ldmfd r13! {rX, rX, ...}
         char* registers_str = get_registers_str_from_lower_16bits(word);
@@ -571,7 +581,7 @@ static void unit_tests() {
     test_print_asm_ldrb();
     test_print_asm_add();
     test_print_asm_add_r3_r3_39();
-    // test_print_asm_add_r3_r3_r4();
+    test_print_asm_add_r3_r3_r4();
     test_print_asm_cmp();
     test_print_asm_bne();
     test_print_asm_sub();
