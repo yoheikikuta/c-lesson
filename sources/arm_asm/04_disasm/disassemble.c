@@ -18,7 +18,7 @@ int try_print_asm(int word) {
             return 1;
         }
 
-        if (0xE1A00030 == (word & 0xE1A00030)) {
+        if ((0xE1A00030 == (word & 0xE1A00030)) & (0 == ((word >> 25 & 1)))) {
             int dest_register_v = (word & 0x0000F000) >> 4*3;
             int second_operand_v = word & 0x0000000F;
             int Rs_v = (word & 0x00000F00) >> 4*2;
