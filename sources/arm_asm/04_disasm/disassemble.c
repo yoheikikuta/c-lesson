@@ -31,12 +31,11 @@ int try_print_asm(int word) {
         if (immediate_operand_v) {
             int immdediate_v = (word & 0x000000FF);
             cl_printf("mov r%i, #0x%02X\n", dest_register_v, immdediate_v);
-            return 1;
         } else {
             int second_operand_register_v = (word & 0xF);
             cl_printf("mov r%i, r%i\n", dest_register_v, second_operand_register_v);
-            return 1;
         }
+        return 1;
     } else if (0xEA000000 == (word & 0xEA000000)) {
         // BRANCH WITH LINK: bl [r15, #0xXX]
         // BRANCH: b [r15, #0xXX]
@@ -70,19 +69,17 @@ int try_print_asm(int word) {
         if ((word >> 20 & 0x00000001) == 0) {
             int base_register_v = (word & 0x000F0000) >> 4*4;
             cl_printf("str r%i, [r%i]\n", dest_register_v, base_register_v);
-            return 1;
-        } else if ((word >> 20 & 0x00000001) == 1) {
+        } else {
             int word_byte_v = (word >> 22) & 1;
             if (word_byte_v) {
                 int base_register_v = (word & 0x000F0000) >> 4*4;
                 cl_printf("ldrb r%i, [r%i]\n", dest_register_v, base_register_v);
-                return 1;
             } else {
                 int offset_v = (word & 0x00000FFF);
                 cl_printf("ldr r%i, [r15, #0x%02X]\n", dest_register_v, offset_v);
-                return 1;
             }
         }
+        return 1;
     } else if (0xE92D0000 == (word & 0xE92D0000)) {
         // STMDB: stmfd r13! {rX, rX, ...}
         // Breakdown of 32 bits: [16 bits] [register 16 bits]
@@ -106,12 +103,11 @@ int try_print_asm(int word) {
         if (immediate_operand_v) {
             int immediate_v = (word & 0x000000FF);
             cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
-            return 1;
         } else {
             int operand2_register_v = (word & 0x0000000F);
             cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
-            return 1;
         }
+        return 1;
 
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
         // LDMIA: ldmfd r13! {rX, rX, ...}
