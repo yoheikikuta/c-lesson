@@ -80,11 +80,11 @@ int try_print_asm(int word) {
         }
         return 1;
     } else if (0xE92D0000 == (word & 0xE92D0000)) {
-        // STMDB: stmfd r13! {rX, rX, ...}
+        // STMDB: stmdb r13! {rX, rX, ...}
         // Breakdown of 32 bits: [16 bits] [register 16 bits]
         char* registers_str = get_registers_str_from_lower_16bits(word);
 
-        cl_printf("stmfd r13! {%s}\n", registers_str);
+        cl_printf("stmdb r13! {%s}\n", registers_str);
         return 1;
     } else if (0xE3500000 == (word & 0xE3500000)) {
         // CMP: cmp rX, #X
@@ -521,7 +521,7 @@ static void test_print_asm_add_r3_r3_r4() {
 
 static void test_print_asm_stmdb() {
     int input = 0xE92D0002;
-    char* expect = "stmfd r13! {r1}\n";
+    char* expect = "stmdb r13! {r1}\n";
 
     char* actual;
     try_print_asm(input);
@@ -533,7 +533,7 @@ static void test_print_asm_stmdb() {
 
 static void test_print_asm_stmdb_multi() {
     int input = 0xE92D4008;
-    char* expect = "stmfd r13! {r3, r14}\n";
+    char* expect = "stmdb r13! {r3, r14}\n";
 
     char* actual;
     try_print_asm(input);
