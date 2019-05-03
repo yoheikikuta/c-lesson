@@ -8,17 +8,21 @@
 
 int try_print_asm(int word) {
     if ((0xE1A00000 == (word & 0xE1A00000)) & (0xD == ((word >> 21) & 0xF))) {
-        // LSR: lsr r3, r1, r2
+        // LSR: lsr rX, rX, rX
         // MOV: mov r13, #0x80000000 or mov rX, 0xXX or mov rX, rX
         // Breakdown of 32 bits: 
-        //   [4 bits] 00 [immediate/operand bit (1/0)] 1011 [5 bits] [dest register 4 bits] [operand2 12 bits]
+        //   [4 bits] 00 [immediate/operand bit (1/0)] 1101 [5 bits] [dest register 4 bits] [operand2 12 bits]
 
-        if (word == 0xE1A03231) {
-            cl_printf("lsr r3, r1, r2\n");
-            return 1;
-        }
         if (word == 0xE3A0D302) {
             cl_printf("mov r13, #0x80000000\n");
+            return 1;
+        }
+
+        if (0xE1A00030 == (word & 0xE1A00030)) {
+            int dest_register_v = (word & 0x0000F000) >> 4*3;
+            int second_operand_v = word & 0x0000000F;
+            int Rs_v = (word & 0x00000F00) >> 4*2;
+            cl_printf("lsr r%i, r%i, r%i\n", dest_register_v, second_operand_v, Rs_v);
             return 1;
         }
 
@@ -559,7 +563,7 @@ static void unit_tests() {
     test_print_asm_bne();
     test_print_asm_sub();
     test_print_asm_lsr();
-    // test_print_asm_lsr_r3_r0_r2();
+    test_print_asm_lsr_r3_r0_r2();
     test_print_asm_and();
     test_print_asm_ble();
     test_print_asm_bgt();
