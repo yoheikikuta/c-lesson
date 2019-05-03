@@ -431,6 +431,18 @@ static void test_print_asm_lsr() {
     cl_clear_output();
 }
 
+static void test_print_asm_lsr_r3_r0_r2() {
+    int input = 0xE1A03230;
+    char* expect = "lsr r3, r0, r2\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_and() {
     int input = 0xE203300F;
     char* expect = "and r3, r3, #15\n";
@@ -547,6 +559,7 @@ static void unit_tests() {
     test_print_asm_bne();
     test_print_asm_sub();
     test_print_asm_lsr();
+    // test_print_asm_lsr_r3_r0_r2();
     test_print_asm_and();
     test_print_asm_ble();
     test_print_asm_bgt();
