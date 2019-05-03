@@ -12,6 +12,8 @@ int try_print_asm(int word) {
         // MOV: mov r13, #0x80000000 or mov rX, 0xXX or mov rX, rX
         // Breakdown of 32 bits: 
         //   [4 bits] 00 [immediate/operand bit (1/0)] 1101 [5 bits] [dest register 4 bits] [operand2 12 bits]
+        int immediate_operand_v = (word >> 25) & 0x1;
+        int dest_register_v = (word & 0xF000) >> 4*3;
 
         if (word == 0xE3A0D302) {
             cl_printf("mov r13, #0x80000000\n");
@@ -19,15 +21,12 @@ int try_print_asm(int word) {
         }
 
         if ((0xE1A00030 == (word & 0xE1A00030)) & (0x0 == ((word >> 25 & 0x1)))) {
-            int dest_register_v = (word & 0xF000) >> 4*3;
-            int second_operand_v = word & 0xF;
             int Rs_v = (word & 0xF00) >> 4*2;
-            cl_printf("lsr r%i, r%i, r%i\n", dest_register_v, second_operand_v, Rs_v);
+            int second_operand_register_v = word & 0xF;
+            cl_printf("lsr r%i, r%i, r%i\n", dest_register_v, second_operand_register_v, Rs_v);
             return 1;
         }
 
-        int dest_register_v = (word & 0xF000) >> 4*3;
-        int immediate_operand_v = (word >> 25) & 0x1;
         if (immediate_operand_v) {
             int immdediate_v = (word & 0xFF);
             cl_printf("mov r%i, #0x%02X\n", dest_register_v, immdediate_v);
@@ -42,8 +41,9 @@ int try_print_asm(int word) {
         // Breakdown of 32 bits: [4 bits] 101 [link 1 bit] [offset 24 bits]
         int offset_v;
         char* offset_s;
+        int link_v = (word >> 24) & 1;
         int is_negative = (word << 8) < 0;
-        int link_v;
+
         if (is_negative) {
             offset_v = (word | 0xFF000000);  // 1111 1111 [offset 24 bits]
             offset_s = "#-0x";
@@ -52,7 +52,6 @@ int try_print_asm(int word) {
             offset_s = "#0x";
         }
         offset_v = abs(offset_v << 2);  // ARM specifications
-        link_v = (word >> 24) & 1;
         if (link_v) {
             cl_printf("bl [r15, %s%X]\n", offset_s, offset_v);
         } else {
@@ -65,14 +64,14 @@ int try_print_asm(int word) {
         // LDR: ldr r0, [r15, #0xXX]
         // Breakdown of 32 bits: 
         //   [4 bits] 01 [3 bits] [word/byte bit (0/1)] [1 bit] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
+        int base_register_v = (word & 0xF0000) >> 4*4;
         int dest_register_v = (word & 0xF000) >> 4*3;
+
         if ((word >> 20 & 0x1) == 0) {
-            int base_register_v = (word & 0xF0000) >> 4*4;
             cl_printf("str r%i, [r%i]\n", dest_register_v, base_register_v);
         } else {
             int word_byte_v = (word >> 22) & 0x1;
             if (word_byte_v) {
-                int base_register_v = (word & 0xF0000) >> 4*4;
                 cl_printf("ldrb r%i, [r%i]\n", dest_register_v, base_register_v);
             } else {
                 int offset_v = (word & 0xFFF);
@@ -84,6 +83,7 @@ int try_print_asm(int word) {
         // STMDB: stmfd r13! {rX, rX, ...}
         // Breakdown of 32 bits: [16 bits] [register 16 bits]
         char* registers_str = get_registers_str_from_lower_16bits(word);
+
         cl_printf("stmfd r13! {%s}\n", registers_str);
         return 1;
     } else if (0xE3500000 == (word & 0xE3500000)) {
@@ -91,6 +91,7 @@ int try_print_asm(int word) {
         // Breakdown of 32 bits: [4 bits] 001 1010 [5 bits] [dest register 4 bits] [operand2 12 bits]
         int register_v = (word & 0xF0000) >> 4*4;
         int immediate_v = (word & 0xF);
+        
         cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
         return 1;
     } else if ((0xE0800000 == (word & 0xE0800000)) & (0x4 == ((word >> 21) & 0xF))) {
@@ -100,6 +101,7 @@ int try_print_asm(int word) {
         int first_op_register_v = (word & 0xF0000) >> 4*4;
         int dest_register_v = (word & 0xF000) >> 4*3;
         int immediate_operand_v = (word >> 25) & 1;
+
         if (immediate_operand_v) {
             int immediate_v = (word & 0xFF);
             cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
@@ -108,10 +110,10 @@ int try_print_asm(int word) {
             cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
         }
         return 1;
-
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
         // LDMIA: ldmfd r13! {rX, rX, ...}
         char* registers_str = get_registers_str_from_lower_16bits(word);
+        
         cl_printf("ldmfd r13! {%s}\n", registers_str);
         return 1;
     } else if (word == 0x1AFFFFFA) {
