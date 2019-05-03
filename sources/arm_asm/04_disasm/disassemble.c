@@ -281,6 +281,66 @@ static void test_print_asm_mov_r13_0x80000000() {
     cl_clear_output();
 }
 
+static void test_print_asm_lsr() {
+    int input = 0xE1A03231;
+    char* expect = "lsr r3, r1, r2\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_lsr_r3_r0_r2() {
+    int input = 0xE1A03230;
+    char* expect = "lsr r3, r0, r2\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_cmp() {
+    int input = 0xE3530000;
+    char* expect = "cmp r3, #0\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_sub() {
+    int input = 0xE2422004;
+    char* expect = "sub r2, r2, #4\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_and() {
+    int input = 0xE203300F;
+    char* expect = "and r3, r3, #15\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_b_negative() {
     int input = 0xEAFFFFFE;
     char* expect = "b [r15, #-0x8]\n";
@@ -320,6 +380,42 @@ static void test_print_asm_bl() {
 static void test_print_asm_bne() {
     int input = 0x1AFFFFFA;
     char* expect = "bne [r15, #-0x18]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_ble() {
+    int input = 0xDA000000;
+    char* expect = "ble [r15, #0x0]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_bgt() {
+    int input = 0xCAFFFFF5;
+    char* expect = "bgt [r15, #-0x2c]\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_bge() {
+    int input = 0xAAFFFFF4;
+    char* expect = "bge [r15, #-0x30]\n";
 
     char* actual;
     try_print_asm(input);
@@ -425,90 +521,6 @@ static void test_print_asm_add_r3_r3_r4() {
     cl_clear_output();
 }
 
-static void test_print_asm_cmp() {
-    int input = 0xE3530000;
-    char* expect = "cmp r3, #0\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_sub() {
-    int input = 0xE2422004;
-    char* expect = "sub r2, r2, #4\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_lsr() {
-    int input = 0xE1A03231;
-    char* expect = "lsr r3, r1, r2\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_lsr_r3_r0_r2() {
-    int input = 0xE1A03230;
-    char* expect = "lsr r3, r0, r2\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_and() {
-    int input = 0xE203300F;
-    char* expect = "and r3, r3, #15\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_ble() {
-    int input = 0xDA000000;
-    char* expect = "ble [r15, #0x0]\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
-static void test_print_asm_bgt() {
-    int input = 0xCAFFFFF5;
-    char* expect = "bgt [r15, #-0x2c]\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
 static void test_print_asm_stmdb() {
     int input = 0xE92D0002;
     char* expect = "stmfd r13! {r1}\n";
@@ -557,18 +569,6 @@ static void test_print_asm_ldmia_multi() {
     cl_clear_output();
 }
 
-static void test_print_asm_bge() {
-    int input = 0xAAFFFFF4;
-    char* expect = "bge [r15, #-0x30]\n";
-
-    char* actual;
-    try_print_asm(input);
-    actual = cl_get_result(0);
-
-    assert_two_str_eq(expect, actual);
-    cl_clear_output();
-}
-
 static void test_print_asm_not_instruction() {
     int input = 0x64646464;
     int expect = 0;
@@ -586,10 +586,19 @@ static void unit_tests() {
     test_print_asm_mov_0x65();
     test_print_asm_mov_r10_0x10();
     test_print_asm_mov_base_register();
-    test_print_asm_b_negative();
     test_print_asm_mov_r13_0x80000000();
+    test_print_asm_lsr();
+    test_print_asm_lsr_r3_r0_r2();
+    test_print_asm_cmp();
+    test_print_asm_sub();
+    test_print_asm_and();
+    test_print_asm_b_negative();
     test_print_asm_b_positive();
     test_print_asm_bl();
+    test_print_asm_bne();
+    test_print_asm_ble();
+    test_print_asm_bgt();
+    test_print_asm_bge();
     test_print_asm_str();
     test_print_asm_str_dest_r2();
     test_print_asm_ldr();
@@ -598,19 +607,10 @@ static void unit_tests() {
     test_print_asm_add();
     test_print_asm_add_r3_r3_39();
     test_print_asm_add_r3_r3_r4();
-    test_print_asm_cmp();
-    test_print_asm_bne();
-    test_print_asm_sub();
-    test_print_asm_lsr();
-    test_print_asm_lsr_r3_r0_r2();
-    test_print_asm_and();
-    test_print_asm_ble();
-    test_print_asm_bgt();
     test_print_asm_stmdb();
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
     test_print_asm_ldmia_multi();
-    test_print_asm_bge();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
