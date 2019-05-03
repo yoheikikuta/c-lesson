@@ -92,7 +92,7 @@ int try_print_asm(int word) {
         int register_v = (word & 0xF0000) >> 4*4;
         int immediate_v = (word & 0xF);
         
-        cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
+        cl_printf("cmp r%i, #0x%X\n", register_v, immediate_v);
         return 1;
     } else if ((0xE0800000 == (word & 0xE0800000)) & (0x4 == ((word >> 21) & 0xF))) {
         // ADD: add rX, rX, #X or add rX, rX, rX 
@@ -104,7 +104,7 @@ int try_print_asm(int word) {
 
         if (immediate_operand_v) {
             int immediate_v = (word & 0xFF);
-            cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
+            cl_printf("add r%i, r%i, #0x%X\n", first_op_register_v, dest_register_v, immediate_v);
         } else {
             int operand2_register_v = (word & 0xF);
             cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
@@ -121,15 +121,15 @@ int try_print_asm(int word) {
         cl_printf("bne [r15, #-0x18]\n");
         return 1;
     } else if (word == 0xE2422004) {
-        // SUB: sub r2, r2, #4
-        cl_printf("sub r2, r2, #4\n");
+        // SUB: sub r2, r2, #0x4
+        cl_printf("sub r2, r2, #0x4\n");
         return 1;
     } else if (word == 0xE203300F) {
-        // AND: and r3, r3, #15
-        cl_printf("and r3, r3, #15\n");
+        // AND: and r3, r3, #0xF
+        cl_printf("and r3, r3, #0xF\n");
         return 1;
     } else if (word == 0xDA000000) {
-        // BLE: ble #0x28
+        // BLE: ble [r15, #0x0]
         cl_printf("ble [r15, #0x0]\n");
         return 1;
     } else if (word == 0xCAFFFFF5) {
@@ -305,7 +305,7 @@ static void test_print_asm_lsr_r3_r0_r2() {
 
 static void test_print_asm_cmp() {
     int input = 0xE3530000;
-    char* expect = "cmp r3, #0\n";
+    char* expect = "cmp r3, #0x0\n";
 
     char* actual;
     try_print_asm(input);
@@ -317,7 +317,7 @@ static void test_print_asm_cmp() {
 
 static void test_print_asm_sub() {
     int input = 0xE2422004;
-    char* expect = "sub r2, r2, #4\n";
+    char* expect = "sub r2, r2, #0x4\n";
 
     char* actual;
     try_print_asm(input);
@@ -329,7 +329,7 @@ static void test_print_asm_sub() {
 
 static void test_print_asm_and() {
     int input = 0xE203300F;
-    char* expect = "and r3, r3, #15\n";
+    char* expect = "and r3, r3, #0xF\n";
 
     char* actual;
     try_print_asm(input);
@@ -485,7 +485,7 @@ static void test_print_asm_ldrb() {
 
 static void test_print_asm_add() {
     int input = 0xE2811001;
-    char* expect = "add r1, r1, #1\n";
+    char* expect = "add r1, r1, #0x1\n";
 
     char* actual;
     try_print_asm(input);
@@ -497,7 +497,7 @@ static void test_print_asm_add() {
 
 static void test_print_asm_add_r3_r3_39() {
     int input = 0xE2833027;
-    char* expect = "add r3, r3, #39\n";
+    char* expect = "add r3, r3, #0x27\n";
 
     char* actual;
     try_print_asm(input);
