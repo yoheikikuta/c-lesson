@@ -7,7 +7,7 @@
 0x00010018  stmfd r13! {r1}
 0x0001001C  ldr r1, [r15, #0x60]
 0x00010020  str r3, [r1]
-0x00010024  ldmfd r13! {r1}
+0x00010024  ldmia r13! {r1}
 0x00010028  mov r15, r14
 0x0001002C  stmfd r13! {r2, r3, r4, r14}
 0x00010030  mov r2, #0x1C
@@ -28,7 +28,7 @@
 0x0001006C  str r2, [r1]
 0x00010070  mov r2, #0x0A
 0x00010074  str r2, [r1]
-0x00010078  ldmfd r13! {r1, r2}
-0x0001007C  ldmfd r13! {r2, r3, r4, r14}
+0x00010078  ldmia r13! {r1, r2}
+0x0001007C  ldmia r13! {r2, r3, r4, r14}
 0x00010080  mov r15, r14
 0x00010084  00 10 1F 10 
