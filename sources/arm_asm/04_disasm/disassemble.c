@@ -18,18 +18,18 @@ int try_print_asm(int word) {
             return 1;
         }
 
-        if ((0xE1A00030 == (word & 0xE1A00030)) & (0 == ((word >> 25 & 1)))) {
-            int dest_register_v = (word & 0x0000F000) >> 4*3;
-            int second_operand_v = word & 0x0000000F;
-            int Rs_v = (word & 0x00000F00) >> 4*2;
+        if ((0xE1A00030 == (word & 0xE1A00030)) & (0x0 == ((word >> 25 & 0x1)))) {
+            int dest_register_v = (word & 0xF000) >> 4*3;
+            int second_operand_v = word & 0xF;
+            int Rs_v = (word & 0xF00) >> 4*2;
             cl_printf("lsr r%i, r%i, r%i\n", dest_register_v, second_operand_v, Rs_v);
             return 1;
         }
 
-        int dest_register_v = (word & 0x0000F000) >> 4*3;
-        int immediate_operand_v = (word >> 25) & 1;
+        int dest_register_v = (word & 0xF000) >> 4*3;
+        int immediate_operand_v = (word >> 25) & 0x1;
         if (immediate_operand_v) {
-            int immdediate_v = (word & 0x000000FF);
+            int immdediate_v = (word & 0xFF);
             cl_printf("mov r%i, #0x%02X\n", dest_register_v, immdediate_v);
         } else {
             int second_operand_register_v = (word & 0xF);
@@ -48,7 +48,7 @@ int try_print_asm(int word) {
             offset_v = (word | 0xFF000000);  // 1111 1111 [offset 24 bits]
             offset_s = "#-0x";
         } else {
-            offset_v = (word & 0x00FFFFFF);  // 0000 0000 [offset 24 bits]
+            offset_v = (word & 0xFFFFFF);  // 0000 0000 [offset 24 bits]
             offset_s = "#0x";
         }
         offset_v = abs(offset_v << 2);  // ARM specifications
@@ -65,17 +65,17 @@ int try_print_asm(int word) {
         // LDR: ldr r0, [r15, #0xXX]
         // Breakdown of 32 bits: 
         //   [4 bits] 01 [3 bits] [word/byte bit (0/1)] [1 bit] [str/ldr bit (0/1)] [dest register 4 bit] [offset 12 bits]
-        int dest_register_v = (word & 0x0000F000) >> 4*3;
-        if ((word >> 20 & 0x00000001) == 0) {
-            int base_register_v = (word & 0x000F0000) >> 4*4;
+        int dest_register_v = (word & 0xF000) >> 4*3;
+        if ((word >> 20 & 0x1) == 0) {
+            int base_register_v = (word & 0xF0000) >> 4*4;
             cl_printf("str r%i, [r%i]\n", dest_register_v, base_register_v);
         } else {
-            int word_byte_v = (word >> 22) & 1;
+            int word_byte_v = (word >> 22) & 0x1;
             if (word_byte_v) {
-                int base_register_v = (word & 0x000F0000) >> 4*4;
+                int base_register_v = (word & 0xF0000) >> 4*4;
                 cl_printf("ldrb r%i, [r%i]\n", dest_register_v, base_register_v);
             } else {
-                int offset_v = (word & 0x00000FFF);
+                int offset_v = (word & 0xFFF);
                 cl_printf("ldr r%i, [r15, #0x%02X]\n", dest_register_v, offset_v);
             }
         }
@@ -89,22 +89,22 @@ int try_print_asm(int word) {
     } else if (0xE3500000 == (word & 0xE3500000)) {
         // CMP: cmp rX, #X
         // Breakdown of 32 bits: [4 bits] 001 1010 [5 bits] [dest register 4 bits] [operand2 12 bits]
-        int register_v = (word & 0x000F0000) >> 4*4;
-        int immediate_v = (word & 0x0000000F);
+        int register_v = (word & 0xF0000) >> 4*4;
+        int immediate_v = (word & 0xF);
         cl_printf("cmp r%i, #%i\n", register_v, immediate_v);
         return 1;
     } else if ((0xE0800000 == (word & 0xE0800000)) & (0x4 == ((word >> 21) & 0xF))) {
         // ADD: add rX, rX, #X or add rX, rX, rX 
         // Breakdown of 32 bits: 
         //   [4 bits] 00 [immediate/operand 1 bit (1/0)] 0100 [1 bit] [1st operand register 4 bits] [dest register 4 bits] [operand2 12 bits]
-        int first_op_register_v = (word & 0x000F0000) >> 4*4;
-        int dest_register_v = (word & 0x0000F000) >> 4*3;
+        int first_op_register_v = (word & 0xF0000) >> 4*4;
+        int dest_register_v = (word & 0xF000) >> 4*3;
         int immediate_operand_v = (word >> 25) & 1;
         if (immediate_operand_v) {
-            int immediate_v = (word & 0x000000FF);
+            int immediate_v = (word & 0xFF);
             cl_printf("add r%i, r%i, #%i\n", first_op_register_v, dest_register_v, immediate_v);
         } else {
-            int operand2_register_v = (word & 0x0000000F);
+            int operand2_register_v = (word & 0xF);
             cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
         }
         return 1;
