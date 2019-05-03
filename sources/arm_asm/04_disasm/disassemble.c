@@ -111,10 +111,10 @@ int try_print_asm(int word) {
         }
         return 1;
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
-        // LDMIA: ldmfd r13! {rX, rX, ...}
+        // LDMIA: ldmia r13! {rX, rX, ...}
         char* registers_str = get_registers_str_from_lower_16bits(word);
-        
-        cl_printf("ldmfd r13! {%s}\n", registers_str);
+
+        cl_printf("ldmia r13! {%s}\n", registers_str);
         return 1;
     } else if (word == 0x1AFFFFFA) {
         // BNE: bne [r15, #-0x18]
@@ -545,7 +545,7 @@ static void test_print_asm_stmdb_multi() {
 
 static void test_print_asm_ldmia() {
     int input = 0xE8BD0002;
-    char* expect = "ldmfd r13! {r1}\n";
+    char* expect = "ldmia r13! {r1}\n";
 
     char* actual;
     try_print_asm(input);
@@ -557,7 +557,7 @@ static void test_print_asm_ldmia() {
 
 static void test_print_asm_ldmia_multi() {
     int input = 0xE8BD4008;
-    char* expect = "ldmfd r13! {r3, r14}\n";
+    char* expect = "ldmia r13! {r3, r14}\n";
 
     char* actual;
     try_print_asm(input);
