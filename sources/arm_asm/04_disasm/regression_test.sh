@@ -1,9 +1,9 @@
-gcc -w ./04_disasm/cl_utils.c ./04_disasm/disassemble.c -o ./04_disasm/disassemble.out
+gcc -w ./cl_utils.c ./disassemble.c -o ./disassemble.out
 
 TARGETS=("hello_arm" "print_loop" "print_hex" "print_nomem" "print_ng" "putchar_bad" "putchar_mem" "print_hex_mem")
 
 for TARGET in ${TARGETS[@]}; do
-	DIFF=`diff <(cat "./04_disasm/test/test_expect/$TARGET.txt") <(./04_disasm/disassemble.out "./04_disasm/test/test_input/$TARGET.bin")`
+	DIFF=`diff <(cat "./test/test_expect/$TARGET.txt") <(./disassemble.out "./test/test_input/$TARGET.bin")`
 
 	if [ "$DIFF" = "" ]; then
     	echo "Regression test SUCESS: $TARGET"
