@@ -138,6 +138,10 @@ int try_print_asm(int word) {
         // BGT: bgt #0x10
         cl_printf("bgt #0x10\n");
         return 1;
+    } else if (word == 0xAAFFFFF4) {
+        // BGE: bge [r15, #-0x30]
+        cl_printf("bge [r15, #-0x30]\n");
+        return 1;
     }
     
     return 0;
@@ -606,7 +610,7 @@ static void unit_tests() {
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
     test_print_asm_ldmia_multi();
-    // test_print_asm_bge();
+    test_print_asm_bge();
     test_print_asm_not_instruction();
     printf("All unittests successfully passed.\n");
 
