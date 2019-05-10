@@ -15,10 +15,15 @@ int cl_getline(char **out_buf) {
             return EOF;
         }
     }
-    buf[strlen(buf) - 1] = '\0';
+
     int len = strlen(buf);
+    if (buf[len - 1] == '\n') {
+        buf[len - 1] = '\0';
+    }
+
+    int len_without_line_end = strlen(buf);
     *out_buf = buf;
-    return len;
+    return len_without_line_end;
 }
 
 void cl_getline_set_file(FILE* input_fp){
