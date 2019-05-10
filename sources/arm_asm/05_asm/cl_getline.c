@@ -8,13 +8,14 @@ static FILE* fp = NULL;
 
 
 // Get one line of the file pointed as fp:
-//   -> return its length, and pack the string into out_buf
+//   "Text\n" -> return 4, out_buf = ['T','e','x','t','\0']
 int cl_getline(char **out_buf) {
     if(fp != NULL){
         if(fgets(buf, BUF_SIZE, fp) == NULL) {
             return EOF;
         }
     }
+    buf[strlen(buf) - 1] = '\0';
     int len = strlen(buf);
     *out_buf = buf;
     return len;
@@ -29,7 +30,7 @@ void cl_getline_set_file(FILE* input_fp){
 // 
 
 static void test_getline_first_line() {
-    int expect = 12;
+    int expect = 11;
 
     char* str_line;
     int actual = cl_getline(&str_line);
@@ -38,7 +39,7 @@ static void test_getline_first_line() {
 }
 
 static void test_getline_second_line() {
-    int expect = 13;
+    int expect = 12;
 
     char* str_line;
     int actual = cl_getline(&str_line);
