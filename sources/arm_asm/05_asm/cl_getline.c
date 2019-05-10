@@ -56,18 +56,27 @@ static void test_getline_last_line() {
     assert(expect == actual);
 }
 
-int main(){
+// Read the input test text file and execute all unittests.
+static void unittests() {
     char cwd[256];
     getcwd(cwd, sizeof(cwd));
     char *fname = strcat(cwd, "/sources/arm_asm/05_asm/test_input/test.txt");
     FILE *fp = NULL;
     if((fp = fopen(fname, "r")) == NULL) {
         printf("ERROR: cannot read the given file.\n");
+        return EOF;
     }
     cl_getline_set_file(fp);
 
 	test_getline_first_line();
     test_getline_second_line();
     test_getline_last_line();
+
+    printf("All unittests successfully passed.\n");
+}
+
+
+int main(){
+    unittests();
 	return 0;
 }
