@@ -3,6 +3,8 @@
 #include <string.h>
 #include "cl_getline.h"
 
+#define PARSE_FAIL -1
+
 struct Substring {
    char *str;
    int len;
@@ -62,10 +64,16 @@ int parse_one(char *str, struct Substring* out_subs) {
 
     out_subs->str = &str[len_read_ch];
 
-    while (is_inst_character(head_ch)) {
+    do {
+        if (head_ch == '\0') {
+            return EOF;
+        } else if (is_inst_character(head_ch)) {
+            len_inst_ch++;
+        } else {
+            return PARSE_FAIL;
+        }
         head_ch = str[++len_read_ch];
-        len_inst_ch++;
-    }
+    } while (!is_space(head_ch));
 
     out_subs->len = len_inst_ch;
 
@@ -80,7 +88,6 @@ static void test_parse_one_movr1r2_mov() {
 	char *input = "mov r1, r2";
 	char *expect = "mov";
 	int expect_len_read = 3;
-	int expect_len_inst = 3;
 	
 	struct Substring actual;
 	int actual_len_read = parse_one(input, &actual);
@@ -93,7 +100,6 @@ static void test_parse_one_movr1r2_mov_with_sp() {
 	char *input = "  mov r1, r2";
 	char *expect = "mov";
 	int expect_len_read = 5;
-	int expect_len_inst = 3;
 	
 	struct Substring actual;
 	int actual_len_read = parse_one(input, &actual);
@@ -102,8 +108,19 @@ static void test_parse_one_movr1r2_mov_with_sp() {
     assert_str_substr_eq(expect, &actual);
 }
 
+static void test_parse_one_only_sp() {
+	char *input = "   ";
+	int expect_len_read = EOF;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 int main(int argc, char* argv[]) {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
+    test_parse_one_only_sp();
     return 0;
 }
