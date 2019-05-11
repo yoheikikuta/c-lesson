@@ -48,7 +48,7 @@ int parse_one(char* str, struct Substring* out_subs) {
         } else if (is_inst_character(head_ch)) {
             len_inst_ch++;
         } else {
-            return PARSE_FAIL;
+            return PARSE_FAILURE;
         }
         head_ch = str[++len_read_ch];
     } while (!is_space(head_ch));
@@ -81,7 +81,7 @@ int parse_register(char* str, int* out_register) {
         } else if (is_digit(head_ch)) {
             register_num = 10 * register_num + (head_ch - '0');
         } else {
-            return PARSE_FAIL;
+            return PARSE_FAILURE;
         }
         head_ch = str[++len_read_ch];
     } while (is_digit(head_ch));
@@ -90,7 +90,7 @@ int parse_register(char* str, int* out_register) {
         *out_register = register_num;
         return len_read_ch;
     } else {
-        return PARSE_FAIL;
+        return PARSE_FAILURE;
     }
 }
 
@@ -165,7 +165,7 @@ static void test_parse_register_r1() {
 
 static void test_parse_register_fail() {
 	char* input = "  r, r2";
-	int expect_len_read = PARSE_FAIL;
+	int expect_len_read = PARSE_FAILURE;
 	
 	int actual;
 	int actual_len_read = parse_register(input, &actual);
