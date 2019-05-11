@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "cl_getline.h"
 
-#define BUF_SIZE 256
-static char buf[BUF_SIZE];
+static char buf[BUF_SIZE] = {'\0'};
 static FILE* fp = NULL;
 
 
