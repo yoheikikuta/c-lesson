@@ -14,8 +14,6 @@ struct Emitter;
 
 void emit_word(struct Emitter* emitter, int oneword);
 
-int parse_register(char *str, int out_register);
-
 int skip_comma(char *str);
 
 void assert_two_num_eq(int num1, int num2) {
@@ -81,6 +79,42 @@ int parse_one(char *str, struct Substring* out_subs) {
     return len_read_ch;
 }
 
+// " r12, r2" ->
+//   return 4 (len including spaces)
+//   out_register = 12
+int parse_register(char *str, int *out_register) {
+    int len_read_ch = 0;
+    int register_num = 0;
+    int head_ch = str[len_read_ch];
+
+    // Skip characters up to 'r' or 'R'.
+    while (head_ch != 'r' && head_ch != 'R') {
+        if (head_ch == '\0') return EOF;
+        head_ch = str[++len_read_ch];
+    }
+
+    // Skip next character of 'r' or 'R'.
+    head_ch = str[++len_read_ch];
+
+    do {
+        if (head_ch == '\0') {
+            return EOF;
+        } else if (is_digit(head_ch)) {
+            register_num = 10 * register_num + (head_ch - '0');
+        } else {
+            return PARSE_FAIL;
+        }
+        head_ch = str[++len_read_ch];
+    } while (is_digit(head_ch));
+
+    if (register_num <= 15) {
+        *out_register = register_num;
+        return len_read_ch;
+    } else {
+        return PARSE_FAIL;
+    }
+}
+
 // 
 // TEST
 // 
@@ -119,11 +153,35 @@ static void test_parse_one_only_sp() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_register_r1() {
+	char *input = "  r1, r2";
+	int expect = 1;
+	int expect_len_read = 4;
+	
+	int actual;
+	int actual_len_read = parse_register(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+	assert_two_num_eq(expect, actual);
+}
+
+static void test_parse_register_fail() {
+	char *input = "  r, r2";
+	int expect_len_read = PARSE_FAIL;
+	
+	int actual;
+	int actual_len_read = parse_register(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
     test_parse_one_only_sp();
-
+    test_parse_register_r1();
+    test_parse_register_fail();
+    
     printf("All unittests successfully passed.\n");
 }
 
