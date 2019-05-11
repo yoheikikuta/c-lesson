@@ -14,8 +14,6 @@ struct Emitter;
 
 void emit_word(struct Emitter* emitter, int oneword);
 
-int skip_comma(char *str);
-
 void assert_two_num_eq(int num1, int num2) {
     return assert(num1 == num2);
 }
@@ -115,6 +113,25 @@ int parse_register(char *str, int *out_register) {
     }
 }
 
+// " ,, " -> return 3 (len including spaces)
+int skip_comma(char *str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    // Skip characters up to ','.
+    while (head_ch != ',') {
+        if (head_ch == '\0') return EOF;
+        head_ch = str[++len_read_ch];
+    }
+
+    while (head_ch == ',') {
+        head_ch = str[++len_read_ch];
+    }
+
+    return len_read_ch;
+}
+
+
 // 
 // TEST
 // 
@@ -175,13 +192,23 @@ static void test_parse_register_fail() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_skip_comma() {
+	char *input = " ,, ";
+	int expect_len_read = 3;
+	
+	int actual_len_read = skip_comma(input);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
     test_parse_one_only_sp();
     test_parse_register_r1();
     test_parse_register_fail();
-    
+    test_skip_comma();
+
     printf("All unittests successfully passed.\n");
 }
 
