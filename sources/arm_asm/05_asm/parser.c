@@ -52,7 +52,21 @@ static void test_parse_one_movr1r2_mov() {
     assert_str_substr_eq(expect, &actual);
 }
 
+static void test_parse_one_movr1r2_mov_with_sp() {
+	char *input = "  mov r1, r2";
+	char *expect = "mov";
+	int expect_len_read = 5;
+	int expect_len_inst = 3;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_str_substr_eq(expect, &actual);
+}
+
 int main(int argc, char* argv[]) {
     test_parse_one_movr1r2_mov();
+    // test_parse_one_movr1r2_mov_with_sp();
     return 0;
 }
