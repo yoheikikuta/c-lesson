@@ -1,6 +1,6 @@
 #pragma once
 
-#define PARSE_FAIL -1
+#define PARSE_FAILURE -1
 
 struct Substring {
    char* str;
