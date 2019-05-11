@@ -1,15 +1,12 @@
+#include "cl_getline.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "cl_getline.h"
-
-static char buf[BUF_SIZE] = {'\0'};
-static FILE* fp = NULL;
 
 
 // Get one line of the file pointed as fp:
 //   "Text\n" -> return 4, out_buf = ['T','e','x','t','\0']
-int cl_getline(char **out_buf) {
+int cl_getline(char** out_buf) {
     if(fp != NULL){
         if(fgets(buf, BUF_SIZE, fp) == NULL) {
             return EOF;
@@ -65,8 +62,8 @@ static void test_getline_last_line() {
 static void unittests() {
     char cwd[256];
     getcwd(cwd, sizeof(cwd));
-    char *fname = strcat(cwd, "/sources/arm_asm/05_asm/test_input/test.txt");
-    FILE *fp = NULL;
+    char* fname = strcat(cwd, "/sources/arm_asm/05_asm/test_input/test.txt");
+    FILE* fp = NULL;
     if((fp = fopen(fname, "r")) == NULL) {
         printf("ERROR: cannot read the given file.\n");
         return EOF;
