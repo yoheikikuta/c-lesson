@@ -58,6 +58,7 @@ int parse_one(char *str, struct Substring* out_subs) {
     int len_inst_ch = 0;
     int head_ch = str[len_read_ch];
 
+    // Skip spaces at the beginning of the string.
     while (is_space(head_ch)) {
         head_ch = str[++len_read_ch];
     }
@@ -118,9 +119,16 @@ static void test_parse_one_only_sp() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
-int main(int argc, char* argv[]) {
+static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
     test_parse_one_only_sp();
+
+    printf("All unittests successfully passed.\n");
+}
+
+
+int main(int argc, char* argv[]) {
+    unittests();
     return 0;
 }
