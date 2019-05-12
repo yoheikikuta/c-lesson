@@ -10,6 +10,8 @@ void emit_word(struct Emitter* emitter, int oneword) {
     emitter->pos += 1;
 }
 
+// Assemble a given line:
+//   " mov r1, r2" -> return E1A01002 (Bit Endian)
 int asm_one(char* str) {
     struct Substring substr = {'\0'};
     int len_read_ch = 0;
@@ -29,14 +31,15 @@ int asm_one(char* str) {
         return result_hex;
     }
 
-
     return ASM_FAILURE;
 }
 
 int assemble() {
     char* str_line;
     struct Emitter emitter;
-
+    for (int i = 0; i < WORD_BUF_SIZE; i++) {
+        emitter.word_buf[i] = 0;
+    }
     emitter.pos = 0;
 
     while(cl_getline(&str_line) != EOF) {
