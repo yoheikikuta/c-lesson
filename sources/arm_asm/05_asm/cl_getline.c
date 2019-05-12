@@ -1,4 +1,5 @@
 #include "cl_getline.h"
+#include "cl_util.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -60,14 +61,7 @@ static void test_getline_last_line() {
 
 // Read the input test text file and execute all unittests.
 static void unittests() {
-    char cwd[256];
-    getcwd(cwd, sizeof(cwd));
-    char* fname = strcat(cwd, "/sources/arm_asm/05_asm/test_input/test.txt");
-    FILE* fp = NULL;
-    if((fp = fopen(fname, "r")) == NULL) {
-        printf("ERROR: cannot read the given file.\n");
-        return EOF;
-    }
+    FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test.txt");
     cl_getline_set_file(fp);
 
 	test_getline_first_line();
@@ -78,7 +72,9 @@ static void unittests() {
 }
 
 
+#if 0
 int main(){
     unittests();
 	return 0;
 }
+#endif
