@@ -26,6 +26,10 @@ int is_inst_character(int c) {
     return is_underscore(c) || is_digit(c) || is_alphabet(c);
 }
 
+int is_register(int c) {
+    return (c == 'r') || (c == 'R');
+}
+
 // "  mov r1, r2" ->
 //   return 5 (len including spaces)
 //   out_subs->str = ['m','o','v','\0', ...]
@@ -67,7 +71,7 @@ int parse_register(char* str, int* out_register) {
     int head_ch = str[len_read_ch];
 
     // Skip characters up to 'r' or 'R'.
-    while (head_ch != 'r' && head_ch != 'R') {
+    while (!is_register(head_ch)) {
         if (head_ch == '\0') return EOF;
         head_ch = str[++len_read_ch];
     }
