@@ -1,8 +1,9 @@
 #pragma once
 
 #define ASM_FAILURE -1
+#define WORD_BUF_SIZE 256 * 100
 
 struct Emitter {
-  struct Element *elems;
-  int pos;
+    int word_buf[WORD_BUF_SIZE];
+    int pos;
 };
