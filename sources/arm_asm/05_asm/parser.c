@@ -2,9 +2,6 @@
 #include "cl_util.h"
 #include <stdio.h>
 
-struct Emitter;
-
-void emit_word(struct Emitter* emitter, int oneword);
 
 int is_space(int c) {
     return c == ' ';
@@ -198,7 +195,9 @@ static void unittests() {
 }
 
 
+#if 0
 int main(int argc, char* argv[]) {
     unittests();
     return 0;
 }
+#endif
