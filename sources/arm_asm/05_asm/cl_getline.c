@@ -7,6 +7,7 @@
 
 // Get one line of the file pointed as fp:
 //   "Text\n" -> return 4, out_buf = ['T','e','x','t','\0']
+//   "  \n" -> return 2, out_buf = [' ',' ','\0']
 int cl_getline(char** out_buf) {
     if(fp != NULL){
         if(fgets(buf, BUF_SIZE, fp) == NULL) {
@@ -18,10 +19,9 @@ int cl_getline(char** out_buf) {
     if (buf[len - 1] == '\n') {
         buf[len - 1] = '\0';
     }
-
-    int len_without_line_end = strlen(buf);
     *out_buf = buf;
-    return len_without_line_end;
+    
+    return strlen(buf);
 }
 
 void cl_getline_set_file(FILE* input_fp){
