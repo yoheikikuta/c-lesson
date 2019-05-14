@@ -44,15 +44,15 @@ int parse_one(char* str, struct Substring* out_subs) {
     out_subs->str = &str[len_read_ch];
 
     do {
-        if (head_ch == '\0') {
-            return EOF;
-        } else if (is_inst_character(head_ch)) {
+        if (is_inst_character(head_ch)) {
             len_inst_ch++;
+        } else if (head_ch == '\0') {
+            return EOF;
         } else {
             return PARSE_FAILURE;
         }
         head_ch = str[++len_read_ch];
-    } while (!is_space(head_ch));
+    } while (is_inst_character(head_ch));
 
     out_subs->len = len_inst_ch;
 
@@ -142,6 +142,28 @@ static void test_parse_one_movr1r2_mov_with_sp() {
     assert_str_substr_eq(expect, &actual);
 }
 
+static void test_parse_one_intermediate() {
+	char* input = "  mov[";
+	char* expect = "mov";
+	int expect_len_read = 5;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_str_substr_eq(expect, &actual);
+}
+
+static void test_parse_one_failure() {
+	char* input = "  [";
+	char* expect_len_read = PARSE_FAILURE;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void test_parse_one_only_sp() {
 	char* input = "   ";
 	int expect_len_read = EOF;
@@ -186,6 +208,8 @@ static void test_skip_comma() {
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
+    test_parse_one_intermediate();
+    test_parse_one_failure();
     test_parse_one_only_sp();
     test_parse_register_r1();
     test_parse_register_fail();
