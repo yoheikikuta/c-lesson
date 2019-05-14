@@ -112,7 +112,6 @@ int skip_comma(char* str) {
     return len_read_ch;
 }
 
-
 // 
 // TEST
 // 
