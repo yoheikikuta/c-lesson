@@ -96,20 +96,18 @@ int parse_register(char* str, int* out_register) {
     }
 }
 
-// " ,, " -> return 3 (len including spaces)
+// " , r2" -> return 2 (len including spaces)
 int skip_comma(char* str) {
     int len_read_ch = 0;
     int head_ch = str[len_read_ch];
 
-    // Skip characters up to ','.
-    while (head_ch != ',') {
-        if (head_ch == '\0') return EOF;
+    while (is_space(head_ch)) {
         head_ch = str[++len_read_ch];
     }
 
-    while (head_ch == ',') {
-        head_ch = str[++len_read_ch];
-    }
+    // Check the character is 'r' or 'R', and read the next character.
+    if (head_ch != ',') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
 
     return len_read_ch;
 }
@@ -208,8 +206,17 @@ static void test_parse_register_fail_other_ch() {
 }
 
 static void test_skip_comma() {
-	char* input = " ,, ";
-	int expect_len_read = 3;
+	char* input = " , r2";
+	int expect_len_read = 2;
+	
+	int actual_len_read = skip_comma(input);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
+static void test_skip_comma_fail() {
+	char* input = " a, r2";
+	int expect_len_read = PARSE_FAILURE;
 	
 	int actual_len_read = skip_comma(input);
 	
@@ -226,6 +233,7 @@ static void unittests() {
     test_parse_register_fail();
     test_parse_register_fail_other_ch();
     test_skip_comma();
+    test_skip_comma_fail();
 
     printf("All unittests successfully passed.\n");
 }
