@@ -67,26 +67,27 @@ int parse_register(char* str, int* out_register) {
     int register_num = 0;
     int head_ch = str[len_read_ch];
 
-    // Skip characters up to 'r' or 'R'.
-    while (!is_register(head_ch)) {
-        if (head_ch == '\0') return EOF;
+    // Skip spaces at the beginning of the string.
+    while (is_space(head_ch)) {
         head_ch = str[++len_read_ch];
     }
 
-    // Read next character of 'r' or 'R'.
+    // Check the character is 'r' or 'R', and read the next character.
+    if (!is_register(head_ch)) return PARSE_FAILURE;
     head_ch = str[++len_read_ch];
 
     do {
-        if (head_ch == '\0') {
-            return EOF;
-        } else if (is_digit(head_ch)) {
+        if (is_digit(head_ch)) {
             register_num = 10 * register_num + (head_ch - '0');
+        } else if (head_ch == '\0') {
+            return EOF;
         } else {
             return PARSE_FAILURE;
         }
         head_ch = str[++len_read_ch];
     } while (is_digit(head_ch));
 
+    // Valid register number is from 0 to 15.
     if (register_num <= 15) {
         *out_register = register_num;
         return len_read_ch;
@@ -196,6 +197,16 @@ static void test_parse_register_fail() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_register_fail_other_ch() {
+	char* input = "  ar1, r2";
+	int expect_len_read = PARSE_FAILURE;
+	
+	int actual;
+	int actual_len_read = parse_register(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void test_skip_comma() {
 	char* input = " ,, ";
 	int expect_len_read = 3;
@@ -213,6 +224,7 @@ static void unittests() {
     test_parse_one_only_sp();
     test_parse_register_r1();
     test_parse_register_fail();
+    test_parse_register_fail_other_ch();
     test_skip_comma();
 
     printf("All unittests successfully passed.\n");
