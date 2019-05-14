@@ -11,7 +11,7 @@ void emit_word(struct Emitter* emitter, int oneword) {
 }
 
 // Assemble a given line:
-//   " mov r1, r2" -> return E1A01002 (Bit Endian)
+//   " mov r1, r2" -> return E1A01002 (Big Endian)
 int asm_one(char* str) {
     struct Substring substr = {'\0'};
     int len_read_ch = 0;
@@ -34,6 +34,8 @@ int asm_one(char* str) {
     return ASM_FAILURE;
 }
 
+// At this stage, assemble input file and print dumped hex numbers.
+// To be implemented to make the output file later.
 int assemble() {
     char* str_line;
     struct Emitter emitter;
