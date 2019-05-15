@@ -19,12 +19,28 @@ int is_alphabet(int c) {
     return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
 }
 
+int is_hex(int c) {
+    return is_digit(c) || (('A' <= c) && (c <= 'F')) || (('a' <= c) && (c <= 'f'));
+}
+
 int is_inst_character(int c) {
     return is_underscore(c) || is_digit(c) || is_alphabet(c);
 }
 
 int is_register(int c) {
     return (c == 'r') || (c == 'R');
+}
+
+int hex2int(int c) {
+    int v = 0;
+    if (is_digit(c)) {
+        v = c - '0';
+    } else if (('a' <= c) && (c <= 'f')) {
+        v = c - 'a' + 10;
+    } else if (('A' <= c) && (c <= 'F')) {
+        v = c - 'A' + 10;
+    }
+    return v;
 }
 
 // "  mov r1, r2" ->
@@ -90,6 +106,46 @@ int parse_register(char* str, int* out_register) {
     // Valid register number is from 0 to 15.
     if (register_num <= 15) {
         *out_register = register_num;
+        return len_read_ch;
+    } else {
+        return PARSE_FAILURE;
+    }
+}
+
+// "  #0xC8 " ->
+//   return 7 (len including spaces)
+//   out_immediate_v = 0xC8
+int parse_immediate_value(char* str, int* out_immediate_v) {
+    int len_read_ch = 0;
+    int immediate_v = 0;
+    int head_ch = str[len_read_ch];
+
+    // Skip spaces at the beginning of the string.
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the prefix is "#0x".
+    char prefix_ch[3] = {'#', '0', 'x'};
+    for (int i = 0; i < 3; i++) {
+        if(str[len_read_ch++] != prefix_ch[i]) return PARSE_FAILURE;
+    }
+    head_ch = str[len_read_ch];
+
+    do {
+        if (is_hex(head_ch)) {
+            immediate_v = 16 * immediate_v + hex2int(head_ch);
+        } else if (head_ch == '\0') {
+            return EOF;
+        } else {
+            return PARSE_FAILURE;
+        }
+        head_ch = str[++len_read_ch];
+    } while (is_hex(head_ch));
+
+    // Valid register number is from 0x00000000 to 0xFFFFFFFF.
+    if (immediate_v <= 0xFFFFFFFF) {
+        *out_immediate_v = immediate_v;
         return len_read_ch;
     } else {
         return PARSE_FAILURE;
@@ -222,6 +278,28 @@ static void test_skip_comma_fail() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_immediate_value() {
+    char* input = "  #0xC8 ";
+    int expect = 0xC8;
+    int expect_len_read = 7;
+
+    int actual;
+    int actual_len_read = parse_immediate_value(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_num_eq(expect, actual);
+}
+
+static void test_parse_immediate_value_fail() {
+    char* input = "  #68 ";
+    int expect_len_read = PARSE_FAILURE;
+
+    int actual;
+    int actual_len_read = parse_immediate_value(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
@@ -233,6 +311,8 @@ static void unittests() {
     test_parse_register_fail_other_ch();
     test_skip_comma();
     test_skip_comma_fail();
+    test_parse_immediate_value();
+    test_parse_immediate_value_fail();
 
     printf("All unittests successfully passed.\n");
 }
