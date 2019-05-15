@@ -4,6 +4,18 @@
 #include "cl_getline.h"
 
 
+// Return the next non-space character: " a" -> 'a'
+int get_next_nonsp_ch(char* str) {
+    int len_read_ch = 0;
+    int ch = str[len_read_ch];
+
+    while (is_space(ch)) {
+        ch = str[++len_read_ch];
+    }
+
+    return ch;
+}
+
 void emit_word(struct Emitter* emitter, int oneword) {
     int pos = emitter->pos;
     emitter->word_buf[pos] = oneword;
@@ -19,14 +31,27 @@ int asm_one(char* str) {
 
     str += parse_one(str, &substr);
     if(strncmp("mov", substr.str, substr.len) == 0) {
-        result_hex += 0xE1A00000;
         int register_dest = 0;
-        int register_op2 = 0;
         str += parse_register(str, &register_dest);
-        result_hex += register_dest << 12;
         str += skip_comma(str);
-        str += parse_register(str, &register_op2);
-        result_hex += register_op2;
+
+        int next_ch = get_next_nonsp_ch(str);
+
+        if ((next_ch == 'r') || (next_ch == 'R')) {
+            result_hex += 0xE1A00000;
+            result_hex += register_dest << 12;
+            int register_op2 = 0;
+            str += parse_register(str, &register_op2);
+            result_hex += register_op2;
+        } else if (next_ch == '#') {
+            result_hex += 0xE3A00000;
+            result_hex += register_dest << 12;
+            int immediate_v = 0;
+            str += parse_immediate_value(str, &immediate_v);
+            result_hex += immediate_v;
+        } else {
+            return ASM_FAILURE;
+        }
         
         return result_hex;
     }
@@ -74,9 +99,19 @@ static void test_asm_one_movr1r2() {
 	assert_two_num_eq(expect, actual);
 }
 
+static void test_asm_one_movr10xFF() {
+	char* input = "mov r1,#0xFF";
+	int expect = 0xE3A010FF;
+	
+	int actual = asm_one(input);
+	
+	assert_two_num_eq(expect, actual);
+}
+
 
 int main(int argc, char* argv[]) {
     test_asm_one_movr1r2();
+    test_asm_one_movr10xFF();
 
     FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.s");
     cl_getline_set_file(fp);
