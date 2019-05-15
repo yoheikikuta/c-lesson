@@ -119,6 +119,7 @@ int parse_immediate_value(char* str, int* out_immediate_v) {
     int len_read_ch = 0;
     int immediate_v = 0;
     int head_ch = str[len_read_ch];
+    int sign = 1;
 
     // Skip spaces at the beginning of the string.
     while (is_space(head_ch)) {
@@ -129,6 +130,10 @@ int parse_immediate_value(char* str, int* out_immediate_v) {
     char prefix_ch[3] = {'#', '0', 'x'};
     for (int i = 0; i < 3; i++) {
         if(str[len_read_ch++] != prefix_ch[i]) return PARSE_FAILURE;
+        if(str[len_read_ch] == '-') {
+            sign = -1;
+            len_read_ch++;
+        }
     }
     head_ch = str[len_read_ch];
 
@@ -143,9 +148,9 @@ int parse_immediate_value(char* str, int* out_immediate_v) {
         head_ch = str[++len_read_ch];
     } while (is_hex(head_ch));
 
-    // Valid register number is from 0x00000000 to 0xFFFFFFFF.
+    // Valid immediate value is from 0x00000000 to 0xFFFFFFFF.
     if (immediate_v <= 0xFFFFFFFF) {
-        *out_immediate_v = immediate_v;
+        *out_immediate_v = sign * immediate_v;
         return len_read_ch;
     } else {
         return PARSE_FAILURE;
@@ -290,6 +295,18 @@ static void test_parse_immediate_value() {
     assert_two_num_eq(expect, actual);
 }
 
+static void test_parse_immediate_value_negative() {
+    char* input = "  #-0xC8 ";
+    int expect = -0xC8;
+    int expect_len_read = 8;
+
+    int actual;
+    int actual_len_read = parse_immediate_value(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_num_eq(expect, actual);
+}
+
 static void test_parse_immediate_value_fail() {
     char* input = "  #68 ";
     int expect_len_read = PARSE_FAILURE;
@@ -312,6 +329,7 @@ static void unittests() {
     test_skip_comma();
     test_skip_comma_fail();
     test_parse_immediate_value();
+    test_parse_immediate_value_negative();
     test_parse_immediate_value_fail();
 
     printf("All unittests successfully passed.\n");
