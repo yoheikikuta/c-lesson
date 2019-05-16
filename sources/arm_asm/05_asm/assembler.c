@@ -159,13 +159,19 @@ static void test_asm_one_mov_fail() {
 	assert_two_num_eq(expect, actual);
 }
 
-
-int main(int argc, char* argv[]) {
+static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
     test_asm_one_movr150x00008000();
     test_asm_one_movr15m0xFF000000();
     test_asm_one_mov_fail();
+
+    printf("All unittests successfully passed.\n");
+}
+
+
+int main(int argc, char* argv[]) {
+    unittests();
 
     FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.s");
     cl_getline_set_file(fp);
