@@ -43,6 +43,48 @@ int hex2int(int c) {
     return v;
 }
 
+// Convert 32 bits int to 12 bits immediate value:
+//   (ex1) 0xC8, -1 -> return -0xC8
+//   (ex2) 0xFF00000, 1 -> return 0x000004FF
+int convert_32bits_to_immediate12bits(int c, int sign) {
+    // Return input itself if 0 <= c <= 0xFF.
+    if (0 <= c && c <= 0xFF) return sign * c;
+
+    // 0000 0000 0000 0010 1000 0000 0000 0000 -> 15
+    int lowest_bit_pos = 0;
+    for (int i = 0; i < 32; i++) {
+        if ((c >> i & 0x1) == 0x1) {
+            lowest_bit_pos = i;
+            break;
+        }
+    }
+
+    // Use unsigned int to handle logical bit shift.
+    unsigned int unsigned_c = (unsigned int)c;
+
+    // 0000 0000 0000 0010 1000 0000 0000 0000 ->
+    //   bit_shift_num_left = 17 ->
+    //   bit_shift_num_left = 18 (only 2 * n is allowed as ARM bit shift)
+    int bit_shift_num_left = 32 - lowest_bit_pos;
+    bit_shift_num_left += bit_shift_num_left % 2;
+
+    // 0000 0000 0000 0010 1000 0000 0000 0000 ->
+    //   F F F F F 0 0 0 (to keep bit information shifted out)
+    int num_F = (bit_shift_num_left + (bit_shift_num_left % 4)) / 4;
+    unsigned int keep_bits = 0x00000000;
+    for (int i = 0; i < num_F; i++) {
+        keep_bits += (0x0000000F << (4 * (7 - i)));
+    }
+
+    // 0000 0000 0000 0010 1000 0000 0000 0000 ->
+    //   target_bits = 0000 0000 0000 0000 0000 0000 0000 1010 ->
+    //   target_bits = 0000 0000 0000 0000 0000 1001 0000 1010 (lower 12 bits = immeadiate value)
+    int target_bits = ((unsigned_c & keep_bits) >> (lowest_bit_pos - lowest_bit_pos % 2));
+    target_bits += ((0x00000000 + bit_shift_num_left / 2) << 8);
+
+    return sign * target_bits;
+}
+
 // "  mov r1, r2" ->
 //   return 5 (len including spaces)
 //   out_subs->str = ['m','o','v','\0', ...]
@@ -148,9 +190,10 @@ int parse_immediate_value(char* str, int* out_immediate_v) {
         head_ch = str[++len_read_ch];
     } while (is_hex(head_ch));
 
-    // Valid immediate value is from 0x00000000 to 0xFFFFFFFF.
-    if (immediate_v <= 0xFFFFFFFF) {
-        *out_immediate_v = sign * immediate_v;
+    // Valid immediate value is <= 0x7FFFFFFF (since it is a signed int).
+    if (immediate_v <= 0x7FFFFFFF) {
+        immediate_v = convert_32bits_to_immediate12bits(immediate_v, sign);
+        *out_immediate_v = immediate_v;
         return len_read_ch;
     } else {
         return PARSE_FAILURE;
@@ -307,6 +350,30 @@ static void test_parse_immediate_value_negative() {
     assert_two_num_eq(expect, actual);
 }
 
+static void test_parse_immediate_value_large() {
+    char* input = "  #0x8000 ";
+    int expect = 0x902;
+    int expect_len_read = 9;
+
+    int actual;
+    int actual_len_read = parse_immediate_value(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_num_eq(expect, actual);
+}
+
+static void test_parse_immediate_value_large_negative() {
+    char* input = "  #0xFF000000 ";
+    int expect = 0x4FF;
+    int expect_len_read = 13;
+
+    int actual;
+    int actual_len_read = parse_immediate_value(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_num_eq(expect, actual);
+}
+
 static void test_parse_immediate_value_fail() {
     char* input = "  #68 ";
     int expect_len_read = PARSE_FAILURE;
@@ -330,6 +397,8 @@ static void unittests() {
     test_skip_comma_fail();
     test_parse_immediate_value();
     test_parse_immediate_value_negative();
+    test_parse_immediate_value_large();
+    test_parse_immediate_value_large_negative();
     test_parse_immediate_value_fail();
 
     printf("All unittests successfully passed.\n");
