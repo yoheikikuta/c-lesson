@@ -22,6 +22,11 @@ void emit_word(struct Emitter* emitter, int oneword) {
     emitter->pos += 1;
 }
 
+// Return 1 if the input str is equal to substr.str.
+int is_str_equal_to_substr(char* str, struct Substring substr) {
+    return strncmp(str, substr.str, substr.len) == 0;
+}
+
 // " mov r1, r2" -> return 0, out_result_hex = E1A01002 (Big Endian)
 int asm_mov(char* str, int* out_result_hex) {
     int len_read_ch = 0;
@@ -70,7 +75,7 @@ int asm_one(char* str) {
     int result_hex = 0x00000000;
 
     str += parse_one(str, &substr);
-    if(strncmp("mov", substr.str, substr.len) == 0) {
+    if (is_str_equal_to_substr("mov", substr)) {
         if (asm_mov(str, &result_hex) == ASM_FAILURE) return ASM_FAILURE; 
         return result_hex;
     }
