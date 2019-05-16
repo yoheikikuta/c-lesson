@@ -108,10 +108,30 @@ static void test_asm_one_movr10xFF() {
 	assert_two_num_eq(expect, actual);
 }
 
+static void test_asm_one_movr150x00008000() {
+	char* input = "mov r15, #0x00008000";
+	int expect = 0xE3A0F902;
+	
+	int actual = asm_one(input);
+	
+	assert_two_num_eq(expect, actual);
+}
+
+static void test_asm_one_movr15m0xFF000000() {
+	char* input = "mov r15, #0xFF000000";
+	int expect = 0xE3A0F4FF;
+	
+	int actual = asm_one(input);
+	
+	assert_two_num_eq(expect, actual);
+}
+
 
 int main(int argc, char* argv[]) {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
+    test_asm_one_movr150x00008000();
+    test_asm_one_movr15m0xFF000000();
 
     FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.s");
     cl_getline_set_file(fp);
