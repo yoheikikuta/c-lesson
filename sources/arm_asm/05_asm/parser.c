@@ -11,6 +11,10 @@ int is_underscore(int c) {
     return c == '_';
 }
 
+int is_dot(int c) {
+    return c == '.';
+}
+
 int is_digit(int c) {
     return ('0' <= c) && (c <= '9');
 }
@@ -24,7 +28,7 @@ int is_hex(int c) {
 }
 
 int is_inst_character(int c) {
-    return is_underscore(c) || is_digit(c) || is_alphabet(c);
+    return is_underscore(c) || is_dot(c) || is_digit(c) || is_alphabet(c);
 }
 
 int is_register(int c) {
@@ -276,6 +280,18 @@ static void test_parse_one_only_sp() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_one_raw() {
+	char* input = "  .raw";
+	char* expect = ".raw";
+	int expect_len_read = 6;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_str_substr_eq(expect, &actual);
+}
+
 static void test_parse_register_r1() {
 	char* input = "  r1, r2";
 	int expect = 1;
@@ -390,6 +406,7 @@ static void unittests() {
     test_parse_one_intermediate();
     test_parse_one_failure();
     test_parse_one_only_sp();
+    test_parse_one_raw();
     test_parse_register_r1();
     test_parse_register_fail();
     test_parse_register_fail_other_ch();
