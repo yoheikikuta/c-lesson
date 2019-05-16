@@ -45,7 +45,7 @@ int asm_one(char* str) {
 
         if ((next_ch == 'r') || (next_ch == 'R')) {
             // 0xE1A0X00X
-            result_hex += 0xE1A00000;
+            result_hex = 0xE1A00000;
             result_hex += register_dest << 12;
             int register_op2 = 0;            
             len_read_ch = parse_register(str, &register_op2);
@@ -54,7 +54,7 @@ int asm_one(char* str) {
             result_hex += register_op2;
         } else if (next_ch == '#') {
             // 0xE3A0XXXX
-            result_hex += 0xE3A00000;
+            result_hex = 0xE3A00000;
             result_hex += register_dest << 12;
             int immediate_v = 0;
             len_read_ch = parse_immediate_value(str, &immediate_v);
