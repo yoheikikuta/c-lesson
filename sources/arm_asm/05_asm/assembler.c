@@ -32,22 +32,34 @@ int asm_one(char* str) {
     str += parse_one(str, &substr);
     if(strncmp("mov", substr.str, substr.len) == 0) {
         int register_dest = 0;
-        str += parse_register(str, &register_dest);
-        str += skip_comma(str);
+
+        len_read_ch = parse_register(str, &register_dest);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+
+        len_read_ch = skip_comma(str);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
 
         int next_ch = get_next_nonsp_ch(str);
 
         if ((next_ch == 'r') || (next_ch == 'R')) {
+            // 0xE1A0X00X
             result_hex += 0xE1A00000;
             result_hex += register_dest << 12;
-            int register_op2 = 0;
-            str += parse_register(str, &register_op2);
+            int register_op2 = 0;            
+            len_read_ch = parse_register(str, &register_op2);
+            if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+            str += len_read_ch;
             result_hex += register_op2;
         } else if (next_ch == '#') {
+            // 0xE3A0XXXX
             result_hex += 0xE3A00000;
             result_hex += register_dest << 12;
             int immediate_v = 0;
-            str += parse_immediate_value(str, &immediate_v);
+            len_read_ch = parse_immediate_value(str, &immediate_v);
+            if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+            str += len_read_ch;
             result_hex += immediate_v;
         } else {
             return ASM_FAILURE;
@@ -126,12 +138,22 @@ static void test_asm_one_movr15m0xFF000000() {
 	assert_two_num_eq(expect, actual);
 }
 
+static void test_asm_one_mov_fail() {
+	char* input = "mov a15, #0xFF";
+	int expect = ASM_FAILURE;
+	
+	int actual = asm_one(input);
+	
+	assert_two_num_eq(expect, actual);
+}
+
 
 int main(int argc, char* argv[]) {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
     test_asm_one_movr150x00008000();
     test_asm_one_movr15m0xFF000000();
+    test_asm_one_mov_fail();
 
     FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.s");
     cl_getline_set_file(fp);
