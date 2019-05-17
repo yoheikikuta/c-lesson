@@ -4,7 +4,7 @@
 #include "cl_getline.h"
 
 
-static struct Element elems[WORD_BUF_SIZE] = {NO_ELEM_TYPE, {.number = 0}};
+static struct Word words[WORD_BUF_SIZE] = {NO_WORD_TYPE, {.number = 0}};
 
 // Return the next non-space character: " a" -> 'a'
 int get_next_nonsp_ch(char* str) {
@@ -18,9 +18,9 @@ int get_next_nonsp_ch(char* str) {
     return ch;
 }
 
-void emit_word(struct Emitter* emitter, int oneword) {
+void emit_word(struct Emitter* emitter, struct Word word) {
     int pos = emitter->pos;
-    emitter->elems[pos].u.number = oneword;
+    emitter->words[pos].u.number = word.u.number;
     emitter->pos += 1;
 }
 
@@ -30,9 +30,9 @@ int is_str_equal_to_substr(char* str, struct Substring substr) {
 }
 
 // mov: " r1, r2" -> return 0, out_result_hex = E1A01002 (Big Endian)
-int asm_mov(char* str, int* out_result_hex) {
+int asm_mov(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    int result_hex = 0x00000000;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
     int register_dest = 0;
 
     len_read_ch = parse_register(str, &register_dest);
@@ -47,70 +47,77 @@ int asm_mov(char* str, int* out_result_hex) {
 
     if ((next_ch == 'r') || (next_ch == 'R')) {
         // 0xE1A0X00X
-        result_hex = 0xE1A00000;
-        result_hex += register_dest << 12;
+        word.u.number = 0xE1A00000;
+        word.u.number += register_dest << 12;
         int register_op2 = 0;            
         len_read_ch = parse_register(str, &register_op2);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-        result_hex += register_op2;
+        word.u.number += register_op2;
     } else if (next_ch == '#') {
         // 0xE3A0XXXX
-        result_hex = 0xE3A00000;
-        result_hex += register_dest << 12;
+        word.u.number = 0xE3A00000;
+        word.u.number += register_dest << 12;
         int immediate_v = 0;
         len_read_ch = parse_immediate_value(str, &immediate_v);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-        result_hex += immediate_v;
+        word.u.number += immediate_v;
     } else {
         return ASM_FAILURE;
     }
 
-    *out_result_hex = result_hex;
+    *out_word = word;
     return 0;
 }
 
 // .raw: " 0x12345678" -> return 0, out_result_hex = 0x12345678
-int asm_raw(char* str, int* out_result_hex) {
+int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    int result_hex = 0x00000000;
+    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
-    len_read_ch = parse_int(str, &result_hex);
+    int number = 0x0;
+    word.wtype = WORD_NUMBER;
+    len_read_ch = parse_int(str, &number);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
+    word.u.number = number;
 
-    *out_result_hex = result_hex;
+    *out_word = word;
     return 0;
 }
 
 // Assemble a given line.
-int asm_one(char* str) {
+int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
-    int result_hex = 0x00000000;
+    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     str += parse_one(str, &substr);
     if (is_str_equal_to_substr("mov", substr)) {
-        if (asm_mov(str, &result_hex) == ASM_FAILURE) return ASM_FAILURE; 
-        return result_hex;
+        if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE; 
+        *out_word = word;
+        return 0;
     } else if (is_str_equal_to_substr(".raw", substr)) {
-        if (asm_raw(str, &result_hex) == ASM_FAILURE) return ASM_FAILURE; 
-        return result_hex;
+        if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+        *out_word = word;
+        return 0;
+    } else {
+        return ASM_FAILURE;
     }
-
-    return ASM_FAILURE;
 }
 
 // At this stage, assemble input file and print dumped hex numbers.
 // To be implemented to make the output file later.
 int assemble() {
     char* str_line;
+    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
     struct Emitter emitter;
-    emitter.elems = elems;
+    emitter.words = words;
     emitter.pos = 0;
 
     while(cl_getline(&str_line) != EOF) {
-        emit_word(&emitter, asm_one(str_line));
+        if (asm_one(str_line, &word) == ASM_FAILURE) return ASM_FAILURE;
+        emit_word(&emitter, word);
     }
 
     // At this stage, print dumped hex numbers for debugging.
@@ -119,7 +126,7 @@ int assemble() {
     // ...
     for (int i = 0; i < emitter.pos; i++) {
         int line_num = i * 4;
-        int word = emitter.elems[i].u.number;
+        int word = emitter.words[i].u.number;
         printf("%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
     }
 
@@ -134,43 +141,48 @@ static void test_asm_one_movr1r2() {
 	char* input = "mov r1, r2";
 	int expect = 0xE1A01002;
 	
-	int actual = asm_one(input);
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
 	
-	assert_two_num_eq(expect, actual);
+	assert_two_num_eq(expect, actual.u.number);
 }
 
 static void test_asm_one_movr10xFF() {
 	char* input = "mov r1,#0xFF";
 	int expect = 0xE3A010FF;
 	
-	int actual = asm_one(input);
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
 	
-	assert_two_num_eq(expect, actual);
+	assert_two_num_eq(expect, actual.u.number);
 }
 
 static void test_asm_one_movr150x00008000() {
 	char* input = "mov r15, #0x00008000";
 	int expect = 0xE3A0F902;
 	
-	int actual = asm_one(input);
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
 	
-	assert_two_num_eq(expect, actual);
+	assert_two_num_eq(expect, actual.u.number);
 }
 
 static void test_asm_one_movr15m0xFF000000() {
 	char* input = "mov r15, #0xFF000000";
 	int expect = 0xE3A0F4FF;
 	
-	int actual = asm_one(input);
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
 	
-	assert_two_num_eq(expect, actual);
+	assert_two_num_eq(expect, actual.u.number);
 }
 
 static void test_asm_one_mov_fail() {
 	char* input = "mov a15, #0xFF";
 	int expect = ASM_FAILURE;
 	
-	int actual = asm_one(input);
+    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
+	int actual = asm_one(input, &word);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -179,9 +191,10 @@ static void test_asm_one_raw_int() {
 	char* input = " .raw 0x12345678";
 	int expect = 0x12345678;
 	
-	int actual = asm_one(input);
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
 	
-	assert_two_num_eq(expect, actual);
+	assert_two_num_eq(expect, actual.u.number);
 }
 
 static void unittests() {
