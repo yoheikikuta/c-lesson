@@ -18,9 +18,15 @@ int get_next_nonsp_ch(char* str) {
     return ch;
 }
 
+// Store the contents of word into emitter->words with its position.
 void emit_word(struct Emitter* emitter, struct Word word) {
     int pos = emitter->pos;
-    emitter->words[pos].u.number = word.u.number;
+    emitter->words[pos].wtype = word.wtype;
+    if (word.wtype == WORD_NUMBER) {
+        emitter->words[emitter->pos].u.number = word.u.number;
+    } else if (word.wtype == WORD_STRING) {
+        emitter->words[emitter->pos].u.str = word.u.str;
+    }    
     emitter->pos += 1;
 }
 
@@ -76,12 +82,25 @@ int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
-    int number = 0x0;
-    word.wtype = WORD_NUMBER;
-    len_read_ch = parse_int(str, &number);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number = number;
+    int next_ch = get_next_nonsp_ch(str);
+
+    if (next_ch == '0') {
+        word.wtype = WORD_NUMBER;
+        int number = 0x0;
+        len_read_ch = parse_int(str, &number);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+        word.u.number = number;
+    } else if (next_ch == '"') {
+        word.wtype = WORD_STRING;
+        char parsed_str[STR_SIZE] = {'\0'};
+        len_read_ch = parse_str(str, &parsed_str);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+        word.u.str = &parsed_str;
+    } else {
+        return ASM_FAILURE;
+    }
 
     *out_word = word;
     return 0;
@@ -123,11 +142,18 @@ int assemble() {
     // At this stage, print dumped hex numbers for debugging.
     // 00000000 0210A0E1 (Little Endian)
     // 00000004 0AF0A0E1
+    // 00000008 Hello
     // ...
     for (int i = 0; i < emitter.pos; i++) {
         int line_num = i * 4;
-        int word = emitter.words[i].u.number;
-        printf("%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
+        int wtype = emitter.words[i].wtype;
+
+        if (wtype == WORD_NUMBER) {
+            int word = emitter.words[i].u.number;
+            printf("%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
+        } else if (wtype == WORD_STRING) {
+            printf("%08X %s\n", line_num, emitter.words[i].u.str);
+        }
     }
 
     return 0;
@@ -197,6 +223,16 @@ static void test_asm_one_raw_int() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_raw_str() {
+	char* input = " .raw \"test\n\"";
+	char* expect = "test\n";
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_str_eq(expect, actual.u.str);
+}
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
@@ -204,6 +240,7 @@ static void unittests() {
     test_asm_one_movr15m0xFF000000();
     test_asm_one_mov_fail();
     test_asm_one_raw_int();
+    test_asm_one_raw_str();
 
     printf("All unittests successfully passed.\n");
 }
