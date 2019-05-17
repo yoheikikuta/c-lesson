@@ -4,6 +4,8 @@
 #include "cl_getline.h"
 
 
+static struct Element elems[WORD_BUF_SIZE] = {NO_ELEM_TYPE, {.number = 0}};
+
 // Return the next non-space character: " a" -> 'a'
 int get_next_nonsp_ch(char* str) {
     int len_read_ch = 0;
@@ -18,7 +20,7 @@ int get_next_nonsp_ch(char* str) {
 
 void emit_word(struct Emitter* emitter, int oneword) {
     int pos = emitter->pos;
-    emitter->word_buf[pos] = oneword;
+    emitter->elems[pos].u.number = oneword;
     emitter->pos += 1;
 }
 
@@ -104,9 +106,7 @@ int asm_one(char* str) {
 int assemble() {
     char* str_line;
     struct Emitter emitter;
-    for (int i = 0; i < WORD_BUF_SIZE; i++) {
-        emitter.word_buf[i] = 0;
-    }
+    emitter.elems = elems;
     emitter.pos = 0;
 
     while(cl_getline(&str_line) != EOF) {
@@ -119,7 +119,7 @@ int assemble() {
     // ...
     for (int i = 0; i < emitter.pos; i++) {
         int line_num = i * 4;
-        int word = emitter.word_buf[i];
+        int word = emitter.elems[i].u.number;
         printf("%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
     }
 
