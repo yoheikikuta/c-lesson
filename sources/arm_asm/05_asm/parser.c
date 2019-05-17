@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "cl_util.h"
 #include <stdio.h>
+#include <string.h>
 
 
 int is_space(int c) {
@@ -258,6 +259,33 @@ int parse_int(char* str, int* out_int) {
     return len_read_ch;
 }
 
+// "  "hello\n" " ->
+//   return 10 (len including spaces)
+//   out_str = "hello\n"
+int parse_str(char* str, char* out_str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check "/"".
+    if(str[len_read_ch++] != '"') return PARSE_FAILURE;
+    head_ch = str[len_read_ch];
+
+    int init_pos = len_read_ch;
+    do {
+        head_ch = str[++len_read_ch];
+    } while (head_ch != '"');
+    int end_pos = len_read_ch;
+
+    strncpy(out_str, &str[init_pos], end_pos - init_pos);
+    out_str[end_pos - init_pos] = '\0';
+
+    return len_read_ch;
+}
+
 // 
 // TEST
 // 
@@ -269,7 +297,7 @@ static void test_parse_one_movr1r2_mov() {
 	
 	struct Substring actual;
 	int actual_len_read = parse_one(input, &actual);
-	
+
 	assert_two_num_eq(expect_len_read, actual_len_read);
     assert_str_substr_eq(expect, &actual);
 }
@@ -460,6 +488,18 @@ static void test_parse_int_fail() {
     assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_str() {
+    char* input = "  \"Test\n\" ";
+    char* expect = "Test\n";
+    int expect_len_read = 8;
+
+    char actual[6] = {'\0'};
+    int actual_len_read = parse_str(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, actual);
+}
+
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
@@ -479,6 +519,7 @@ static void unittests() {
     test_parse_immediate_value_fail();
     test_parse_int();
     test_parse_int_fail();
+    test_parse_str();
 
     printf("All unittests successfully passed.\n");
 }
