@@ -3,14 +3,14 @@
 #define ASM_FAILURE -1
 #define WORD_BUF_SIZE 256 * 100
 
-enum ElementType {
-    NO_ELEM_TYPE,
-    ELEMENT_NUMBER,
-    ELEMENT_STRING
+enum WordType {
+    NO_WORD_TYPE,
+    WORD_NUMBER,
+    WORD_STRING
 };
 
-struct Element {
-    enum ElementType etype;
+struct Word {
+    enum WordType wtype;
     union {
         int number;
         char* str;
@@ -18,6 +18,6 @@ struct Element {
 };
 
 struct Emitter {
-    struct Element* elems;
+    struct Word* words;
     int pos;
 };
