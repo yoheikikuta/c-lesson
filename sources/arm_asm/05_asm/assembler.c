@@ -27,7 +27,7 @@ int is_str_equal_to_substr(char* str, struct Substring substr) {
     return strncmp(str, substr.str, substr.len) == 0;
 }
 
-// " mov r1, r2" -> return 0, out_result_hex = E1A01002 (Big Endian)
+// mov: " r1, r2" -> return 0, out_result_hex = E1A01002 (Big Endian)
 int asm_mov(char* str, int* out_result_hex) {
     int len_read_ch = 0;
     int result_hex = 0x00000000;
@@ -69,6 +69,19 @@ int asm_mov(char* str, int* out_result_hex) {
     return 0;
 }
 
+// .raw: " 0x12345678" -> return 0, out_result_hex = 0x12345678
+int asm_raw(char* str, int* out_result_hex) {
+    int len_read_ch = 0;
+    int result_hex = 0x00000000;
+
+    len_read_ch = parse_int(str, &result_hex);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    *out_result_hex = result_hex;
+    return 0;
+}
+
 // Assemble a given line.
 int asm_one(char* str) {
     struct Substring substr = {'\0'};
@@ -77,6 +90,9 @@ int asm_one(char* str) {
     str += parse_one(str, &substr);
     if (is_str_equal_to_substr("mov", substr)) {
         if (asm_mov(str, &result_hex) == ASM_FAILURE) return ASM_FAILURE; 
+        return result_hex;
+    } else if (is_str_equal_to_substr(".raw", substr)) {
+        if (asm_raw(str, &result_hex) == ASM_FAILURE) return ASM_FAILURE; 
         return result_hex;
     }
 
@@ -159,12 +175,22 @@ static void test_asm_one_mov_fail() {
 	assert_two_num_eq(expect, actual);
 }
 
+static void test_asm_one_raw_int() {
+	char* input = " .raw 0x12345678";
+	int expect = 0x12345678;
+	
+	int actual = asm_one(input);
+	
+	assert_two_num_eq(expect, actual);
+}
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
     test_asm_one_movr150x00008000();
     test_asm_one_movr15m0xFF000000();
     test_asm_one_mov_fail();
+    test_asm_one_raw_int();
 
     printf("All unittests successfully passed.\n");
 }
@@ -173,7 +199,7 @@ static void unittests() {
 int main(int argc, char* argv[]) {
     unittests();
 
-    FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.s");
+    FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.ks");
     cl_getline_set_file(fp);
     assemble();
 

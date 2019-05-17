@@ -220,6 +220,44 @@ int skip_comma(char* str) {
     return len_read_ch;
 }
 
+// "  0x1234F678 " (32 bits fully specified int) ->
+//   return 12 (len including spaces)
+//   out_int = 0x1234F678
+int parse_int(char* str, int* out_int) {
+    int len_read_ch = 0;
+    int hex_int = 0x00000000;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the prefix is "0x".
+    char prefix_ch[2] = {'0', 'x'};
+    for (int i = 0; i < 2; i++) {
+        if(str[len_read_ch++] != prefix_ch[i]) return PARSE_FAILURE;
+    }
+    head_ch = str[len_read_ch];
+
+    // Convert each char to hex and make hex int.
+    int pos = 7;
+    do {
+        if (is_hex(head_ch)) {
+            hex_int += hex2int(head_ch) << (4 * pos--);
+        } else if (head_ch == '\0') {
+            return EOF;
+        } else {
+            return PARSE_FAILURE;
+        }
+        head_ch = str[++len_read_ch];
+    } while (is_hex(head_ch));
+
+    if (pos >= 0) return PARSE_FAILURE;
+
+    *out_int = hex_int;
+    return len_read_ch;
+}
+
 // 
 // TEST
 // 
@@ -400,6 +438,28 @@ static void test_parse_immediate_value_fail() {
     assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_parse_int() {
+    char* input = "  0x1234F678 ";
+    int expect = 0x1234F678;
+    int expect_len_read = 12;
+
+    int actual;
+    int actual_len_read = parse_int(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_num_eq(expect, actual);
+}
+
+static void test_parse_int_fail() {
+    char* input = "  0x1234F67 ";
+    int expect_len_read = PARSE_FAILURE;
+
+    int actual;
+    int actual_len_read = parse_int(input, &actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void unittests() {
     test_parse_one_movr1r2_mov();
     test_parse_one_movr1r2_mov_with_sp();
@@ -417,6 +477,8 @@ static void unittests() {
     test_parse_immediate_value_large();
     test_parse_immediate_value_large_negative();
     test_parse_immediate_value_fail();
+    test_parse_int();
+    test_parse_int_fail();
 
     printf("All unittests successfully passed.\n");
 }
