@@ -35,7 +35,7 @@ int is_str_equal_to_substr(char* str, struct Substring substr) {
     return strncmp(str, substr.str, substr.len) == 0;
 }
 
-// mov: " r1, r2" -> return 0, out_result_hex = E1A01002 (Big Endian)
+// mov: " r1, r2" -> return 0, out_word->u.number = E1A01002 (Big Endian)
 int asm_mov(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {WORD_NUMBER, {.number = 0x0}};
@@ -77,7 +77,8 @@ int asm_mov(char* str, struct Word* out_word) {
     return 0;
 }
 
-// .raw: " 0x12345678" -> return 0, out_result_hex = 0x12345678
+// .raw: " 0x12345678" -> return 0, out_word->u.number = 0x12345678
+// .raw: " "hello"" -> return 0, out_word->u.str = "hello"
 int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
 
