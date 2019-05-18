@@ -80,29 +80,32 @@ int asm_mov(char* str, struct Word* out_word) {
 // .raw: " 0x12345678" -> return 0, out_result_hex = 0x12345678
 int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     int next_ch = get_next_nonsp_ch(str);
 
     if (next_ch == '0') {
-        word.wtype = WORD_NUMBER;
+        out_word->wtype = WORD_NUMBER;
+
         int number = 0x0;
         len_read_ch = parse_int(str, &number);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-        word.u.number = number;
+
+        out_word->u.number = number;
     } else if (next_ch == '"') {
-        word.wtype = WORD_STRING;
+        out_word->wtype = WORD_STRING;
+
         char parsed_str[STR_SIZE] = {'\0'};
         len_read_ch = parse_str(str, &parsed_str);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-        word.u.str = &parsed_str;
+
+        out_word->u.str = (char*)malloc(strlen(str));
+        strcpy(out_word->u.str, parsed_str);
     } else {
         return ASM_FAILURE;
     }
 
-    *out_word = word;
     return 0;
 }
 
@@ -118,7 +121,13 @@ int asm_one(char* str, struct Word* out_word) {
         return 0;
     } else if (is_str_equal_to_substr(".raw", substr)) {
         if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-        *out_word = word;
+        if (word.wtype == WORD_NUMBER) {
+            *out_word = word;
+        } else if (word.wtype == WORD_STRING) {
+            out_word->wtype = word.wtype;
+            out_word->u.str = (char*)malloc(strlen(str));
+            strcpy(out_word->u.str, word.u.str);
+        }
         return 0;
     } else {
         return ASM_FAILURE;
