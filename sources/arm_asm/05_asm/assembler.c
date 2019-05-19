@@ -140,6 +140,42 @@ int asm_ldr(char* str, struct Word* out_word) {
     return 0;
 }
 
+// str: " r1, [r15]" -> return 0, out_word.u.number = E5810000
+int asm_str(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_dest = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE5800000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_sbracket_open(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_sbracket_close(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    *out_word = word;
+    return 0;
+}
+
 // Assemble a given line.
 int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
@@ -162,6 +198,10 @@ int asm_one(char* str, struct Word* out_word) {
         return 0;
     } else if (is_str_equal_to_substr("ldr", substr)) {
         if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+        *out_word = word;
+        return 0;
+    } else if (is_str_equal_to_substr("str", substr)) {
+        if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
         *out_word = word;
         return 0;
     } else {
@@ -317,6 +357,17 @@ static void test_asm_one_ldr_fail() {
 	assert_two_num_eq(expect_return, actual_return);
 }
 
+static void test_asm_one_str_r0r1() {
+	char* input = " str r0, [r1]";
+	int expect = 0xE5810000;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
@@ -329,6 +380,7 @@ static void unittests() {
     test_asm_one_ldr_r1r15_minus0x30();
     test_asm_one_ldr_r1r15();
     test_asm_one_ldr_fail();
+    test_asm_one_str_r0r1();
 
     printf("All unittests successfully passed.\n");
 }
