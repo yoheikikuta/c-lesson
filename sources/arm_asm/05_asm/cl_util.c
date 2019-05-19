@@ -20,15 +20,18 @@ void assert_str_substr_eq(char* str, struct Substring* substr) {
 
 // Return the file pointer of a given relative file path
 // from the top directory of the repository.
-FILE* get_fp(char* rel_path) {
+FILE* get_fp(char* rel_path, enum FileOpenMode mode) {
     char cwd[256];
     getcwd(cwd, sizeof(cwd));
     char* fname = strcat(cwd, rel_path);
     FILE* fp = NULL;
-    if((fp = fopen(fname, "r")) == NULL) {
-        printf("ERROR: cannot read the given file.\n");
-        return EOF;
+    if (mode == FREAD) {
+        if((fp = fopen(fname, "r")) == NULL) {
+            printf("ERROR: cannot read the given file.\n");
+            return EOF;
+        }
+    } else if (mode == FWRITE) {
+        fp = fopen(fname, "w+");
     }
-
     return fp;
 }
