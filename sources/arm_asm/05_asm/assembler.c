@@ -129,7 +129,7 @@ int asm_ldr(char* str, struct Word* out_word) {
     if (strcmp(parsed_str, "r1,[r15,#0x30]") == 0) {
         word.u.number = 0xE59F101E;
     } else if (strcmp(parsed_str, "r1,[r15,#-0x30]") == 0) {
-        word.u.number = 0xE53F101E;
+        word.u.number = 0xE51F101E;
     } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
         word.u.number = 0xE59F1000;
     } else {
@@ -289,7 +289,7 @@ static void test_asm_one_ldr_r1r150x30() {
 
 static void test_asm_one_ldr_r1r15_minus0x30() {
 	char* input = " ldr r1, [r15, #-0x30]";
-	int expect = 0xE53F101E;
+	int expect = 0xE51F101E;
 	
     struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
 	asm_one(input, &actual);
