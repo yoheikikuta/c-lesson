@@ -209,9 +209,9 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// At this stage, assemble input file and print dumped hex numbers.
-// To be implemented to make the output file later.
-int assemble() {
+// Assemble the input file and save the result in the output file.
+// out_file_rel_path is given as a relatie path from the top of the repository.
+int assemble(char* out_file_rel_path) {
     char* str_line;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
     struct Emitter emitter;
@@ -223,7 +223,7 @@ int assemble() {
         emit_word(&emitter, word);
     }
 
-    FILE* out_fp = get_fp("/sources/arm_asm/05_asm/test/test_input/test_assembler", FWRITE);
+    FILE* out_fp = get_fp(out_file_rel_path, FWRITE);
 
     // Write the result into the output file:
     // 00000000 0210A0E1 (Little Endian)
@@ -388,12 +388,19 @@ static void unittests() {
 }
 
 
+// USAGE: ./sources/arm_asm/05_asm/assembler.out \
+//   /sources/arm_asm/05_asm/test/test_input/test_assembler.ks \
+//   /sources/arm_asm/05_asm/test/test_input/test_assembler
 int main(int argc, char* argv[]) {
-    unittests();
-
-    FILE* fp = get_fp("/sources/arm_asm/05_asm/test/test_input/test_assembler.ks", FREAD);
-    cl_getline_set_file(fp);
-    assemble();
+    if (argc > 2) {
+        char* in_file_rel_path = argv[1];
+        char* out_file_rel_path = argv[2];
+        FILE* fp = get_fp(in_file_rel_path, FREAD);
+        cl_getline_set_file(fp);
+        assemble(out_file_rel_path);
+    } else {
+        unittests();
+    }
 
     return 0;
 }
