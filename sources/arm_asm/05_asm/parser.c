@@ -214,8 +214,40 @@ int skip_comma(char* str) {
         head_ch = str[++len_read_ch];
     }
 
-    // Check the character is 'r' or 'R', and read the next character.
+    // Check the character is ',', and read the next character.
     if (head_ch != ',') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
+
+    return len_read_ch;
+}
+
+// " [r2]" -> return 2 (len including spaces)
+int skip_sbracket_open(char* str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the character is '[', and read the next character.
+    if (head_ch != '[') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
+
+    return len_read_ch;
+}
+
+// " ]" -> return 2 (len including spaces)
+int skip_sbracket_close(char* str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the character is ']', and read the next character.
+    if (head_ch != ']') return PARSE_FAILURE;
     head_ch = str[++len_read_ch];
 
     return len_read_ch;
@@ -408,6 +440,24 @@ static void test_skip_comma_fail() {
 	assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
+static void test_skip_bracket_open() {
+	char* input = " [r2";
+	int expect_len_read = 2;
+
+	int actual_len_read = skip_sbracket_open(input);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
+static void test_skip_bracket_close() {
+	char* input = " ]";
+	int expect_len_read = 2;
+
+	int actual_len_read = skip_sbracket_close(input);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+}
+
 static void test_parse_immediate_value() {
     char* input = "  #0xC8 ";
     int expect = 0xC8;
@@ -512,6 +562,8 @@ static void unittests() {
     test_parse_register_fail_other_ch();
     test_skip_comma();
     test_skip_comma_fail();
+    test_skip_bracket_open();
+    test_skip_bracket_close();
     test_parse_immediate_value();
     test_parse_immediate_value_negative();
     test_parse_immediate_value_large();
