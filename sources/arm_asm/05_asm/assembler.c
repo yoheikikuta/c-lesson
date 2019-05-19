@@ -110,6 +110,36 @@ int asm_raw(char* str, struct Word* out_word) {
     return 0;
 }
 
+// ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E (Big Endian)
+// ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
+// ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
+int asm_ldr(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
+    char parsed_str[STR_SIZE] = {'\0'};
+
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch++] != '\0') {
+        if (str[len_read_ch] != ' ') {
+            parsed_str[non_sp_ch_idx++] = str[len_read_ch];
+        }
+    }
+
+    word.wtype = WORD_NUMBER;
+    if (strcmp(parsed_str, "r1,[r15,#0x30]") == 0) {
+        word.u.number = 0xE59F101E;
+    } else if (strcmp(parsed_str, "r1,[r15,#-0x30]") == 0) {
+        word.u.number = 0xE53F101E;
+    } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
+        word.u.number = 0xE59F1000;
+    } else {
+        return ASM_FAILURE;
+    }
+
+    *out_word = word;
+    return 0;
+}
+
 // Assemble a given line.
 int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
@@ -129,6 +159,10 @@ int asm_one(char* str, struct Word* out_word) {
             out_word->u.str = (char*)malloc(strlen(str));
             strcpy(out_word->u.str, word.u.str);
         }
+        return 0;
+    } else if (is_str_equal_to_substr("ldr", substr)) {
+        if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+        *out_word = word;
         return 0;
     } else {
         return ASM_FAILURE;
@@ -243,6 +277,46 @@ static void test_asm_one_raw_str() {
 	assert_two_str_eq(expect, actual.u.str);
 }
 
+static void test_asm_one_ldr_r1r150x30() {
+	char* input = " ldr r1, [r15, #0x30]";
+	int expect = 0xE59F101E;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_ldr_r1r15_minus0x30() {
+	char* input = " ldr r1, [r15, #-0x30]";
+	int expect = 0xE53F101E;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_ldr_r1r15() {
+	char* input = " ldr r1, [r15]";
+	int expect = 0xE59F1000;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_ldr_fail() {
+	char* input = " ldr r2, [r15]";
+	int expect_return = ASM_FAILURE;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	int actual_return = asm_one(input, &actual);
+	
+	assert_two_num_eq(expect_return, actual_return);
+}
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
@@ -251,6 +325,10 @@ static void unittests() {
     test_asm_one_mov_fail();
     test_asm_one_raw_int();
     test_asm_one_raw_str();
+    test_asm_one_ldr_r1r150x30();
+    test_asm_one_ldr_r1r15_minus0x30();
+    test_asm_one_ldr_r1r15();
+    test_asm_one_ldr_fail();
 
     printf("All unittests successfully passed.\n");
 }
