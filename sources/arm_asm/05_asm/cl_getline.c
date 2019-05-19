@@ -61,7 +61,7 @@ static void test_getline_last_line() {
 
 // Read the input test text file and execute all unittests.
 static void unittests() {
-    FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test.txt");
+    FILE* fp = get_fp("/sources/arm_asm/05_asm/test/test_input/test.txt", FREAD);
     cl_getline_set_file(fp);
 
 	test_getline_first_line();

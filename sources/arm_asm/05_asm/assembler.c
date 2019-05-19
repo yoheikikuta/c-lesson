@@ -223,7 +223,9 @@ int assemble() {
         emit_word(&emitter, word);
     }
 
-    // At this stage, print dumped hex numbers for debugging.
+    FILE* out_fp = get_fp("/sources/arm_asm/05_asm/test/test_input/test_assembler", FWRITE);
+
+    // Write the result into the output file:
     // 00000000 0210A0E1 (Little Endian)
     // 00000004 0AF0A0E1
     // 00000008 Hello
@@ -234,9 +236,9 @@ int assemble() {
 
         if (wtype == WORD_NUMBER) {
             int word = emitter.words[i].u.number;
-            printf("%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
+            fprintf(out_fp, "%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
         } else if (wtype == WORD_STRING) {
-            printf("%08X %s\n", line_num, emitter.words[i].u.str);
+            fprintf(out_fp, "%08X %s\n", line_num, emitter.words[i].u.str);
         }
     }
 
@@ -389,7 +391,7 @@ static void unittests() {
 int main(int argc, char* argv[]) {
     unittests();
 
-    FILE* fp = get_fp("/sources/arm_asm/05_asm/test_input/test_assembler.ks");
+    FILE* fp = get_fp("/sources/arm_asm/05_asm/test/test_input/test_assembler.ks", FREAD);
     cl_getline_set_file(fp);
     assemble();
 
