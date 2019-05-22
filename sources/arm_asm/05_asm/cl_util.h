@@ -2,7 +2,7 @@
 #include "parser.h"
 #include <stdio.h>
 
-enum FileOpenMode { FREAD, FWRITE };
+enum FileOpenMode { FREAD, FREADBIN, FWRITE };
 
 /*
 Assert if num1 != num2.

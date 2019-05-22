@@ -225,22 +225,19 @@ int assemble(char* out_file_rel_path) {
 
     FILE* out_fp = get_fp(out_file_rel_path, FWRITE);
 
-    // Write the result into the output file:
-    // 00000000 0210A0E1 (Little Endian)
-    // 00000004 0AF0A0E1
-    // 00000008 Hello
-    // ...
+    // Write the result binaries into the output file:
     for (int i = 0; i < emitter.pos; i++) {
         int line_num = i * 4;
         int wtype = emitter.words[i].wtype;
 
         if (wtype == WORD_NUMBER) {
-            int word = emitter.words[i].u.number;
-            fprintf(out_fp, "%08X %02X%02X%02X%02X\n", line_num, word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF);
+            fwrite(&emitter.words[i].u.number, sizeof(emitter.words[i].u.number), 1, out_fp);
         } else if (wtype == WORD_STRING) {
-            fprintf(out_fp, "%08X %s\n", line_num, emitter.words[i].u.str);
+            fwrite(&emitter.words[i].u.str, sizeof(emitter.words[i].u.str), 1, out_fp);
         }
     }
+
+    fclose(out_fp);
 
     return 0;
 }
