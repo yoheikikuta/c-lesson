@@ -30,8 +30,13 @@ FILE* get_fp(char* rel_path, enum FileOpenMode mode) {
             printf("ERROR: cannot read the given file.\n");
             return EOF;
         }
+    } else if (mode == FREADBIN) {
+        if((fp = fopen(fname, "rb")) == NULL) {
+            printf("ERROR: cannot read the given file.\n");
+            return EOF;
+        }
     } else if (mode == FWRITE) {
-        fp = fopen(fname, "w+");
+        fp = fopen(fname, "wb+");
     }
     return fp;
 }
