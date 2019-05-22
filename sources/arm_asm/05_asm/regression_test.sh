@@ -1,20 +1,25 @@
 gcc -w ./cl_util.c ./cl_getline.c ./parser.c ./assembler.c -o ./assembler.out
+gcc -w ./cl_util.c ./regression_test_single_file.c -o ./regression_test_single_file.out
 
 TARGETS=("test_assembler")
+EXPECT_BASE="/test/test_expect/"
+ACTUAL_BASE="/test/test_input/"
 
 # Assemble target files.
 for TARGET in ${TARGETS[@]}; do
-    ./assembler.out /test/test_input/$TARGET.ks /test/test_input/$TARGET
+    ./assembler.out ${ACTUAL_BASE}${TARGET}.ks ${ACTUAL_BASE}${TARGET}.bin
 done
 
 # Regressin test.
+echo ""
 for TARGET in ${TARGETS[@]}; do
-	DIFF=`diff <(cat "./test/test_expect/$TARGET.txt") <(cat "./test/test_input/$TARGET")`
+    DIFF=`./regression_test_single_file.out ${EXPECT_BASE}${TARGET}.bin ${ACTUAL_BASE}${TARGET}.bin`
 
 	if [ "$DIFF" = "" ]; then
     	echo "Regression test SUCESS: $TARGET"
 	else
     	echo "Regression test FAIL: $TARGET"
-    	echo $DIFF
+    	echo "$DIFF"
 	fi
 done
+echo ""
