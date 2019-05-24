@@ -18,6 +18,8 @@ struct Node label_root = {"l-root", LABEL_ID_INIT, NULL, NULL};
 int mnemonic_id = MNEMONIC_ID_INIT;
 int label_id = LABEL_ID_INIT;
 
+enum Side {LEFT, RIGHT};
+
 
 void reset_trees() {
     mnemonic_root.right = NULL;
@@ -29,66 +31,69 @@ void reset_trees() {
     label_id = LABEL_ID_INIT;
 }
 
-int find_node(char* str, struct Node* node) {
+int return_no_existing_node() {
+    return NO_EXISTING_NODE;
+}
+
+int add_new_node(char* str, int value, struct Node* node, enum Side side) {
+    char* str_copied;
+    int len_str = strlen(str) + 1;
+    str_copied = malloc(len_str);
+    strcpy(str_copied, str);
+
+	struct Node* node_new = malloc(sizeof(struct Node));
+	node_new->name = str_copied;
+	node_new->value = value;
+	node_new->left = NULL;
+	node_new->right = NULL;
+
+    if (side == LEFT) {
+        node->left = node_new;
+    } else if (side == RIGHT) {
+        node->right = node_new;
+    }
+
+	return node_new->value;
+}
+
+int find_node(char* str, struct Node* node, int* func) {
+    int (*pfunc)() = func;
 	int str_compared = strncmp(str, node->name, strlen(node->name));
 
 	if(str_compared == 0) {
 		return node->value;
 	} else if(str_compared > 0) {
 		if(node->right != NULL) {
-			return find_node(str, node->right);
+			return find_node(str, node->right, func);
 		} else {
-			return NO_EXISTING_NODE;
+			return pfunc();
 		}
 	} else if(str_compared < 0){
 		if(node->left != NULL) {
-			return find_node(str, node->left);
+			return find_node(str, node->left, func);
 		} else {
-			return NO_EXISTING_NODE;
+			return pfunc();
 		}
 	}
 }
 
-int add_node(char* str, int value, struct Node* node) {
+int add_node(char* str, int value, struct Node* node, int* func) {
+    int (*pfunc)(char* str, int value, struct Node* node, enum Side side) = func;
 	int str_compared = strncmp(str, node->name, strlen(node->name));
     
 	if(str_compared == 0) {
 		return node->value;
 	} else if(str_compared > 0){
 		if(node->right != NULL) {
-			return add_node(str, value, node->right);
+			return add_node(str, value, node->right, func);
 		} else {
-            char* str_copied;
-            int len_str = strlen(str) + 1;
-            str_copied = malloc(len_str);
-            strcpy(str_copied, str);
-			
-			struct Node* node_right = malloc(sizeof(struct Node));
-			node_right->name = str_copied;
-			node_right->value = value;
-			node_right->left = NULL;
-			node_right->right = NULL;
-			node->right = node_right;
-
-			return node_right->value;
+            return pfunc(str, value, node, RIGHT);
 		}
 	} else if(str_compared < 0){
 		if(node->left != NULL) {
-			return add_node(str, value, node->left);
+			return add_node(str, value, node->left, func);
 		} else {
-            char* str_copied;
-            int len_str = strlen(str) + 1;
-            str_copied = malloc(len_str);
-            strcpy(str_copied, str);
-
-			struct Node *node_left = malloc(sizeof(struct Node));
-			node_left->name = str_copied;
-			node_left->value = value;
-			node_left->left = NULL;
-			node_left->right = NULL;
-			node->left = node_left;
-
-			return node_left->value;
+            return pfunc(str, value, node, LEFT);
 		}
 	}
 }
@@ -96,10 +101,10 @@ int add_node(char* str, int value, struct Node* node) {
 int to_mnemonic_symbol(char* str) {
 	int value = 0;
 
-	value = find_node(str, &mnemonic_root);
+	value = find_node(str, &mnemonic_root, return_no_existing_node);
 	if(value == NO_EXISTING_NODE) {
 		mnemonic_id++;
-		value = add_node(str, mnemonic_id, &mnemonic_root);
+		value = add_node(str, mnemonic_id, &mnemonic_root, &add_new_node);
 		return value;
 	} else {
 		return value;
@@ -115,7 +120,7 @@ static void test_find_node_no_node() {
     struct Node node = mnemonic_root;
     int expect = NO_EXISTING_NODE;
 	
-    int actual = find_node(input, &node);
+    int actual = find_node(input, &node, &return_no_existing_node);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -125,7 +130,7 @@ static void test_find_node_single_node() {
     struct Node node = mnemonic_root;
     int expect = 1;
 	
-    int actual = find_node(input, &node);
+    int actual = find_node(input, &node, &return_no_existing_node);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -135,7 +140,7 @@ static void test_find_node_no_second_node() {
     struct Node node = mnemonic_root;
     int expect = NO_EXISTING_NODE;
 	
-    int actual = find_node(input, &node);
+    int actual = find_node(input, &node, &return_no_existing_node);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -147,7 +152,7 @@ static void test_find_node_second_node() {
     node.right = &node_second;
     int expect = 2;
 	
-    int actual = find_node(input, &node);
+    int actual = find_node(input, &node, &return_no_existing_node);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -158,7 +163,7 @@ static void test_add_node_new_node() {
     struct Node node = mnemonic_root;
     int expect = 2;
 	
-    int actual = add_node(input_str, input_value, &node);
+    int actual = add_node(input_str, input_value, &node, &add_new_node);
 	
 	assert_two_num_eq(expect, actual);
 }
@@ -171,8 +176,8 @@ static void test_add_node_two_nodes() {
     struct Node node = mnemonic_root;
     int expect = 3;
 	
-    add_node(input_str_1, input_value_1, &node);
-    int actual = add_node(input_str_2, input_value_2, &node);
+    add_node(input_str_1, input_value_1, &node, &add_new_node);
+    int actual = add_node(input_str_2, input_value_2, &node, &add_new_node);
 	
 	assert_two_num_eq(expect, actual);
 }
