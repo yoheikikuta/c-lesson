@@ -2,6 +2,8 @@
 #include "cl_util.h"
 
 #define NO_EXISTING_NODE -1
+#define MNEMONIC_ID_INIT 1
+#define LABEL_ID_INIT 100000
 
 struct Node {
     char* name;
@@ -10,11 +12,11 @@ struct Node {
     struct Node* right;
 };
 
-struct Node mnemonic_root;
-struct Node label_root;
+struct Node mnemonic_root = {"m-root", MNEMONIC_ID_INIT, NULL, NULL};
+struct Node label_root = {"l-root", LABEL_ID_INIT, NULL, NULL};
 
-int mnemonic_id = 1;
-int label_id = 10000;
+int mnemonic_id = MNEMONIC_ID_INIT;
+int label_id = LABEL_ID_INIT;
 
 
 int find_node(char* str, struct Node* node) {
@@ -96,7 +98,7 @@ int to_mnemonic_symbol(char* str) {
 
 static void test_find_node_no_node() {
 	char* input = "mov";
-    struct Node node = {"str", 2, NULL, NULL};
+    struct Node node = mnemonic_root;
     int expect = NO_EXISTING_NODE;
 	
     int actual = find_node(input, &node);
@@ -105,9 +107,9 @@ static void test_find_node_no_node() {
 }
 
 static void test_find_node_single_node() {
-	char* input = "mov";
-    struct Node node = {"mov", 2, NULL, NULL};
-    int expect = 2;
+	char* input = "m-root";
+    struct Node node = mnemonic_root;
+    int expect = 1;
 	
     int actual = find_node(input, &node);
 	
@@ -116,7 +118,7 @@ static void test_find_node_single_node() {
 
 static void test_find_node_no_second_node() {
 	char* input = "str";
-    struct Node node = {"mov", 2, NULL, NULL};
+    struct Node node = mnemonic_root;
     int expect = NO_EXISTING_NODE;
 	
     int actual = find_node(input, &node);
@@ -126,10 +128,10 @@ static void test_find_node_no_second_node() {
 
 static void test_find_node_second_node() {
 	char* input = "str";
-    struct Node node = {"mov", 2, NULL, NULL};
-    struct Node node_second = {"str", 3, NULL, NULL};
+    struct Node node = mnemonic_root;
+    struct Node node_second = {"str", 2, NULL, NULL};
     node.right = &node_second;
-    int expect = 3;
+    int expect = 2;
 	
     int actual = find_node(input, &node);
 	
@@ -138,9 +140,9 @@ static void test_find_node_second_node() {
 
 static void test_add_node_new_node() {
 	char* input_str = "str";
-    int input_value = 3;
-    struct Node node = {"mov", 2, NULL, NULL};
-    int expect = 3;
+    int input_value = 2;
+    struct Node node = mnemonic_root;
+    int expect = 2;
 	
     int actual = add_node(input_str, input_value, &node);
 	
