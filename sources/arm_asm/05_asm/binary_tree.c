@@ -21,6 +21,7 @@ int label_id = LABEL_ID_INIT;
 enum Side {LEFT, RIGHT};
 
 
+// Reset trees.
 void reset_trees() {
     mnemonic_root.right = NULL;
     mnemonic_root.left = NULL;
@@ -31,11 +32,14 @@ void reset_trees() {
     label_id = LABEL_ID_INIT;
 }
 
-int return_no_existing_node(char* str, int value, struct Node* node, enum Side side) {
+int return_no_existing_node() {
     return NO_EXISTING_NODE;
 }
 
-int add_new_node(char* str, int value, struct Node* node, enum Side side) {
+// Add a new node into the tree: "mov", 2, out_node, LEFT -> 
+//   return 2,
+//   out_node = {"root", 1, {"mov", 2, NULL, NULL}, NULL}
+int add_new_node(char* str, int value, struct Node* out_node, enum Side side) {
     char* str_copied;
     int len_str = strlen(str) + 1;
     str_copied = malloc(len_str);
@@ -48,14 +52,17 @@ int add_new_node(char* str, int value, struct Node* node, enum Side side) {
 	node_new->right = NULL;
 
     if (side == LEFT) {
-        node->left = node_new;
+        out_node->left = node_new;
     } else if (side == RIGHT) {
-        node->right = node_new;
+        out_node->right = node_new;
     }
 
 	return node_new->value;
 }
 
+// Find or Add a node in the tree:
+//   (find) func = return_no_existing_node -> return node's value (if exists) or NO_EXISTING_NODE.
+//   (add) func = add_new_node -> retrun value and add a new node with str & value.
 int find_or_add_node(char* str, int value, struct Node* node, int* func) {
     int (*pfunc)(char* str, int value, struct Node* node, enum Side side) = func;
 	int str_compared = strncmp(str, node->name, strlen(node->name));
@@ -77,6 +84,9 @@ int find_or_add_node(char* str, int value, struct Node* node, int* func) {
 	}
 }
 
+// Convert a mnemonic to a symbol: "mov" ->
+//   (if mov exists in the tree) return the corresponding mnemonic id.
+//   (if not exists) return the corresponding new mnemonic id and add the node.
 int to_mnemonic_symbol(char* str) {
 	int value = 0;
 
@@ -209,8 +219,7 @@ static void test_to_mnemonic_symbol_find_intermediate() {
     reset_trees();
 }
 
-
-int main(int argc, char* argv[]) {
+static void unittests() {
     test_find_or_add_node_no_node();
     test_find_or_add_node_single_node();
     test_find_or_add_node_no_second_node();
@@ -221,5 +230,11 @@ int main(int argc, char* argv[]) {
     test_to_mnemonic_symbol_add();
     test_to_mnemonic_symbol_add_and_find();
     test_to_mnemonic_symbol_find_intermediate();
+    
+    printf("All unittests successfully passed.\n");
+}
+
+int main(int argc, char* argv[]) {
+    unittests();
     return 0;
 }
