@@ -56,7 +56,7 @@ int add_node(char* str, int value, struct Node* node) {
 		return node->value;
 	} else if(str_compared > 0){
 		if(node->right != NULL) {
-			return add_node(str, node->right, value);
+			return add_node(str, value, node->right);
 		} else {
             char* str_copied;
             int len_str = strlen(str) + 1;
@@ -74,7 +74,7 @@ int add_node(char* str, int value, struct Node* node) {
 		}
 	} else if(str_compared < 0){
 		if(node->left != NULL) {
-			return add_node(str, node->left, value);
+			return add_node(str, value, node->left);
 		} else {
             char* str_copied;
             int len_str = strlen(str) + 1;
