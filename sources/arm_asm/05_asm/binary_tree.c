@@ -1,16 +1,6 @@
-#include <stdlib.h>
+#include "binary_tree.h"
 #include "cl_util.h"
-
-#define NO_EXISTING_NODE -1
-#define MNEMONIC_ID_INIT 1
-#define LABEL_ID_INIT 100000
-
-struct Node {
-    char* name;
-    int value;
-    struct Node* left;
-    struct Node* right;
-};
+#include <stdlib.h>
 
 struct Node mnemonic_root = {"m-root", MNEMONIC_ID_INIT, NULL, NULL};
 struct Node label_root = {"l-root", LABEL_ID_INIT, NULL, NULL};
@@ -18,10 +8,8 @@ struct Node label_root = {"l-root", LABEL_ID_INIT, NULL, NULL};
 int mnemonic_id = MNEMONIC_ID_INIT;
 int label_id = LABEL_ID_INIT;
 
-enum Side {LEFT, RIGHT};
 
-
-// Reset trees.
+// Reset binary trees.
 void reset_trees() {
     mnemonic_root.right = NULL;
     mnemonic_root.left = NULL;
@@ -36,7 +24,7 @@ int return_no_existing_node() {
     return NO_EXISTING_NODE;
 }
 
-// Add a new node into the tree: "mov", 2, out_node, LEFT -> 
+// Add a new node into the tree: ("mov", 2, out_node, LEFT) -> 
 //   return 2,
 //   out_node = {"root", 1, {"mov", 2, NULL, NULL}, NULL}
 int add_new_node(char* str, int value, struct Node* out_node, enum Side side) {
@@ -230,7 +218,7 @@ static void unittests() {
     test_to_mnemonic_symbol_add();
     test_to_mnemonic_symbol_add_and_find();
     test_to_mnemonic_symbol_find_intermediate();
-    
+
     printf("All unittests successfully passed.\n");
 }
 
