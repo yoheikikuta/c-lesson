@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "cl_util.h"
 #include "cl_getline.h"
+#include "binary_tree.h"
 
 
 static struct Word words[WORD_BUF_SIZE] = {NO_WORD_TYPE, {.number = 0}};
@@ -182,11 +183,7 @@ int asm_one(char* str, struct Word* out_word) {
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     str += parse_one(str, &substr);
-    if (is_str_equal_to_substr("mov", substr)) {
-        if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE; 
-        *out_word = word;
-        return 0;
-    } else if (is_str_equal_to_substr(".raw", substr)) {
+    if (is_str_equal_to_substr(".raw", substr)) {
         if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
         if (word.wtype == WORD_NUMBER) {
             *out_word = word;
@@ -196,16 +193,29 @@ int asm_one(char* str, struct Word* out_word) {
             strcpy(out_word->u.str, word.u.str);
         }
         return 0;
-    } else if (is_str_equal_to_substr("ldr", substr)) {
-        if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-        *out_word = word;
-        return 0;
-    } else if (is_str_equal_to_substr("str", substr)) {
-        if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-        *out_word = word;
-        return 0;
-    } else {
-        return ASM_FAILURE;
+    }
+    
+    char* str_inst;
+    str_inst = malloc(substr.len + 1);
+    strncpy(str_inst, substr.str, substr.len);
+    str_inst[substr.len] = '\0';
+    int symbol_mnemonic = to_mnemonic_symbol(str_inst);
+    switch (symbol_mnemonic) {
+        case 2:
+            if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case 3:
+            if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case 4:
+            if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        
+        default:
+            return ASM_FAILURE;
     }
 }
 
@@ -389,6 +399,9 @@ static void unittests() {
 //   /sources/arm_asm/05_asm/test/test_input/test_assembler.ks \
 //   /sources/arm_asm/05_asm/test/test_input/test_assembler
 int main(int argc, char* argv[]) {
+    // Set mnemonics as symbols.
+    set_mnemonics();
+
     if (argc > 2) {
         char* in_file_rel_path = argv[1];
         char* out_file_rel_path = argv[2];
