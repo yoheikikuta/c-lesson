@@ -88,6 +88,12 @@ int to_mnemonic_symbol(char* str) {
 	}
 }
 
+void set_mnemonics() {
+    to_mnemonic_symbol("mov");
+    to_mnemonic_symbol("str");
+    to_mnemonic_symbol("ldr");
+}
+
 // 
 // TEST
 // 
@@ -222,7 +228,9 @@ static void unittests() {
     printf("All unittests successfully passed.\n");
 }
 
+#if 0
 int main(int argc, char* argv[]) {
     unittests();
     return 0;
 }
+#endif
