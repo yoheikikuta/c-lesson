@@ -12,3 +12,8 @@ struct Node {
 };
 
 enum Side {LEFT, RIGHT};
+
+/*
+Return symbol int corresponding to a mnemonic.
+*/
+int to_mnemonic_symbol(char* str);
