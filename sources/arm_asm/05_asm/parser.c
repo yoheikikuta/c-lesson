@@ -20,6 +20,10 @@ int is_digit(int c) {
     return ('0' <= c) && (c <= '9');
 }
 
+int is_colon(int c) {
+    return c == ':';
+}
+
 int is_alphabet(int c) {
     return (('A' <= c) && (c <= 'Z')) || (('a' <= c) && (c <= 'z'));
 }
@@ -116,6 +120,13 @@ int parse_one(char* str, struct Substring* out_subs) {
         }
         head_ch = str[++len_read_ch];
     } while (is_inst_character(head_ch));
+
+    // Read one more char if the next char is ':'.
+    char next_ch = str[len_read_ch];
+    if (is_colon(next_ch)) {
+        len_read_ch++;
+        len_inst_ch++;
+    }
 
     out_subs->len = len_inst_ch;
 
@@ -390,6 +401,18 @@ static void test_parse_one_raw() {
     assert_str_substr_eq(expect, &actual);
 }
 
+static void test_parse_one_movlabel() {
+	char* input = "  mov:";
+	char* expect = "mov:";
+	int expect_len_read = 6;
+	
+	struct Substring actual;
+	int actual_len_read = parse_one(input, &actual);
+	
+	assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_str_substr_eq(expect, &actual);
+}
+
 static void test_parse_register_r1() {
 	char* input = "  r1, r2";
 	int expect = 1;
@@ -557,6 +580,7 @@ static void unittests() {
     test_parse_one_failure();
     test_parse_one_only_sp();
     test_parse_one_raw();
+    test_parse_one_movlabel();
     test_parse_register_r1();
     test_parse_register_fail();
     test_parse_register_fail_other_ch();
