@@ -183,17 +183,6 @@ int asm_one(char* str, struct Word* out_word) {
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     str += parse_one(str, &substr);
-    if (is_str_equal_to_substr(".raw", substr)) {
-        if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-        if (word.wtype == WORD_NUMBER) {
-            *out_word = word;
-        } else if (word.wtype == WORD_STRING) {
-            out_word->wtype = word.wtype;
-            out_word->u.str = (char*)malloc(strlen(str));
-            strcpy(out_word->u.str, word.u.str);
-        }
-        return 0;
-    }
     
     char* str_inst;
     str_inst = malloc(substr.len + 1);
@@ -212,6 +201,16 @@ int asm_one(char* str, struct Word* out_word) {
         case 4:
             if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
+            return 0;
+        case 5:
+            if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (word.wtype == WORD_NUMBER) {
+                *out_word = word;
+            } else if (word.wtype == WORD_STRING) {
+                out_word->wtype = word.wtype;
+                out_word->u.str = (char*)malloc(strlen(str));
+                strcpy(out_word->u.str, word.u.str);
+            }
             return 0;
         
         default:
