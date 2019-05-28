@@ -1,4 +1,4 @@
-gcc -w ./cl_util.c ./cl_getline.c ./parser.c ./assembler.c -o ./assembler.out
+gcc -w ./cl_util.c ./cl_getline.c ./parser.c ./binary_tree.c ./assembler.c -o ./assembler.out
 gcc -w ./cl_util.c ./regression_test_single_file.c -o ./regression_test_single_file.out
 
 TARGETS=("test_assembler")
