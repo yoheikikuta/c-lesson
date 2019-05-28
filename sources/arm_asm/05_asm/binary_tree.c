@@ -92,6 +92,7 @@ void set_mnemonics() {
     to_mnemonic_symbol("mov");
     to_mnemonic_symbol("str");
     to_mnemonic_symbol("ldr");
+    to_mnemonic_symbol(".raw");
 }
 
 // 
