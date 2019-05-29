@@ -22,7 +22,7 @@ static int find_key_index(int key, int* out_index) {
     return 0;
 }
 
-void dict_put(int key, struct Word *elem) {
+void dict_put(int key, struct Word* elem) {
     int index = 0;
     if (find_key_index(key, &index)) {
         dict_array[index].value = *elem;
@@ -32,7 +32,7 @@ void dict_put(int key, struct Word *elem) {
     }
 };
 
-int dict_get(int key, struct Word *out_elem) {
+int dict_get(int key, struct Word* out_elem) {
     int index = 0;
     if (find_key_index(key, &index)) {
         *out_elem = dict_array[index].value;
