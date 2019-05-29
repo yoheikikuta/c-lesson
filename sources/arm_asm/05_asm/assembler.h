@@ -7,7 +7,9 @@
 enum WordType {
     NO_WORD_TYPE,
     WORD_NUMBER,
-    WORD_STRING
+    WORD_STRING,
+    WORD_LABEL,
+    WORD_JAMP
 };
 
 struct Word {
@@ -22,3 +24,11 @@ struct Emitter {
     struct Word* words;
     int pos;
 };
+
+// struct List {
+//     int emitter_pos;
+//     int label;
+//     int code;
+//     int immediate;
+//     struct List *next;
+// };

@@ -3,6 +3,7 @@
 #include "cl_util.h"
 #include "cl_getline.h"
 #include "binary_tree.h"
+#include "dict.h"
 
 
 static struct Word words[WORD_BUF_SIZE] = {NO_WORD_TYPE, {.number = 0}};
@@ -23,7 +24,7 @@ int get_next_nonsp_ch(char* str) {
 void emit_word(struct Emitter* emitter, struct Word word) {
     int pos = emitter->pos;
     emitter->words[pos].wtype = word.wtype;
-    if (word.wtype == WORD_NUMBER) {
+    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JAMP)) {
         emitter->words[emitter->pos].u.number = word.u.number;
     } else if (word.wtype == WORD_STRING) {
         emitter->words[emitter->pos].u.str = word.u.str;
@@ -177,6 +178,26 @@ int asm_str(char* str, struct Word* out_word) {
     return 0;
 }
 
+int asm_b(char* str, struct Word* out_word) {
+    char* label;
+    int len_read_ch = 0;
+    char parsed_str[STR_SIZE] = {'\0'};
+
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch] == ' ') {len_read_ch++;}
+    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
+        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
+        len_read_ch++;
+    }
+
+    int symbol_label = to_label_symbol(parsed_str);
+    out_word->wtype = WORD_JAMP;
+    out_word->u.number = symbol_label;
+    // out_word->u.number = 0xEA000000;
+
+    return 0;
+}
+
 // Assemble a given line.
 int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
@@ -188,6 +209,15 @@ int asm_one(char* str, struct Word* out_word) {
     str_inst = malloc(substr.len + 1);
     strncpy(str_inst, substr.str, substr.len);
     str_inst[substr.len] = '\0';
+
+    if (str_inst[substr.len - 1] == ':') {
+        str_inst[substr.len - 1] = '\0';
+        int symbol_label = to_label_symbol(str_inst);
+        out_word->wtype = WORD_LABEL;
+        out_word->u.number = symbol_label;
+        return 0;
+    }
+
     int symbol_mnemonic = to_mnemonic_symbol(str_inst);
     switch (symbol_mnemonic) {
         case 2:
@@ -212,9 +242,31 @@ int asm_one(char* str, struct Word* out_word) {
                 strcpy(out_word->u.str, word.u.str);
             }
             return 0;
+        case 6:
+            if (asm_b(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         
         default:
             return ASM_FAILURE;
+    }
+}
+
+void solve_label_address(struct Emitter* emitter) {
+    int i = 0;
+    while (i++ < emitter->pos) {
+        if (emitter->words[i].wtype == WORD_JAMP) {
+            int key_label = emitter->words[i].u.number;
+            struct Word label_info = {NO_WORD_TYPE, {0}};
+            dict_get(key_label, &label_info);
+            int pos_label = label_info.u.number;
+            int offset = (i - pos_label - 1) * 4;  // -1 absorbs the relative position. // Does not work if there are more then two labels.
+            offset -= 0x8;
+            offset = offset >> 2;
+            offset = offset & 0x00FFFFFF;
+            int word = 0xEA000000 + offset;
+            emitter->words[i].u.number = word;
+        }
     }
 }
 
@@ -229,8 +281,20 @@ int assemble(char* out_file_rel_path) {
 
     while(cl_getline(&str_line) != EOF) {
         if (asm_one(str_line, &word) == ASM_FAILURE) return ASM_FAILURE;
-        emit_word(&emitter, word);
+        struct Word label_info = {WORD_LABEL, {.number = emitter.pos}};
+        switch (word.wtype) {
+            case WORD_LABEL:
+                emitter.words[emitter.pos].wtype = WORD_LABEL;
+                emitter.pos++;
+                dict_put(word.u.number, &label_info);
+                break;
+            default:
+                emit_word(&emitter, word);
+                break;
+        }
     }
+
+    solve_label_address(&emitter);
 
     FILE* out_fp = get_fp(out_file_rel_path, FWRITE);
 
@@ -239,7 +303,7 @@ int assemble(char* out_file_rel_path) {
         int line_num = i * 4;
         int wtype = emitter.words[i].wtype;
 
-        if (wtype == WORD_NUMBER) {
+        if ((wtype == WORD_NUMBER) || (wtype == WORD_JAMP)) {
             fwrite(&emitter.words[i].u.number, sizeof(emitter.words[i].u.number), 1, out_fp);
         } else if (wtype == WORD_STRING) {
             fwrite(&emitter.words[i].u.str, sizeof(emitter.words[i].u.str), 1, out_fp);

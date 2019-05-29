@@ -15,5 +15,7 @@ enum Side {LEFT, RIGHT};
 
 /*
 Return symbol int corresponding to a mnemonic.
+Return symbol int corresponding to a label.
 */
 int to_mnemonic_symbol(char* str);
+int to_label_symbol(char* str);
