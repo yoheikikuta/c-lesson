@@ -88,11 +88,28 @@ int to_mnemonic_symbol(char* str) {
 	}
 }
 
+// Convert a label to a symbol: "label:" ->
+//   (if "label" exists in the tree) return the corresponding label id.
+//   (if not exists) return the corresponding new label id and add the node.
+int to_label_symbol(char* str) {
+	int value = 0;
+
+	value = find_or_add_node(str, label_id, &label_root, &return_no_existing_node);
+	if(value == NO_EXISTING_NODE) {
+		label_id++;
+		value = find_or_add_node(str, label_id, &label_root, &add_new_node);
+		return value;
+	} else {
+		return value;
+	}
+}
+
 void set_mnemonics() {
     to_mnemonic_symbol("mov");
     to_mnemonic_symbol("str");
     to_mnemonic_symbol("ldr");
     to_mnemonic_symbol(".raw");
+    to_mnemonic_symbol("b");
 }
 
 // 
