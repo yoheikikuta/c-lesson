@@ -103,6 +103,7 @@ int to_label_symbol(char* str) {
 }
 
 void set_mnemonics() {
+    // Need to match the order with that of macro definitions in binary_tree.h.
     to_mnemonic_symbol("mov");
     to_mnemonic_symbol("str");
     to_mnemonic_symbol("ldr");
