@@ -1,3 +1,6 @@
+.globl _start
+_start:
+
     mov r1,#0x68
     str r1,[r0]
     mov r1,#0x65
