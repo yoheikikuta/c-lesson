@@ -110,6 +110,7 @@ void set_mnemonics() {
     to_mnemonic_symbol("ldr");
     to_mnemonic_symbol(".raw");
     to_mnemonic_symbol("b");
+    to_mnemonic_symbol(".globl");
 }
 
 // 

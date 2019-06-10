@@ -211,6 +211,10 @@ int asm_one(char* str, struct Word* out_word) {
 
     if (str_inst[substr.len - 1] == ':') {
         str_inst[substr.len - 1] = '\0';
+        if (strcmp("_start:", str_inst) == 0) {
+            out_word->wtype = WORD_SKIP;
+            return 0;
+        }
         int symbol_label = to_label_symbol(str_inst);
         out_word->wtype = WORD_LABEL;
         out_word->u.number = symbol_label;
@@ -244,6 +248,9 @@ int asm_one(char* str, struct Word* out_word) {
         case 6:
             if (asm_b(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
+            return 0;
+        case 7:  // .globl
+            out_word->wtype = WORD_SKIP;
             return 0;
         
         default:
@@ -293,6 +300,8 @@ int assemble(char* out_file_rel_path) {
                 // [emitter.pos = n+1] some_inst
                 //   -> add dict to key = (id of some_label), value = n+1 
                 dict_put(word.u.number, &label_info);
+                break;
+            case WORD_SKIP:
                 break;
             default:
                 emit_word(&emitter, word);
