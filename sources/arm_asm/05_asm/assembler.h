@@ -24,11 +24,3 @@ struct Emitter {
     struct Word* words;
     int pos;
 };
-
-// struct List {
-//     int emitter_pos;
-//     int label;
-//     int code;
-//     int immediate;
-//     struct List *next;
-// };

@@ -193,7 +193,6 @@ int asm_b(char* str, struct Word* out_word) {
     int symbol_label = to_label_symbol(parsed_str);
     out_word->wtype = WORD_JAMP;
     out_word->u.number = symbol_label;
-    // out_word->u.number = 0xEA000000;
 
     return 0;
 }
@@ -252,6 +251,11 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
+// emitter->words[i]
+//   .wtype = WORD_JAMP
+//   .u.number = n (key int of a corresponding label)
+// ->
+//   .u.number = 0xEA000000 + (offset indicating to the label position)
 void solve_label_address(struct Emitter* emitter) {
     int i = 0;
     while (i++ < emitter->pos) {
@@ -260,10 +264,10 @@ void solve_label_address(struct Emitter* emitter) {
             struct Word label_info = {NO_WORD_TYPE, {0}};
             dict_get(key_label, &label_info);
             int pos_label = label_info.u.number;
-            int offset = (i - pos_label - 1) * 4;  // -1 absorbs the relative position. // Does not work if there are more then two labels.
-            offset -= 0x8;
-            offset = offset >> 2;
-            offset = offset & 0x00FFFFFF;
+            int relative_word_num = (i - pos_label) * 4;
+            int offset = relative_word_num - 0x8;  // Subtract pc.
+            offset = offset >> 2;  // 2 bits shift.
+            offset = offset & 0x00FFFFFF;  // Get the lower 24 bits.
             int word = 0xEA000000 + offset;
             emitter->words[i].u.number = word;
         }
@@ -284,8 +288,10 @@ int assemble(char* out_file_rel_path) {
         struct Word label_info = {WORD_LABEL, {.number = emitter.pos}};
         switch (word.wtype) {
             case WORD_LABEL:
-                emitter.words[emitter.pos].wtype = WORD_LABEL;
-                emitter.pos++;
+                // [emitter.pos = n] some_inst
+                // [NO emit] some_label:
+                // [emitter.pos = n+1] some_inst
+                //   -> add dict to key = (id of some_label), value = n+1 
                 dict_put(word.u.number, &label_info);
                 break;
             default:
