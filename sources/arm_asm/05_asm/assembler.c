@@ -24,7 +24,7 @@ int get_next_nonsp_ch(char* str) {
 void emit_word(struct Emitter* emitter, struct Word word) {
     int pos = emitter->pos;
     emitter->words[pos].wtype = word.wtype;
-    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JUMP)) {
+    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JUMP) || (word.wtype == WORD_LDR_LABEL)) {
         emitter->words[emitter->pos].u.number = word.u.number;
     } else if (word.wtype == WORD_STRING) {
         emitter->words[emitter->pos].u.str = word.u.str;
@@ -115,6 +115,7 @@ int asm_raw(char* str, struct Word* out_word) {
 // ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E (Big Endian)
 // ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
 // ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
+// ldr: " r0, =0x101f1000" -> return 0, out_word.wtype = WORD_LDR_LABEL, out_word.u.number = 0x101f1000
 int asm_ldr(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
@@ -134,6 +135,9 @@ int asm_ldr(char* str, struct Word* out_word) {
         word.u.number = 0xE51F101E;
     } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
         word.u.number = 0xE59F1000;
+    } else if (strcmp(parsed_str, "r0,=0x101f1000") == 0) {
+        word.wtype = WORD_LDR_LABEL;
+        word.u.number = 0x101f1000;
     } else {
         return ASM_FAILURE;
     }
@@ -258,14 +262,21 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// emitter->words[i]
-//   .wtype = WORD_JUMP
-//   .u.number = n (key int of a corresponding label)
-// ->
-//   .u.number = 0xEA000000 + (offset indicating to the label position)
+// (1) Solve label address for b.
+//   emitter->words[i]: .wtype = WORD_JUMP, .u.number = n (key int of a corresponding label)
+//   ->
+//     emitter->words[i].u.number = 0xEA000000 + (offset indicating to the label position)
+// 
+// (2) Solve label address for ldr.
+//   emitter->words[i]: .wtype = WORD_LDR_LABEL, .u.number = 0x101f1000
+//   ->
+//     (Add label information to the last position of emitter)
+//     emitter->words[emitter->pos]: .wtype = WORD_NUMBER, .u.number = 0x101f1000
+//     (Update emitter element of str)
+//     emitter->words[i]: .wtype = WORD_NUMBER, .u.number = 0x59FXXXX
 void solve_label_address(struct Emitter* emitter) {
     int i = 0;
-    while (i++ < emitter->pos) {
+    while (i < emitter->pos) {
         if (emitter->words[i].wtype == WORD_JUMP) {
             int key_label = emitter->words[i].u.number;
             struct Word label_info = {NO_WORD_TYPE, {0}};
@@ -277,7 +288,14 @@ void solve_label_address(struct Emitter* emitter) {
             offset = offset & 0x00FFFFFF;  // Get the lower 24 bits.
             int word = 0xEA000000 + offset;
             emitter->words[i].u.number = word;
+        } else if (emitter->words[i].wtype == WORD_LDR_LABEL) {
+            emitter->words[emitter->pos].wtype = WORD_NUMBER;
+            emitter->words[emitter->pos].u.number = emitter->words[i].u.number;
+            emitter->pos++;
+            emitter->words[i].wtype = WORD_NUMBER;
+            emitter->words[i].u.number = 0xE59F0000 + (emitter->pos - i - 1) * 4 - 0x8;
         }
+        i++;
     }
 }
 
