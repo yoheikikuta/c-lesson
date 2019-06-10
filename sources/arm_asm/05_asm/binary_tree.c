@@ -80,8 +80,7 @@ int to_mnemonic_symbol(char* str) {
 
 	value = find_or_add_node(str, mnemonic_id, &mnemonic_root, &return_no_existing_node);
 	if(value == NO_EXISTING_NODE) {
-		mnemonic_id++;
-		value = find_or_add_node(str, mnemonic_id, &mnemonic_root, &add_new_node);
+		value = find_or_add_node(str, mnemonic_id++, &mnemonic_root, &add_new_node);
 		return value;
 	} else {
 		return value;
@@ -96,8 +95,7 @@ int to_label_symbol(char* str) {
 
 	value = find_or_add_node(str, label_id, &label_root, &return_no_existing_node);
 	if(value == NO_EXISTING_NODE) {
-		label_id++;
-		value = find_or_add_node(str, label_id, &label_root, &add_new_node);
+		value = find_or_add_node(str, label_id++, &label_root, &add_new_node);
 		return value;
 	} else {
 		return value;

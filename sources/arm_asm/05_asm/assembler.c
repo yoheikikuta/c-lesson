@@ -233,19 +233,19 @@ int asm_one(char* str, struct Word* out_word) {
 
     int symbol_mnemonic = to_mnemonic_symbol(str_inst);
     switch (symbol_mnemonic) {
-        case 2:
+        case 1:
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case 3:
+        case 2:
             if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case 4:
+        case 3:
             if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case 5:
+        case 4:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             if (word.wtype == WORD_NUMBER) {
                 *out_word = word;
@@ -255,11 +255,11 @@ int asm_one(char* str, struct Word* out_word) {
                 strcpy(out_word->u.str, word.u.str);
             }
             return 0;
-        case 6:
+        case 5:
             if (asm_b(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case 7:  // .globl
+        case 6:  // .globl
             out_word->wtype = WORD_SKIP;
             return 0;
         
