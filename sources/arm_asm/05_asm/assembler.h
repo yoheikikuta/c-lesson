@@ -9,7 +9,7 @@ enum WordType {
     WORD_NUMBER,
     WORD_STRING,
     WORD_LABEL,
-    WORD_JAMP
+    WORD_JUMP
 };
 
 struct Word {

@@ -24,7 +24,7 @@ int get_next_nonsp_ch(char* str) {
 void emit_word(struct Emitter* emitter, struct Word word) {
     int pos = emitter->pos;
     emitter->words[pos].wtype = word.wtype;
-    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JAMP)) {
+    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JUMP)) {
         emitter->words[emitter->pos].u.number = word.u.number;
     } else if (word.wtype == WORD_STRING) {
         emitter->words[emitter->pos].u.str = word.u.str;
@@ -191,7 +191,7 @@ int asm_b(char* str, struct Word* out_word) {
     }
 
     int symbol_label = to_label_symbol(parsed_str);
-    out_word->wtype = WORD_JAMP;
+    out_word->wtype = WORD_JUMP;
     out_word->u.number = symbol_label;
 
     return 0;
@@ -252,14 +252,14 @@ int asm_one(char* str, struct Word* out_word) {
 }
 
 // emitter->words[i]
-//   .wtype = WORD_JAMP
+//   .wtype = WORD_JUMP
 //   .u.number = n (key int of a corresponding label)
 // ->
 //   .u.number = 0xEA000000 + (offset indicating to the label position)
 void solve_label_address(struct Emitter* emitter) {
     int i = 0;
     while (i++ < emitter->pos) {
-        if (emitter->words[i].wtype == WORD_JAMP) {
+        if (emitter->words[i].wtype == WORD_JUMP) {
             int key_label = emitter->words[i].u.number;
             struct Word label_info = {NO_WORD_TYPE, {0}};
             dict_get(key_label, &label_info);
@@ -309,7 +309,7 @@ int assemble(char* out_file_rel_path) {
         int line_num = i * 4;
         int wtype = emitter.words[i].wtype;
 
-        if ((wtype == WORD_NUMBER) || (wtype == WORD_JAMP)) {
+        if ((wtype == WORD_NUMBER) || (wtype == WORD_JUMP)) {
             fwrite(&emitter.words[i].u.number, sizeof(emitter.words[i].u.number), 1, out_fp);
         } else if (wtype == WORD_STRING) {
             fwrite(&emitter.words[i].u.str, sizeof(emitter.words[i].u.str), 1, out_fp);
