@@ -207,6 +207,12 @@ int asm_one(char* str, struct Word* out_word) {
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     str += parse_one(str, &substr);
+
+    //  Skip the blank line.
+    if (strcmp("", &substr.str[0]) == 0) {
+        out_word->wtype = WORD_SKIP;
+        return 0;
+    }
     
     char* str_inst;
     str_inst = malloc(substr.len + 1);
@@ -215,7 +221,7 @@ int asm_one(char* str, struct Word* out_word) {
 
     if (str_inst[substr.len - 1] == ':') {
         str_inst[substr.len - 1] = '\0';
-        if (strcmp("_start:", str_inst) == 0) {
+        if (strcmp("_start", &str_inst[0]) == 0) {
             out_word->wtype = WORD_SKIP;
             return 0;
         }

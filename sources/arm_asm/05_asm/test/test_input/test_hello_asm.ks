@@ -1,5 +1,6 @@
 .globl _start
 _start:
+
     ldr r0,=0x101f1000
     mov r1,#0x68
     str r1,[r0]
