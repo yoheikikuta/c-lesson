@@ -4,9 +4,11 @@
 #include "cl_getline.h"
 #include "binary_tree.h"
 #include "dict.h"
+#include "unsolved_label_address_list.h"
 
+static unsigned char word_buf[WORD_BUF_SIZE];
+static struct Emitter emitter;
 
-static struct Word words[WORD_BUF_SIZE] = {NO_WORD_TYPE, {.number = 0}};
 
 // Return the next non-space character: " a" -> 'a'
 int get_next_nonsp_ch(char* str) {
@@ -20,16 +22,19 @@ int get_next_nonsp_ch(char* str) {
     return ch;
 }
 
-// Store the contents of word into emitter->words with its position.
+// TO BE FIXED: arguments are emitter and int word.
 void emit_word(struct Emitter* emitter, struct Word word) {
+    unsigned char* tmp_buf;
+    if (word.wtype == WORD_STRING) {
+        tmp_buf = &word.u.str;
+    } else {
+        tmp_buf = &word.u.number;
+    }
     int pos = emitter->pos;
-    emitter->words[pos].wtype = word.wtype;
-    if ((word.wtype == WORD_NUMBER) || (word.wtype == WORD_JUMP) || (word.wtype == WORD_LDR_LABEL)) {
-        emitter->words[emitter->pos].u.number = word.u.number;
-    } else if (word.wtype == WORD_STRING) {
-        emitter->words[emitter->pos].u.str = word.u.str;
-    }    
-    emitter->pos += 1;
+    for (int i = 0; i < 4; i++) {
+        emitter->word_buf[pos + i] = tmp_buf[i];
+    }
+    emitter->pos += 4;
 }
 
 // Return 1 if the input str is equal to substr.str.
@@ -115,8 +120,8 @@ int asm_raw(char* str, struct Word* out_word) {
 // ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E (Big Endian)
 // ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
 // ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
-// ldr: " r0, =0x101f1000" -> return 0, out_word.wtype = WORD_LDR_LABEL, out_word.u.number = 0x101f1000
-int asm_ldr(char* str, struct Word* out_word) {
+// ldr: " r0, =0x101f1000" -> return 0, out_word.u.number = E59F0000
+int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
     char parsed_str[STR_SIZE] = {'\0'};
@@ -136,8 +141,14 @@ int asm_ldr(char* str, struct Word* out_word) {
     } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
         word.u.number = 0xE59F1000;
     } else if (strcmp(parsed_str, "r0,=0x101f1000") == 0) {
+        struct LinkedList* list;
+        list = malloc(sizeof(struct LinkedList));
+        list->emitter_pos = emitter->pos;
+        list->word = 0xE59F0000;
+        linkedlist_put(list);
+
         word.wtype = WORD_LDR_LABEL;
-        word.u.number = 0x101f1000;
+        word.u.number = 0xE59F0000;
     } else {
         return ASM_FAILURE;
     }
@@ -182,7 +193,7 @@ int asm_str(char* str, struct Word* out_word) {
     return 0;
 }
 
-int asm_b(char* str, struct Word* out_word) {
+int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     char* label;
     int len_read_ch = 0;
     char parsed_str[STR_SIZE] = {'\0'};
@@ -195,8 +206,14 @@ int asm_b(char* str, struct Word* out_word) {
     }
 
     int symbol_label = to_label_symbol(parsed_str);
+    struct LinkedList* list;
+    list = malloc(sizeof(struct LinkedList));
+    list->emitter_pos = emitter->pos;
+    list->label_id = symbol_label;
+    list->word = 0xEA000000;
+    linkedlist_put(list);
     out_word->wtype = WORD_JUMP;
-    out_word->u.number = symbol_label;
+    out_word->u.number = 0xEA000000;
 
     return 0;
 }
@@ -242,7 +259,7 @@ int asm_one(char* str, struct Word* out_word) {
             *out_word = word;
             return 0;
         case _LDR:
-            if (asm_ldr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_ldr(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _RAW:
@@ -256,10 +273,10 @@ int asm_one(char* str, struct Word* out_word) {
             }
             return 0;
         case _B:
-            if (asm_b(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _GLOBAL:  // .globl
+        case _GLOBAL:
             out_word->wtype = WORD_SKIP;
             return 0;
         
@@ -268,40 +285,36 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// (1) Solve label address for b.
-//   emitter->words[i]: .wtype = WORD_JUMP, .u.number = n (key int of a corresponding label)
-//   ->
-//     emitter->words[i].u.number = 0xEA000000 + (offset indicating to the label position)
-// 
-// (2) Solve label address for ldr.
-//   emitter->words[i]: .wtype = WORD_LDR_LABEL, .u.number = 0x101f1000
-//   ->
-//     (Add label information to the last position of emitter)
-//     emitter->words[emitter->pos]: .wtype = WORD_NUMBER, .u.number = 0x101f1000
-//     (Update emitter element of str)
-//     emitter->words[i]: .wtype = WORD_NUMBER, .u.number = 0x59FXXXX
+// b:
+//   e.g.) emitter->word_buf: [0x0, 0x0, 0x0, 0xEA] -> [0xFE, 0xFF, 0xFF, 0xEA]
+// ldr:
+//   e.g.) emitter->word_buf: [0x0, 0x0, 0x9F, 0xE5] -> [0x38, 0x00, 0x9F, 0xE5]
 void solve_label_address(struct Emitter* emitter) {
-    int i = 0;
-    while (i < emitter->pos) {
-        if (emitter->words[i].wtype == WORD_JUMP) {
-            int key_label = emitter->words[i].u.number;
-            struct Word label_info = {NO_WORD_TYPE, {0}};
-            dict_get(key_label, &label_info);
+    struct LinkedList* list;
+    list = malloc(sizeof(struct LinkedList));
+    struct Word label_info = {NO_WORD_TYPE, {0}};
+
+    while (linkedlist_get(list)) {
+        if (0xEA000000 == list->word) {
+            dict_get(list->label_id, &label_info);
             int pos_label = label_info.u.number;
-            int relative_word_num = (i - pos_label) * 4;
+            int relative_word_num = list->emitter_pos - pos_label;
             int offset = relative_word_num - 0x8;  // Subtract pc.
             offset = offset >> 2;  // 2 bits shift.
             offset = offset & 0x00FFFFFF;  // Get the lower 24 bits.
-            int word = 0xEA000000 + offset;
-            emitter->words[i].u.number = word;
-        } else if (emitter->words[i].wtype == WORD_LDR_LABEL) {
-            emitter->words[emitter->pos].wtype = WORD_NUMBER;
-            emitter->words[emitter->pos].u.number = emitter->words[i].u.number;
-            emitter->pos++;
-            emitter->words[i].wtype = WORD_NUMBER;
-            emitter->words[i].u.number = 0xE59F0000 + (emitter->pos - i - 1) * 4 - 0x8;
+            for (int i = 0; i < 3; i++) {
+                emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+            }
+        } else if (0xE59F0000 == list->word) {
+            int address = 0x101f1000;
+            for (int i = 0; i < 4; i++) {
+                emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
+            }
+            int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
+            for (int i = 0; i < 2; i++) {
+                emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+            }
         }
-        i++;
     }
 }
 
@@ -310,9 +323,9 @@ void solve_label_address(struct Emitter* emitter) {
 int assemble(char* out_file_rel_path) {
     char* str_line;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
-    struct Emitter emitter;
-    emitter.words = words;
+    emitter.word_buf = word_buf;
     emitter.pos = 0;
+    linkedlist_init();
 
     while(cl_getline(&str_line) != EOF) {
         if (asm_one(str_line, &word) == ASM_FAILURE) return ASM_FAILURE;
@@ -321,8 +334,8 @@ int assemble(char* out_file_rel_path) {
             case WORD_LABEL:
                 // [emitter.pos = n] some_inst
                 // [NO emit] some_label:
-                // [emitter.pos = n+1] some_inst
-                //   -> add dict to key = (id of some_label), value = n+1 
+                // [emitter.pos = n+4] some_inst
+                //   -> add dict to key = (id of some_label), value = n+4
                 dict_put(word.u.number, &label_info);
                 break;
             case WORD_SKIP:
@@ -339,14 +352,7 @@ int assemble(char* out_file_rel_path) {
 
     // Write the result binaries into the output file:
     for (int i = 0; i < emitter.pos; i++) {
-        int line_num = i * 4;
-        int wtype = emitter.words[i].wtype;
-
-        if ((wtype == WORD_NUMBER) || (wtype == WORD_JUMP)) {
-            fwrite(&emitter.words[i].u.number, sizeof(emitter.words[i].u.number), 1, out_fp);
-        } else if (wtype == WORD_STRING) {
-            fwrite(&emitter.words[i].u.str, sizeof(emitter.words[i].u.str), 1, out_fp);
-        }
+        fwrite(&emitter.word_buf[i], sizeof(unsigned char), 1, out_fp);
     }
 
     fclose(out_fp);
