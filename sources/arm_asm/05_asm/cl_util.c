@@ -39,12 +39,20 @@ int two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
     }
 }
 
+int two_linkedlist_eq(struct LinkedList* list1, struct LinkedList* list2) {
+    return (list1->emitter_pos == list2->emitter_pos) & (list1->label_id == list2->label_id) & (list1->word == list2->word);
+}
+
 void assert_two_word_eq(struct Word* w1, struct Word* w2) {
     assert(two_word_eq(w1, w2));
 }
 
 void assert_two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
     assert(two_keyvalue_eq(kv1, kv2));
+}
+
+void assert_two_linkedlist_eq(struct LinkedList* list1, struct LinkedList* list2) {
+    assert(two_linkedlist_eq(list1, list2));
 }
 
 // Return the file pointer of a given relative file path
