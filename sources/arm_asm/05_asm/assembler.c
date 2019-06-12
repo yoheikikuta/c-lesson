@@ -141,12 +141,7 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
         word.u.number = 0xE59F1000;
     } else if (strcmp(parsed_str, "r0,=0x101f1000") == 0) {
-        struct LinkedList* list;
-        list = malloc(sizeof(struct LinkedList));
-        list->emitter_pos = emitter->pos;
-        list->word = 0xE59F0000;
-        linkedlist_put(list);
-
+        common_unsolved_label_address_list_put(emitter->pos, 0, 0xE59F0000);
         word.wtype = WORD_LDR_LABEL;
         word.u.number = 0xE59F0000;
     } else {
@@ -206,12 +201,7 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     }
 
     int symbol_label = to_label_symbol(parsed_str);
-    struct LinkedList* list;
-    list = malloc(sizeof(struct LinkedList));
-    list->emitter_pos = emitter->pos;
-    list->label_id = symbol_label;
-    list->word = 0xEA000000;
-    linkedlist_put(list);
+    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xEA000000);
     out_word->wtype = WORD_JUMP;
     out_word->u.number = 0xEA000000;
 
@@ -325,7 +315,7 @@ int assemble(char* out_file_rel_path) {
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
     emitter.word_buf = word_buf;
     emitter.pos = 0;
-    linkedlist_init();
+    unsolved_label_address_list_init();
 
     while(cl_getline(&str_line) != EOF) {
         if (asm_one(str_line, &word) == ASM_FAILURE) return ASM_FAILURE;
