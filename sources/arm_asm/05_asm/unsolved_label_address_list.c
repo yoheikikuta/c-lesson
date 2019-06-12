@@ -8,7 +8,7 @@ static struct LinkedList* unsolved_label_address_list;
 int cur_list_pos = 0;
 
 // Initialize unsolved_label_address_list.
-void linkedlist_init() {
+void unsolved_label_address_list_init() {
     unsolved_label_address_list = malloc(sizeof(struct LinkedList));
     unsolved_label_address_list->emitter_pos = 0;
     unsolved_label_address_list->label_id = 0;
@@ -34,6 +34,18 @@ void linkedlist_put(struct LinkedList* add_elem) {
         last_elem->next = NULL;
         list->next = last_elem;
     }
+}
+
+// Create an elem from the input and put the elem into unsolved_label_address_list.
+void common_unsolved_label_address_list_put(int emitter_pos, int symbol_label, int word) {
+    struct LinkedList* list;
+    list = malloc(sizeof(struct LinkedList));
+
+    list->emitter_pos = emitter_pos;
+    list->label_id = symbol_label;
+    list->word = word;
+
+    linkedlist_put(list);
 }
 
 // unsolved_label_address_list = list0->list1->list2->list3, ...
