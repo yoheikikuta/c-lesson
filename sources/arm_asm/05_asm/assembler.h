@@ -1,7 +1,7 @@
 #pragma once
 
 #define ASM_FAILURE -1
-#define WORD_BUF_SIZE 256 * 100
+#define WORD_BUF_SIZE 4 * 1024
 #define STR_SIZE 256
 
 enum WordType {
@@ -23,6 +23,6 @@ struct Word {
 };
 
 struct Emitter {
-    struct Word* words;
+    unsigned char* word_buf;
     int pos;
 };
