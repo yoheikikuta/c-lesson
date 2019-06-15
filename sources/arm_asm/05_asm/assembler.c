@@ -31,19 +31,8 @@ void emit_int(struct Emitter* emitter, int number) {
     }
 }
 
-
-void emit_word(struct Emitter* emitter, struct Word word) {
-    unsigned char* tmp_buf;
-    if (word.wtype == WORD_STRING) {
-        tmp_buf = &word.u.str;
-    } else {
-        tmp_buf = &word.u.number;
-    }
-    int pos = emitter->pos;
-    for (int i = 0; i < 4; i++) {
-        emitter->word_buf[pos + i] = tmp_buf[i];
-    }
-    emitter->pos += 4;
+void emit_string(struct Emitter* emitter, char* str) {
+    // TO BE IMPLEMENTED.
 }
 
 // Return 1 if the input str is equal to substr.str.
@@ -151,7 +140,6 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
         word.u.number = 0xE59F1000;
     } else if (strcmp(parsed_str, "r0,=0x101f1000") == 0) {
         common_unsolved_label_address_list_put(emitter->pos, 0, 0xE59F0000);
-        word.wtype = WORD_LDR_LABEL;
         word.u.number = 0xE59F0000;
     } else {
         return ASM_FAILURE;
@@ -211,7 +199,7 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
 
     int symbol_label = to_label_symbol(parsed_str);
     common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xEA000000);
-    out_word->wtype = WORD_JUMP;
+    out_word->wtype = WORD_NUMBER;
     out_word->u.number = 0xEA000000;
 
     return 0;
@@ -342,8 +330,10 @@ int assemble(char* out_file_rel_path) {
             case WORD_NUMBER:
                 emit_int(&emitter, word.u.number);
                 break;
+            case WORD_STRING:
+                emit_string(&emitter, word.u.str);
+                break;
             default:
-                emit_word(&emitter, word);
                 break;
         }
     }
