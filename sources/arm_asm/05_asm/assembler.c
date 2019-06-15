@@ -22,7 +22,16 @@ int get_next_nonsp_ch(char* str) {
     return ch;
 }
 
-// TO BE FIXED: arguments are emitter and int word.
+// number: 0xE59F101E -> emitter: 
+//   pos       n     n+1   n+2   n+3   n+4
+//   word_buf  0x1E, 0x10, 0x9F, 0xE5
+void emit_int(struct Emitter* emitter, int number) {
+    for (int i = 0; i < 4; i++) {
+        emitter->word_buf[emitter->pos++] = (number >> (i * 8)) & 0xFF;
+    }
+}
+
+
 void emit_word(struct Emitter* emitter, struct Word word) {
     unsigned char* tmp_buf;
     if (word.wtype == WORD_STRING) {
@@ -329,6 +338,9 @@ int assemble(char* out_file_rel_path) {
                 dict_put(word.u.number, &label_info);
                 break;
             case WORD_SKIP:
+                break;
+            case WORD_NUMBER:
+                emit_int(&emitter, word.u.number);
                 break;
             default:
                 emit_word(&emitter, word);
