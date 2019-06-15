@@ -280,11 +280,11 @@ void solve_label_address(struct Emitter* emitter) {
     struct LinkedList* list;
     list = malloc(sizeof(struct LinkedList));
     struct Word label_info = {NO_WORD_TYPE, {0}};
+    int pos_label = 0;;
 
     while (linkedlist_get(list)) {
         if (0xEA000000 == list->word) {
-            dict_get(list->label_id, &label_info);
-            int pos_label = label_info.u.number;
+            dict_get(list->label_id, &pos_label);
             int relative_word_num = list->emitter_pos - pos_label;
             int offset = relative_word_num - 0x8;  // Subtract pc.
             offset = offset >> 2;  // 2 bits shift.
@@ -316,14 +316,13 @@ int assemble(char* out_file_rel_path) {
 
     while(cl_getline(&str_line) != EOF) {
         if (asm_one(str_line, &word) == ASM_FAILURE) return ASM_FAILURE;
-        struct Word label_info = {WORD_LABEL, {.number = emitter.pos}};
         switch (word.wtype) {
             case WORD_LABEL:
                 // [emitter.pos = n] some_inst
                 // [NO emit] some_label:
                 // [emitter.pos = n+4] some_inst
                 //   -> add dict to key = (id of some_label), value = n+4
-                dict_put(word.u.number, &label_info);
+                dict_put(word.u.number, emitter.pos);
                 break;
             case WORD_SKIP:
                 break;

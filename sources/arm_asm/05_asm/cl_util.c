@@ -33,7 +33,7 @@ int two_word_eq(struct Word* w1, struct Word* w2) {
 int two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
     // Return 1 if two KeyValues are identical.
     if (kv1->key == kv2->key) {
-        return two_word_eq(&kv1->value, &kv2->value);
+        return kv1->value == kv2->value;
     } else {
         return 0;
     }
