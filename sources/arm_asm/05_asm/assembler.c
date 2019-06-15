@@ -31,8 +31,19 @@ void emit_int(struct Emitter* emitter, int number) {
     }
 }
 
+// char: "hello " -> emitter: 
+//   pos       n    n+1  n+2  n+3  n+4   n+5   n+6  n+7
+//   word_buf  'l', 'l', 'e', 'h', '\0', '\0', ' ', 'o'
 void emit_string(struct Emitter* emitter, char* str) {
-    // TO BE IMPLEMENTED.
+    char str_buf[STR_SIZE] = {'\0'};
+    strcpy(&str_buf, str);
+    int len = strlen(str);
+    int len_four_bytes_aligned = len + (4 - len % 4);
+
+    for (int i = 0; i < len_four_bytes_aligned; i++) {
+        int str_pos = 4 * (i / 4) + 3 - (i % 4);
+        emitter->word_buf[emitter->pos++] = str_buf[str_pos];
+    }
 }
 
 // Return 1 if the input str is equal to substr.str.
@@ -101,13 +112,17 @@ int asm_raw(char* str, struct Word* out_word) {
     } else if (next_ch == '"') {
         out_word->wtype = WORD_STRING;
 
-        char parsed_str[STR_SIZE] = {'\0'};
-        len_read_ch = parse_str(str, &parsed_str);
+        char** parsed_str;
+        len_read_ch = parse_str(str, parsed_str);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-
-        out_word->u.str = (char*)malloc(strlen(&parsed_str));
-        strcpy(out_word->u.str, parsed_str);
+        
+        char tmp_buf[STR_SIZE];
+        int parsed_str_len = strlen(*parsed_str) + 1;
+        strcpy(tmp_buf, *parsed_str);
+        tmp_buf[parsed_str_len] = '\0';
+        out_word->u.str = (char*)malloc(parsed_str_len);
+        strcpy(out_word->u.str, &tmp_buf);
     } else {
         return ASM_FAILURE;
     }
