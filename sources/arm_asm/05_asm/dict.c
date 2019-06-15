@@ -22,20 +22,20 @@ static int find_key_index(int key, int* out_index) {
     return 0;
 }
 
-void dict_put(int key, struct Word* elem) {
+void dict_put(int key, int value) {
     int index = 0;
     if (find_key_index(key, &index)) {
-        dict_array[index].value = *elem;
+        dict_array[index].value = value;
     } else {
-        struct KeyValue key_value_elem = {key, *elem};
+        struct KeyValue key_value_elem = {key, value};
         dict_array[dict_pos++] = key_value_elem;
     }
 };
 
-int dict_get(int key, struct Word* out_elem) {
+int dict_get(int key, int* value) {
     int index = 0;
     if (find_key_index(key, &index)) {
-        *out_elem = dict_array[index].value;
+        *value = dict_array[index].value;
         return 1;
     } else {
         return 0;
@@ -48,10 +48,10 @@ int dict_get(int key, struct Word* out_elem) {
 
 static void test_one_put() {
     int input_key = 2;
-    struct Word input_word = {WORD_NUMBER, .u.number = 123};
-    struct KeyValue expect = {2, {WORD_NUMBER, .u.number = 123}};
+    int input_value = 123;
+    struct KeyValue expect = {2, 123};
 
-    dict_put(input_key, &input_word);
+    dict_put(input_key, input_value);
     struct KeyValue* actual = &dict_array[0];
 
     assert_two_keyvalue_eq(&expect, actual);
@@ -60,29 +60,29 @@ static void test_one_put() {
 
 static void test_one_put_one_get() {
     int input_key = 2;
-    struct Word input_word = {WORD_STRING, .u.str = "test"};
-    struct Word expect_word = {WORD_STRING, .u.str = "test"};
+    int input_value = 123;
+    int expect_value = 123;
     int expect = 1;
 
-    dict_put(input_key, &input_word);
-    struct Word actual_word = {NO_WORD_TYPE, {0}};
-    int actual = dict_get(2, &actual_word);
+    dict_put(input_key, input_value);
+    int actual_value = 0;
+    int actual = dict_get(2, &actual_value);
 
     assert(expect == actual);
-    assert_two_word_eq(&expect_word, &actual_word);
+    assert(expect_value == actual_value);
     reset_dict();
 }
 
 static void test_two_put() {
     int input_key_1 = 1;
-    struct Word input_word_1 = {WORD_STRING, .u.str = "test"};
-    char *input_key_2 = 2;
-    struct Word input_word_2 = {WORD_NUMBER, .u.number = 5};
-    struct KeyValue expect_1 = {1, {WORD_STRING, .u.str = "test"}};
-    struct KeyValue expect_2 = {2, {WORD_NUMBER, .u.number = 5}};
+    int input_value_1 = 123;
+    int input_key_2 = 2;
+    int input_value_2 = 456;
+    struct KeyValue expect_1 = {1, 123};
+    struct KeyValue expect_2 = {2, 456};
 
-    dict_put(input_key_1, &input_word_1);
-    dict_put(input_key_2, &input_word_2);
+    dict_put(input_key_1, input_value_1);
+    dict_put(input_key_2, input_value_2);
     struct KeyValue* actual_1 = &dict_array[0];
     struct KeyValue* actual_2 = &dict_array[1];
 
@@ -93,37 +93,37 @@ static void test_two_put() {
 
 static void test_two_put_two_get() {
     int input_key_1 = 1;
-    struct Word input_word_1 = {WORD_STRING, .u.str = "test"};
+    int input_value_1 = 123;
     int input_key_2 = 2;
-    struct Word input_word_2 = {WORD_NUMBER, .u.number = 5};
-    struct Word expect_word_1 = {WORD_STRING, .u.str = "test"};
-    struct Word expect_word_2 = {WORD_NUMBER, .u.number = 5};
+    int input_value_2 = 456;
+    int expect_value_1 = 123;
+    int expect_value_2 = 456;
     int expect_1 = 1;
     int expect_2 = 1;
 
-    dict_put(input_key_1, &input_word_1);
-    dict_put(input_key_2, &input_word_2);
-    struct Word actual_word_1 = {NO_WORD_TYPE, {0}};
-    struct Word actual_word_2 = {NO_WORD_TYPE, {0}};
-    int actual_1 = dict_get(1, &actual_word_1);
-    int actual_2 = dict_get(2, &actual_word_2);
+    dict_put(input_key_1, input_value_1);
+    dict_put(input_key_2, input_value_2);
+    int actual_value_1 = 0;
+    int actual_value_2 = 0;
+    int actual_1 = dict_get(1, &actual_value_1);
+    int actual_2 = dict_get(2, &actual_value_2);
 
     assert(expect_1 == actual_1);
-    assert_two_word_eq(&expect_word_1, &actual_word_1);
+    assert(expect_value_1 == actual_value_1);
     assert(expect_2 == actual_2);
-    assert_two_word_eq(&expect_word_2, &actual_word_2);
+    assert(expect_value_2 == actual_value_2);
 
     reset_dict();
 }
 
 static void test_rewrite_dict() {
     int input_key = 2;
-    struct Word input_word_1 = {WORD_NUMBER, .u.number = 123};
-    struct Word input_word_2 = {WORD_STRING, .u.str = "abc"};
-    struct KeyValue expect = {2, {WORD_STRING, .u.str = "abc"}};
+    int input_value_1 = 123;
+    int input_value_2 = 456;
+    struct KeyValue expect = {2, 456};
 
-    dict_put(input_key, &input_word_1);
-    dict_put(input_key, &input_word_2);
+    dict_put(input_key, input_value_1);
+    dict_put(input_key, input_value_2);
     struct KeyValue* actual = &dict_array[0];
 
     assert_two_keyvalue_eq(&expect, actual);
@@ -131,13 +131,13 @@ static void test_rewrite_dict() {
 }
 
 static void test_get_nil_key() {
-    char *input_key = 1;
-    struct Word input_word = {WORD_NUMBER, {123}};
+    int *input_key = 1;
+    int input_value = 123;
     int expect = 0;
 
-    dict_put(input_key, &input_word);
-    struct Word actual_word = {NO_WORD_TYPE, {0}};
-    int actual = dict_get(100, &actual_word);
+    dict_put(input_key, input_value);
+    int actual_value = 0;
+    int actual = dict_get(100, &actual_value);
 
     assert(expect == actual);
     reset_dict();
