@@ -119,6 +119,7 @@ int asm_raw(char* str, struct Word* out_word) {
 // ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
 // ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
 // ldr: " r0, =0x101f1000" -> return 0, out_word.u.number = E59F0000
+//   store its emitter_pos and word into the linked list.
 int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
@@ -149,7 +150,7 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
-// str: " r1, [r15]" -> return 0, out_word.u.number = E5810000
+// str: " r1, [r15]" -> return 0, out_word.u.number = E58F1000
 int asm_str(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {WORD_NUMBER, {.number = 0x0}};
@@ -185,6 +186,8 @@ int asm_str(char* str, struct Word* out_word) {
     return 0;
 }
 
+// b: " some_label" -> return 0, out_word.u.number = EA000000
+//   label id of "some_label" is stored into the linked list.
 int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     char* label;
     int len_read_ch = 0;
@@ -206,13 +209,16 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
 }
 
 // Assemble a given line.
+//   "" (blank line) -> out_word wtype = WORD_SKIP 
+//   "label:" -> out_word wtype = WORD_LABEL, u,number = (label id).
+//   "str xxx" -> out_word wtype = WORD_NUMBER, u,number = (corresponding 4 bytes word).
 int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
 
     str += parse_one(str, &substr);
 
-    //  Skip the blank line.
+    // Skip the blank line case.
     if (strcmp("", &substr.str[0]) == 0) {
         out_word->wtype = WORD_SKIP;
         return 0;
@@ -225,6 +231,7 @@ int asm_one(char* str, struct Word* out_word) {
 
     if (str_inst[substr.len - 1] == ':') {
         str_inst[substr.len - 1] = '\0';
+        // Skip _start: label case.
         if (strcmp("_start", &str_inst[0]) == 0) {
             out_word->wtype = WORD_SKIP;
             return 0;
@@ -237,6 +244,10 @@ int asm_one(char* str, struct Word* out_word) {
 
     int symbol_mnemonic = to_mnemonic_symbol(str_inst);
     switch (symbol_mnemonic) {
+        case _GLOBAL:
+            // Skip .globl mnemonic case.
+            out_word->wtype = WORD_SKIP;
+            return 0;
         case _MOV:
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
@@ -249,6 +260,10 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_ldr(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _B:
+            if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _RAW:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             if (word.wtype == WORD_NUMBER) {
@@ -258,13 +273,6 @@ int asm_one(char* str, struct Word* out_word) {
                 out_word->u.str = (char*)malloc(strlen(str));
                 strcpy(out_word->u.str, word.u.str);
             }
-            return 0;
-        case _B:
-            if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
-        case _GLOBAL:
-            out_word->wtype = WORD_SKIP;
             return 0;
         
         default:
