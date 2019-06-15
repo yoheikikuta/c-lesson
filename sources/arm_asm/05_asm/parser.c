@@ -302,10 +302,9 @@ int parse_int(char* str, int* out_int) {
     return len_read_ch;
 }
 
-// "  "hello\n" " ->
-//   return 10 (len including spaces)
-//   out_str = "hello\n"
-int parse_str(char* str, char* out_str) {
+// "  "hello\n" " -> return 10 (len including spaces), out_str = "hello\n"
+int parse_str(char* str, char** out_str) {
+    char tmpbuf[PARSE_STR_SIZE] = {'\0'};
     int len_read_ch = 0;
     int head_ch = str[len_read_ch];
 
@@ -313,18 +312,43 @@ int parse_str(char* str, char* out_str) {
         head_ch = str[++len_read_ch];
     }
 
-    // Check "/"".
-    if(str[len_read_ch++] != '"') return PARSE_FAILURE;
-    head_ch = str[len_read_ch];
+    // Check the double quotation exists.
+    if(str[len_read_ch] != '"') return PARSE_FAILURE;
 
-    int init_pos = len_read_ch;
-    do {
+    int init_pos = len_read_ch + 1;
+    enum ParseState state = S_READING;
+    while (state != S_FINAL) {
         head_ch = str[++len_read_ch];
-    } while (head_ch != '"');
+        switch(state) {
+            case S_READING:
+                if (head_ch == '\\') {
+                    state = S_ESCAPING;
+                    break;
+                } else if (head_ch == '"') {
+                    state = S_FINAL;
+                    break;
+                } else {
+                    tmpbuf[len_read_ch - init_pos] = head_ch;
+                    break;
+                }
+            case S_ESCAPING:
+                if (head_ch == '"' || head_ch == '\\' || head_ch == 'n') {
+                    tmpbuf[len_read_ch - init_pos] = head_ch;
+                    state = S_READING;
+                    break;
+                } else {
+                    return PARSE_FAILURE;
+                }
+            case S_FINAL:
+                break;
+        }
+    }
+
     int end_pos = len_read_ch;
 
-    strncpy(out_str, &str[init_pos], end_pos - init_pos);
-    out_str[end_pos - init_pos] = '\0';
+    char* res = (char*)malloc(end_pos - init_pos);
+    memcpy(res, tmpbuf, end_pos - init_pos);
+    *out_str = res;
 
     return len_read_ch;
 }
@@ -566,11 +590,11 @@ static void test_parse_str() {
     char* expect = "Test\n";
     int expect_len_read = 8;
 
-    char actual[6] = {'\0'};
-    int actual_len_read = parse_str(input, &actual);
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, actual);
+    assert_two_str_eq(expect, *actual);
 }
 
 static void unittests() {
