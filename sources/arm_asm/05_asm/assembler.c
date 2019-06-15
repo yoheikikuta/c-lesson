@@ -108,7 +108,7 @@ int asm_raw(char* str, struct Word* out_word) {
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
 
-        out_word->u.str = (char*)malloc(strlen(str));
+        out_word->u.str = (char*)malloc(strlen(&parsed_str));
         strcpy(out_word->u.str, parsed_str);
     } else {
         return ASM_FAILURE;
@@ -415,8 +415,8 @@ static void test_asm_one_raw_int() {
 }
 
 static void test_asm_one_raw_str() {
-	char* input = " .raw \"test\n\"";
-	char* expect = "test\n";
+	char* input = " .raw \"this is a test\n\"";
+	char* expect = "this is a test\n";
 	
     struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
 	asm_one(input, &actual);
