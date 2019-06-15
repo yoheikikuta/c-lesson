@@ -1,6 +1,14 @@
 #pragma once
 
 #define PARSE_FAILURE -1
+#define PARSE_STR_SIZE 1024
+
+enum ParseState {
+   S_INITIAL,
+   S_READING,
+   S_ESCAPING,
+   S_FINAL
+};
 
 struct Substring {
    char* str;
