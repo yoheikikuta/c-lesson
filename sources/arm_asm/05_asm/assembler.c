@@ -112,17 +112,13 @@ int asm_raw(char* str, struct Word* out_word) {
     } else if (next_ch == '"') {
         out_word->wtype = WORD_STRING;
 
-        char** parsed_str;
-        len_read_ch = parse_str(str, parsed_str);
+        char* parsed_str;
+        len_read_ch = parse_str(str, &parsed_str);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
         
-        char tmp_buf[STR_SIZE];
-        int parsed_str_len = strlen(*parsed_str) + 1;
-        strcpy(tmp_buf, *parsed_str);
-        tmp_buf[parsed_str_len] = '\0';
-        out_word->u.str = (char*)malloc(parsed_str_len);
-        strcpy(out_word->u.str, &tmp_buf);
+        out_word->u.str = (char*)malloc(strlen(parsed_str));
+        strcpy(out_word->u.str, parsed_str);
     } else {
         return ASM_FAILURE;
     }
@@ -285,7 +281,7 @@ int asm_one(char* str, struct Word* out_word) {
                 *out_word = word;
             } else if (word.wtype == WORD_STRING) {
                 out_word->wtype = word.wtype;
-                out_word->u.str = (char*)malloc(strlen(str));
+                out_word->u.str = (char*)malloc(strlen(word.u.str));
                 strcpy(out_word->u.str, word.u.str);
             }
             return 0;
