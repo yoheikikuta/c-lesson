@@ -306,6 +306,7 @@ int parse_int(char* str, int* out_int) {
 int parse_str(char* str, char** out_str) {
     char tmpbuf[PARSE_STR_SIZE] = {'\0'};
     int len_read_ch = 0;
+    int copy_pos = 0;
     int head_ch = str[len_read_ch];
 
     while (is_space(head_ch)) {
@@ -315,7 +316,6 @@ int parse_str(char* str, char** out_str) {
     // Check the double quotation exists.
     if(str[len_read_ch] != '"') return PARSE_FAILURE;
 
-    int init_pos = len_read_ch + 1;
     enum ParseState state = S_READING;
     while (state != S_FINAL) {
         head_ch = str[++len_read_ch];
@@ -325,15 +325,16 @@ int parse_str(char* str, char** out_str) {
                     state = S_ESCAPING;
                     break;
                 } else if (head_ch == '"') {
+                    ++len_read_ch;  // Include the last double quote.
                     state = S_FINAL;
                     break;
                 } else {
-                    tmpbuf[len_read_ch - init_pos] = head_ch;
+                    tmpbuf[copy_pos++] = head_ch;
                     break;
                 }
             case S_ESCAPING:
                 if (head_ch == '"' || head_ch == '\\' || head_ch == 'n') {
-                    tmpbuf[len_read_ch - init_pos] = head_ch;
+                    tmpbuf[copy_pos++] = head_ch;
                     state = S_READING;
                     break;
                 } else {
@@ -344,10 +345,9 @@ int parse_str(char* str, char** out_str) {
         }
     }
 
-    int end_pos = len_read_ch;
-
-    char* res = (char*)malloc(end_pos - init_pos);
-    memcpy(res, tmpbuf, end_pos - init_pos);
+    char* res = (char*)malloc(copy_pos + 1);
+    memcpy(res, tmpbuf, copy_pos + 1);
+    res[copy_pos] = '\0';
     *out_str = res;
 
     return len_read_ch;
@@ -585,10 +585,70 @@ static void test_parse_int_fail() {
     assert_two_num_eq(expect_len_read, actual_len_read);
 }
 
-static void test_parse_str() {
-    char* input = "  \"Test\n\" ";
-    char* expect = "Test\n";
+static void test_parse_str_test() {
+    char* input = "  \"Test\" ";
+    char* expect = "Test";
     int expect_len_read = 8;
+
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, *actual);
+}
+
+static void test_parse_str_helloworld() {
+    char* input = "  \"Hello World\n\" ";
+    char* expect = "Hello World\n";
+    int expect_len_read = 16;
+
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, *actual);
+}
+
+static void test_parse_str_escape_one_dq() {
+    char* input = "  \"escape1 \\\" end\" ";
+    char* expect = "escape1 \" end";
+    int expect_len_read = 18;
+
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, *actual);
+}
+
+static void test_parse_str_escape_one_bs() {
+    char* input = "  \"escape2 \\\\ end\" ";
+    char* expect = "escape2 \\ end";
+    int expect_len_read = 18;
+
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, *actual);
+}
+
+static void test_parse_str_escape_one_bs_end() {
+    char* input = "  \"escape3 \\\\\" ";
+    char* expect = "escape3 \\";
+    int expect_len_read = 14;
+
+    char** actual;
+    int actual_len_read = parse_str(input, actual);
+
+    assert_two_num_eq(expect_len_read, actual_len_read);
+    assert_two_str_eq(expect, *actual);
+}
+
+static void test_parse_str_escape_one_bs_dq() {
+    char* input = "  \"escape4 \\\\\\\" end\" ";
+    char* expect = "escape4 \\\" end";
+    int expect_len_read = 20;
 
     char** actual;
     int actual_len_read = parse_str(input, actual);
@@ -619,7 +679,12 @@ static void unittests() {
     test_parse_immediate_value_fail();
     test_parse_int();
     test_parse_int_fail();
-    test_parse_str();
+    test_parse_str_test();
+    test_parse_str_helloworld();
+    test_parse_str_escape_one_dq();
+    test_parse_str_escape_one_bs();
+    test_parse_str_escape_one_bs_end();
+    test_parse_str_escape_one_bs_dq();
 
     printf("All unittests successfully passed.\n");
 }
