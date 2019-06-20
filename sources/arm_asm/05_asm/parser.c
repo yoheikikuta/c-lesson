@@ -590,11 +590,11 @@ static void test_parse_str_test() {
     char* expect = "Test";
     int expect_len_read = 8;
 
-    char** actual;
-    int actual_len_read = parse_str(input, actual);
+    char* actual;
+    int actual_len_read = parse_str(input, &actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, *actual);
+    assert_two_str_eq(expect, actual);
 }
 
 static void test_parse_str_helloworld() {
@@ -602,11 +602,11 @@ static void test_parse_str_helloworld() {
     char* expect = "Hello World\n";
     int expect_len_read = 16;
 
-    char** actual;
-    int actual_len_read = parse_str(input, actual);
+    char* actual;
+    int actual_len_read = parse_str(input, &actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, *actual);
+    assert_two_str_eq(expect, actual);
 }
 
 static void test_parse_str_escape_one_dq() {
@@ -614,11 +614,11 @@ static void test_parse_str_escape_one_dq() {
     char* expect = "escape1 \" end";
     int expect_len_read = 18;
 
-    char** actual;
-    int actual_len_read = parse_str(input, actual);
+    char* actual;
+    int actual_len_read = parse_str(input, &actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, *actual);
+    assert_two_str_eq(expect, actual);
 }
 
 static void test_parse_str_escape_one_bs() {
@@ -626,11 +626,11 @@ static void test_parse_str_escape_one_bs() {
     char* expect = "escape2 \\ end";
     int expect_len_read = 18;
 
-    char** actual;
-    int actual_len_read = parse_str(input, actual);
+    char* actual;
+    int actual_len_read = parse_str(input, &actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, *actual);
+    assert_two_str_eq(expect, actual);
 }
 
 static void test_parse_str_escape_one_bs_end() {
@@ -650,11 +650,11 @@ static void test_parse_str_escape_one_bs_dq() {
     char* expect = "escape4 \\\" end";
     int expect_len_read = 20;
 
-    char** actual;
-    int actual_len_read = parse_str(input, actual);
+    char* actual;
+    int actual_len_read = parse_str(input, &actual);
 
     assert_two_num_eq(expect_len_read, actual_len_read);
-    assert_two_str_eq(expect, *actual);
+    assert_two_str_eq(expect, actual);
 }
 
 static void unittests() {
