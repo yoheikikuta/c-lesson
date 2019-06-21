@@ -178,6 +178,42 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
+// ldrb: " r3, [r1]" -> return 0, out_word.u.number = E5D13000
+int asm_ldrb(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_dest = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE5D00000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_sbracket_open(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_sbracket_close(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    *out_word = word;
+    return 0;
+}
+
 // str: " r1, [r15]" -> return 0, out_word.u.number = E58F1000
 int asm_str(char* str, struct Word* out_word) {
     int len_read_ch = 0;
@@ -288,6 +324,10 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_ldr(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _LDRB:
+            if (asm_ldrb(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _B:
             if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
@@ -352,7 +392,7 @@ void solve_label_address(struct Emitter* emitter) {
                 int label_pos = 0;
                 dict_get(list->label_id, &label_pos);
                 int offset_from_ldr = emitter->pos - list->emitter_pos - 0x8;
-                
+
                 int word = 0x00010000 + label_pos;
                 emit_int(emitter, word);
 
@@ -524,6 +564,16 @@ static void test_asm_one_ldr_fail() {
 	assert_two_num_eq(expect_return, actual_return);
 }
 
+static void test_asm_one_ldrb_r3r1() {
+	char* input = " ldrb r3, [r1]";
+	int expect = 0xE5D13000;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
 static void test_asm_one_str_r0r1() {
 	char* input = " str r0, [r1]";
 	int expect = 0xE5810000;
@@ -547,6 +597,7 @@ static void unittests() {
     test_asm_one_ldr_r1r15_minus0x30();
     test_asm_one_ldr_r1r15();
     test_asm_one_ldr_fail();
+    test_asm_one_ldrb_r3r1();
     test_asm_one_str_r0r1();
 
     printf("All unittests successfully passed.\n");
