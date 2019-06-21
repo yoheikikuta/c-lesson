@@ -33,7 +33,7 @@ void emit_int(struct Emitter* emitter, int number) {
 
 // char: "hello " -> emitter: 
 //   pos       n    n+1  n+2  n+3  n+4   n+5   n+6  n+7
-//   word_buf  'l', 'l', 'e', 'h', '\0', '\0', ' ', 'o'
+//   word_buf  'h', 'e', 'l', 'l', 'o', ' ', '\0', '\0'
 void emit_string(struct Emitter* emitter, char* str) {
     char str_buf[STR_SIZE] = {'\0'};
     strcpy(&str_buf, str);
@@ -41,7 +41,7 @@ void emit_string(struct Emitter* emitter, char* str) {
     int len_four_bytes_aligned = len + (4 - len % 4);
 
     for (int i = 0; i < len_four_bytes_aligned; i++) {
-        int str_pos = 4 * (i / 4) + 3 - (i % 4);
+        int str_pos = 4 * (i / 4) + (i % 4);
         emitter->word_buf[emitter->pos++] = str_buf[str_pos];
     }
 }
