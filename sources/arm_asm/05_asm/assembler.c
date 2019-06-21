@@ -331,6 +331,7 @@ void solve_label_address(struct Emitter* emitter) {
         } else if (0xE59F0000 == (list->word & 0xE59F0000)) {
             // ldr rX,=SOMETHING case.
             if (list->label_id == to_label_symbol("0x101f1000")) {
+                // Use the hard-coded condition so far.
                 int address = 0x101f1000;
                 for (int i = 0; i < 4; i++) {
                     emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
@@ -338,6 +339,25 @@ void solve_label_address(struct Emitter* emitter) {
                 int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
                 for (int i = 0; i < 2; i++) {
                     emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+                }
+            } else {
+                // e.g., =message case.
+                //   [N] ldr rX,=message
+                //   ...
+                //   [M] message:
+                //     .raw "something"
+                // -> 
+                //   [emitter->pos] 0x0001XXXX + 0xM
+                //   Add offset from (ldr rX,=message) to (0x0001XXXX + 0xM) instruction into word of (ldr rX,=message).
+                int label_pos = 0;
+                dict_get(list->label_id, &label_pos);
+                int offset_from_ldr = emitter->pos - list->emitter_pos - 0x8;
+                
+                int word = 0x00010000 + label_pos;
+                emit_int(emitter, word);
+
+                for (int i = 0; i < 2; i++) {
+                    emitter->word_buf[list->emitter_pos + i] = (offset_from_ldr >> (i * 8)) & 0xFF;
                 }
             }
         }
