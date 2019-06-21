@@ -53,7 +53,7 @@ int add_new_node(char* str, int value, struct Node* out_node, enum Side side) {
 //   (add) func = add_new_node -> retrun value and add a new node with str & value.
 int find_or_add_node(char* str, int value, struct Node* node, int* func) {
     int (*pfunc)(char* str, int value, struct Node* node, enum Side side) = func;
-	int str_compared = strncmp(str, node->name, strlen(node->name));
+	int str_compared = strcmp(str, node->name);
     
 	if(str_compared == 0) {
 		return node->value;
@@ -110,6 +110,7 @@ void set_mnemonics() {
     to_mnemonic_symbol(".raw");
     to_mnemonic_symbol("b");
     to_mnemonic_symbol(".globl");
+    to_mnemonic_symbol("ldrb");
 }
 
 // 
