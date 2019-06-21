@@ -4,12 +4,12 @@
 #define MNEMONIC_ID_INIT 1
 #define LABEL_ID_INIT 100000
 // mnemonic ids.
-#define _MOV 1
-#define _STR 2
-#define _LDR 3
-#define _RAW 4
-#define _B 5
-#define _GLOBAL 6
+#define _MOV 2
+#define _STR 3
+#define _LDR 4
+#define _RAW 5
+#define _B 6
+#define _GLOBAL 7
 
 struct Node {
     char* name;
