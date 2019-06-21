@@ -135,24 +135,41 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
     char parsed_str[STR_SIZE] = {'\0'};
-
-    int non_sp_ch_idx = 0;
-    while (str[len_read_ch++] != '\0') {
-        if (str[len_read_ch] != ' ') {
-            parsed_str[non_sp_ch_idx++] = str[len_read_ch];
-        }
-    }
+    int register_dest = 0;
 
     word.wtype = WORD_NUMBER;
-    if (strcmp(parsed_str, "r1,[r15,#0x30]") == 0) {
-        word.u.number = 0xE59F101E;
-    } else if (strcmp(parsed_str, "r1,[r15,#-0x30]") == 0) {
-        word.u.number = 0xE51F101E;
-    } else if (strcmp(parsed_str, "r1,[r15]") == 0) {
-        word.u.number = 0xE59F1000;
-    } else if (strcmp(parsed_str, "r0,=0x101f1000") == 0) {
-        common_unsolved_label_address_list_put(emitter->pos, 0, 0xE59F0000);
-        word.u.number = 0xE59F0000;
+    word.u.number = 0xE5000000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    
+    // " [r15 , #0x30] " ->  parsed_str = "[r15,#0x30]"
+    len_read_ch = 0;
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch] != '\0') {
+        if (str[len_read_ch] != ' ') {
+            parsed_str[non_sp_ch_idx] = str[len_read_ch];
+            non_sp_ch_idx++;
+        }
+        len_read_ch++;
+    }
+
+    if (strcmp(parsed_str, "[r15,#0x30]") == 0) {
+        word.u.number += 0x009F001E;
+    } else if (strcmp(parsed_str, "[r15,#-0x30]") == 0) {
+        word.u.number += 0x001F001E;
+    } else if (strcmp(parsed_str, "[r15]") == 0) {
+        word.u.number += 0x009F0000;
+    } else if (parsed_str[0] == '=') {
+        word.u.number += 0x009F0000;
+        int symbol_label = to_label_symbol(&parsed_str[1]);
+        common_unsolved_label_address_list_put(emitter->pos, symbol_label, word.u.number);
     } else {
         return ASM_FAILURE;
     }
@@ -311,14 +328,17 @@ void solve_label_address(struct Emitter* emitter) {
             for (int i = 0; i < 3; i++) {
                 emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
             }
-        } else if (0xE59F0000 == list->word) {
-            int address = 0x101f1000;
-            for (int i = 0; i < 4; i++) {
-                emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
-            }
-            int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
-            for (int i = 0; i < 2; i++) {
-                emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+        } else if (0xE59F0000 == (list->word & 0xE59F0000)) {
+            // ldr rX,=SOMETHING case.
+            if (list->label_id == to_label_symbol("0x101f1000")) {
+                int address = 0x101f1000;
+                for (int i = 0; i < 4; i++) {
+                    emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
+                }
+                int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
+                for (int i = 0; i < 2; i++) {
+                    emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+                }
             }
         }
     }
@@ -475,7 +495,7 @@ static void test_asm_one_ldr_r1r15() {
 }
 
 static void test_asm_one_ldr_fail() {
-	char* input = " ldr r2, [r15]";
+	char* input = " ldr [r15], r2";
 	int expect_return = ASM_FAILURE;
 	
     struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
