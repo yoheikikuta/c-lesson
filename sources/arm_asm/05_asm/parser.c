@@ -333,8 +333,12 @@ int parse_str(char* str, char** out_str) {
                     break;
                 }
             case S_ESCAPING:
-                if (head_ch == '"' || head_ch == '\\' || head_ch == 'n') {
+                if (head_ch == '"' || head_ch == '\\') {
                     tmpbuf[copy_pos++] = head_ch;
+                    state = S_READING;
+                    break;
+                } else if (head_ch == 'n') {
+                    tmpbuf[copy_pos++] = '\n';
                     state = S_READING;
                     break;
                 } else {
