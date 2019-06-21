@@ -10,6 +10,7 @@
 #define _RAW 5
 #define _B 6
 #define _GLOBAL 7
+#define _LDRB 8
 
 struct Node {
     char* name;
