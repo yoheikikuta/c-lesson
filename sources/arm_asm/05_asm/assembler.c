@@ -400,9 +400,9 @@ int asm_ldrb(char* str, struct Word* out_word) {
     return 0;
 }
 
-// b: " some_label" -> return 0, out_word.u.number = EA000000
+// branch (b, bne, ...): " some_label" -> return 0, out_word.u.number = base_word
 //   label id of "some_label" is stored into the linked list.
-int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
+int asm_branch(char* str, struct Emitter* emitter, struct Word* out_word, int base_word) {
     char* label;
     int len_read_ch = 0;
     char parsed_str[STR_SIZE] = {'\0'};
@@ -415,75 +415,9 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     }
 
     int symbol_label = to_label_symbol(parsed_str);
-    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xEA000000);
+    common_unsolved_label_address_list_put(emitter->pos, symbol_label, base_word);
     out_word->wtype = WORD_NUMBER;
-    out_word->u.number = 0xEA000000;
-
-    return 0;
-}
-
-// bne: " some_label" -> return 0, out_word.u.number = 1A000000
-//   label id of "some_label" is stored into the linked list.
-int asm_bne(char* str, struct Emitter* emitter, struct Word* out_word) {
-    char* label;
-    int len_read_ch = 0;
-    char parsed_str[STR_SIZE] = {'\0'};
-
-    int non_sp_ch_idx = 0;
-    while (str[len_read_ch] == ' ') {len_read_ch++;}
-    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
-        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
-        len_read_ch++;
-    }
-
-    int symbol_label = to_label_symbol(parsed_str);
-    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0x1A000000);
-    out_word->wtype = WORD_NUMBER;
-    out_word->u.number = 0x1A000000;
-
-    return 0;
-}
-
-// ble: " some_label" -> return 0, out_word.u.number = DA000000
-//   label id of "some_label" is stored into the linked list.
-int asm_ble(char* str, struct Emitter* emitter, struct Word* out_word) {
-    char* label;
-    int len_read_ch = 0;
-    char parsed_str[STR_SIZE] = {'\0'};
-
-    int non_sp_ch_idx = 0;
-    while (str[len_read_ch] == ' ') {len_read_ch++;}
-    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
-        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
-        len_read_ch++;
-    }
-
-    int symbol_label = to_label_symbol(parsed_str);
-    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xDA000000);
-    out_word->wtype = WORD_NUMBER;
-    out_word->u.number = 0xDA000000;
-
-    return 0;
-}
-
-// bgt: " some_label" -> return 0, out_word.u.number = CA000000
-//   label id of "some_label" is stored into the linked list.
-int asm_bgt(char* str, struct Emitter* emitter, struct Word* out_word) {
-    char* label;
-    int len_read_ch = 0;
-    char parsed_str[STR_SIZE] = {'\0'};
-
-    int non_sp_ch_idx = 0;
-    while (str[len_read_ch] == ' ') {len_read_ch++;}
-    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
-        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
-        len_read_ch++;
-    }
-
-    int symbol_label = to_label_symbol(parsed_str);
-    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xCA000000);
-    out_word->wtype = WORD_NUMBER;
-    out_word->u.number = 0xCA000000;
+    out_word->u.number = base_word;
 
     return 0;
 }
@@ -598,19 +532,19 @@ int asm_one(char* str, struct Word* out_word) {
             *out_word = word;
             return 0;
         case _B:
-            if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_branch(str, &emitter, &word, 0xEA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _BNE:
-            if (asm_bne(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_branch(str, &emitter, &word, 0x1A000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _BLE:
-            if (asm_ble(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_branch(str, &emitter, &word, 0xDA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _BGT:
-            if (asm_bgt(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_branch(str, &emitter, &word, 0xCA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _RAW:
@@ -629,7 +563,7 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// b or bne:
+// branch:
 //   e.g.) emitter->word_buf: [0x0, 0x0, 0x0, 0xEA] -> [0xFE, 0xFF, 0xFF, 0xEA]
 // ldr:
 //   e.g.) emitter->word_buf: [0x0, 0x0, 0x9F, 0xE5] -> [0x38, 0x00, 0x9F, 0xE5]
@@ -640,8 +574,8 @@ void solve_label_address(struct Emitter* emitter) {
     int pos_label = 0;;
 
     while (linkedlist_get(list)) {
-        if ((0xEA000000 == list->word) || (0x1A000000 == list->word) || (0xDA000000 == list->word) || (0xCA000000 == list->word)) {
-            // b (bne, ble, bgt) SOMETHING case.
+        if (0x0A000000 == (list->word & 0x0A000000)) {
+            // branch (b, bne, ...) SOMETHING case.
             dict_get(list->label_id, &pos_label);
             int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
