@@ -311,6 +311,35 @@ int asm_add(char* str, struct Word* out_word) {
     return 0;
 }
 
+// cmp: " r3, #0x0" -> return 0, out_word.u.number = E3530000
+// Now only supporting operand2 is an immediate value case.
+int asm_cmp(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_operand1 = 0;
+    int immediate_v = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE3500000;
+
+    len_read_ch = parse_register(str, &register_operand1);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand1 << 16;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
 // Assemble a given line.
 //   "" (blank line) -> out_word wtype = WORD_SKIP 
 //   "label:" -> out_word wtype = WORD_LABEL, u,number = (label id).
@@ -369,6 +398,10 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case _ADD:
             if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _CMP:
+            if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _B:
@@ -637,6 +670,15 @@ static void test_asm_one_add_r1r1_0x05() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_cmp_r3_0x0() {
+	char* input = " cmp r3, #0x0";
+	int expect = 0xE3530000;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
 
 static void unittests() {
     test_asm_one_movr1r2();
@@ -653,6 +695,7 @@ static void unittests() {
     test_asm_one_ldrb_r3r1();
     test_asm_one_str_r0r1();
     test_asm_one_add_r1r1_0x05();
+    test_asm_one_cmp_r3_0x0();
 
     printf("All unittests successfully passed.\n");
 }

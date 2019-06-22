@@ -12,6 +12,7 @@
 #define _GLOBAL 7
 #define _LDRB 8
 #define _ADD 9
+#define _CMP 10
 
 struct Node {
     char* name;
