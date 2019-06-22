@@ -11,6 +11,7 @@
 #define _B 6
 #define _GLOBAL 7
 #define _LDRB 8
+#define _ADD 9
 
 struct Node {
     char* name;
