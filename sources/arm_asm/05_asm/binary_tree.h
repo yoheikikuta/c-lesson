@@ -19,6 +19,7 @@
 #define _AND 14
 #define _BLE 15
 #define _BGT 16
+#define _BL 17
 
 struct Node {
     char* name;
