@@ -14,6 +14,11 @@
 #define _ADD 9
 #define _CMP 10
 #define _BNE 11
+#define _SUB 12
+#define _LSR 13
+#define _AND 14
+#define _BLE 15
+#define _BGT 16
 
 struct Node {
     char* name;
