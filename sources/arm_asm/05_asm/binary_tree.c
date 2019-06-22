@@ -113,6 +113,7 @@ void set_mnemonics() {
     to_mnemonic_symbol("ldrb");
     to_mnemonic_symbol("add");
     to_mnemonic_symbol("cmp");
+    to_mnemonic_symbol("bne");
 }
 
 // 
