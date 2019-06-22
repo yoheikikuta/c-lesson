@@ -547,6 +547,10 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_branch(str, &emitter, &word, 0xCA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _BL:
+            if (asm_branch(str, &emitter, &word, 0xEB000000) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _RAW:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             if (word.wtype == WORD_NUMBER) {
@@ -574,7 +578,7 @@ void solve_label_address(struct Emitter* emitter) {
     int pos_label = 0;;
 
     while (linkedlist_get(list)) {
-        if (0x0A000000 == (list->word & 0x0A000000)) {
+        if ((0x0A000000 == (list->word & 0x0A000000)) || (0x0B000000 == (list->word & 0x0B000000))) {
             // branch (b, bne, ...) SOMETHING case.
             dict_get(list->label_id, &pos_label);
             int relative_word_num = pos_label - list->emitter_pos;
