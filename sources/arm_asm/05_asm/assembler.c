@@ -400,6 +400,100 @@ int asm_ldrb(char* str, struct Word* out_word) {
     return 0;
 }
 
+// stmdb: " r13!, {r3, r14}" -> return 0, out_word.u.number = E92D4008
+// Now only write-back mode is supported.
+int asm_stmdb(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_tmp = 0;
+    int register_list = 0x0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE9200000;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_exclamation(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_cbracket_open(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    // " r2, r3, r5, r12}" -> register_list = 0x102C (0001000000101100)
+    while (get_next_nonsp_ch(str) != '}') {
+        len_read_ch = parse_register(str, &register_tmp);
+        str += len_read_ch;
+        register_list += 0x1 << register_tmp;
+
+        if (get_next_nonsp_ch(str) == ',') {
+            len_read_ch = skip_comma(str);
+            if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+            str += len_read_ch;
+        }
+    }
+    word.u.number += register_list;
+
+    *out_word = word;
+    return 0;
+}
+
+// ldmia: " r13!, {r3, r14}" -> return 0, out_word.u.number = E8BD4008
+// Now only write-back mode is supported.
+int asm_ldmia(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_tmp = 0;
+    int register_list = 0x0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE8B00000;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_exclamation(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_cbracket_open(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    // " r2, r3, r5, r12}" -> register_list = 0x102C (0001000000101100)
+    while (get_next_nonsp_ch(str) != '}') {
+        len_read_ch = parse_register(str, &register_tmp);
+        str += len_read_ch;
+        register_list += 0x1 << register_tmp;
+
+        if (get_next_nonsp_ch(str) == ',') {
+            len_read_ch = skip_comma(str);
+            if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+            str += len_read_ch;
+        }
+    }
+    word.u.number += register_list;
+
+    *out_word = word;
+    return 0;
+}
+
 // branch (b, bne, ...): " some_label" -> return 0, out_word.u.number = base_word
 //   label id of "some_label" is stored into the linked list.
 int asm_branch(char* str, struct Emitter* emitter, struct Word* out_word, int base_word) {
@@ -549,6 +643,14 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case _BL:
             if (asm_branch(str, &emitter, &word, 0xEB000000) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _STMDB:
+            if (asm_stmdb(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _LDMIA:
+            if (asm_ldmia(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _RAW:
@@ -864,6 +966,26 @@ static void test_asm_one_and_r3r3_0x15() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_stmdb_r13_r3r14() {
+	char* input = " stmdb r13!, {r3, r14}";
+	int expect = 0xE92D4008;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_ldmia_r13_r3r14() {
+	char* input = " ldmia r13!, {r3, r14}";
+	int expect = 0xE8BD4008;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
@@ -883,6 +1005,8 @@ static void unittests() {
     test_asm_one_sub_r2r2_0x04();
     test_asm_one_lsr_r3r1r2();
     test_asm_one_and_r3r3_0x15();
+    test_asm_one_stmdb_r13_r3r14();
+    test_asm_one_ldmia_r13_r3r14();
 
     printf("All unittests successfully passed.\n");
 }
