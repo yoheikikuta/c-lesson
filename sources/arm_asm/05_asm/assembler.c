@@ -272,6 +272,45 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
+// add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
+// Now only supporting operand2 is an immediate value case.
+int asm_add(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_dest = 0;
+    int immediate_v = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE2800000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
 // Assemble a given line.
 //   "" (blank line) -> out_word wtype = WORD_SKIP 
 //   "label:" -> out_word wtype = WORD_LABEL, u,number = (label id).
@@ -326,6 +365,10 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case _LDRB:
             if (asm_ldrb(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _ADD:
+            if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _B:
@@ -584,6 +627,16 @@ static void test_asm_one_str_r0r1() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_add_r1r1_0x05() {
+	char* input = " add r1, r1, #0x05";
+	int expect = 0xE2811005;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
 
 static void unittests() {
     test_asm_one_movr1r2();
@@ -599,6 +652,7 @@ static void unittests() {
     test_asm_one_ldr_fail();
     test_asm_one_ldrb_r3r1();
     test_asm_one_str_r0r1();
+    test_asm_one_add_r1r1_0x05();
 
     printf("All unittests successfully passed.\n");
 }
