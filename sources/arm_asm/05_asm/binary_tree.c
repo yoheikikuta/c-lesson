@@ -114,6 +114,11 @@ void set_mnemonics() {
     to_mnemonic_symbol("add");
     to_mnemonic_symbol("cmp");
     to_mnemonic_symbol("bne");
+    to_mnemonic_symbol("sub");
+    to_mnemonic_symbol("lsr");
+    to_mnemonic_symbol("and");
+    to_mnemonic_symbol("ble");
+    to_mnemonic_symbol("bgt");
 }
 
 // 
