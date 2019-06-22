@@ -38,7 +38,7 @@ void emit_string(struct Emitter* emitter, char* str) {
     char str_buf[STR_SIZE] = {'\0'};
     strcpy(&str_buf, str);
     int len = strlen(str);
-    int len_four_bytes_aligned = len + (4 - len % 4);
+    int len_four_bytes_aligned = len + (4 - len % 4) % 4;
 
     for (int i = 0; i < len_four_bytes_aligned; i++) {
         int str_pos = 4 * (i / 4) + (i % 4);
