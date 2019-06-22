@@ -232,6 +232,23 @@ int skip_comma(char* str) {
     return len_read_ch;
 }
 
+// "!, r2" -> return 1
+int skip_exclamation(char* str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the character is '!', and read the next character.
+    if (head_ch != '!') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
+
+    return len_read_ch;
+}
+
+
 // " [r2]" -> return 2 (len including spaces)
 int skip_sbracket_open(char* str) {
     int len_read_ch = 0;
@@ -259,6 +276,38 @@ int skip_sbracket_close(char* str) {
 
     // Check the character is ']', and read the next character.
     if (head_ch != ']') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
+
+    return len_read_ch;
+}
+
+// " {r2}" -> return 2 (len including spaces)
+int skip_cbracket_open(char* str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the character is '{', and read the next character.
+    if (head_ch != '{') return PARSE_FAILURE;
+    head_ch = str[++len_read_ch];
+
+    return len_read_ch;
+}
+
+// " }" -> return 2 (len including spaces)
+int skip_cbracket_close(char* str) {
+    int len_read_ch = 0;
+    int head_ch = str[len_read_ch];
+
+    while (is_space(head_ch)) {
+        head_ch = str[++len_read_ch];
+    }
+
+    // Check the character is '}', and read the next character.
+    if (head_ch != '}') return PARSE_FAILURE;
     head_ch = str[++len_read_ch];
 
     return len_read_ch;
