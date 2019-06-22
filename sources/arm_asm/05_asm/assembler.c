@@ -93,6 +93,44 @@ int asm_mov(char* str, struct Word* out_word) {
     return 0;
 }
 
+// lsr: " r3, r1, r2" -> return 0, out_word->u.number = E1A03231
+int asm_lsr(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_dest = 0;
+    int register_shift = 0;
+    int register_operand2 = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE1A00030;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_operand2);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand2;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_shift);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_shift << 8;
+
+    *out_word = word;
+    return 0;
+}
+
 // add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
 // Now only supporting operand2 is an immediate value case.
 int asm_add(char* str, struct Word* out_word) {
@@ -132,6 +170,45 @@ int asm_add(char* str, struct Word* out_word) {
     return 0;
 }
 
+// sub: " r2, r2, #0x04" -> return 0, out_word.u.number = E2422004
+// Now only supporting operand2 is an immediate value case.
+int asm_sub(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_operand1 = 0;
+    int register_dest = 0;
+    int immediate_v = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE2400000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_operand1);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand1 << 16;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
 // cmp: " r3, #0x0" -> return 0, out_word.u.number = E3530000
 // Now only supporting operand2 is an immediate value case.
 int asm_cmp(char* str, struct Word* out_word) {
@@ -142,6 +219,44 @@ int asm_cmp(char* str, struct Word* out_word) {
 
     word.wtype = WORD_NUMBER;
     word.u.number = 0xE3500000;
+
+    len_read_ch = parse_register(str, &register_operand1);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand1 << 16;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
+// and: " r3, r3, #0x15" -> return 0, out_word.u.number = E2033015
+int asm_and(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_operand1 = 0;
+    int register_dest = 0;
+    int immediate_v = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE2000000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
 
     len_read_ch = parse_register(str, &register_operand1);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -329,6 +444,50 @@ int asm_bne(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
+// ble: " some_label" -> return 0, out_word.u.number = DA000000
+//   label id of "some_label" is stored into the linked list.
+int asm_ble(char* str, struct Emitter* emitter, struct Word* out_word) {
+    char* label;
+    int len_read_ch = 0;
+    char parsed_str[STR_SIZE] = {'\0'};
+
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch] == ' ') {len_read_ch++;}
+    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
+        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
+        len_read_ch++;
+    }
+
+    int symbol_label = to_label_symbol(parsed_str);
+    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xDA000000);
+    out_word->wtype = WORD_NUMBER;
+    out_word->u.number = 0xDA000000;
+
+    return 0;
+}
+
+// bgt: " some_label" -> return 0, out_word.u.number = CA000000
+//   label id of "some_label" is stored into the linked list.
+int asm_bgt(char* str, struct Emitter* emitter, struct Word* out_word) {
+    char* label;
+    int len_read_ch = 0;
+    char parsed_str[STR_SIZE] = {'\0'};
+
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch] == ' ') {len_read_ch++;}
+    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
+        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
+        len_read_ch++;
+    }
+
+    int symbol_label = to_label_symbol(parsed_str);
+    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0xCA000000);
+    out_word->wtype = WORD_NUMBER;
+    out_word->u.number = 0xCA000000;
+
+    return 0;
+}
+
 // .raw: " 0x12345678" -> return 0, out_word->u.number = 0x12345678
 // .raw: " "hello"" -> return 0, out_word->u.str = "hello"
 int asm_raw(char* str, struct Word* out_word) {
@@ -406,12 +565,24 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _LSR:
+            if (asm_lsr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _ADD:
             if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _SUB:
+            if (asm_sub(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _CMP:
             if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _AND:
+            if (asm_and(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _STR:
@@ -432,6 +603,14 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case _BNE:
             if (asm_bne(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _BLE:
+            if (asm_ble(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _BGT:
+            if (asm_bgt(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _RAW:
@@ -461,8 +640,8 @@ void solve_label_address(struct Emitter* emitter) {
     int pos_label = 0;;
 
     while (linkedlist_get(list)) {
-        if ((0xEA000000 == list->word) || (0x1A000000 == list->word)) {
-            // b (bne) SOMETHING case.
+        if ((0xEA000000 == list->word) || (0x1A000000 == list->word) || (0xDA000000 == list->word) || (0xCA000000 == list->word)) {
+            // b (bne, ble, bgt) SOMETHING case.
             dict_get(list->label_id, &pos_label);
             int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
@@ -476,6 +655,16 @@ void solve_label_address(struct Emitter* emitter) {
             if (list->label_id == to_label_symbol("0x101f1000")) {
                 // Use the hard-coded condition so far.
                 int address = 0x101f1000;
+                for (int i = 0; i < 4; i++) {
+                    emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
+                }
+                int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
+                for (int i = 0; i < 2; i++) {
+                    emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+                }
+            } else if (list->label_id == to_label_symbol("0xdeadbeaf")) {
+                // Use the hard-coded condition so far.
+                int address = 0xdeadbeaf;
                 for (int i = 0; i < 4; i++) {
                     emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
                 }
@@ -707,6 +896,36 @@ static void test_asm_one_cmp_r3_0x0() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_sub_r2r2_0x04() {
+	char* input = " sub r2, r2, #0x04";
+	int expect = 0xE2422004;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_lsr_r3r1r2() {
+	char* input = " lsr r3, r1, r2";
+	int expect = 0xE1A03231;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
+static void test_asm_one_and_r3r3_0x15() {
+	char* input = " and r3, r3, #0x15";
+	int expect = 0xE2033015;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
 static void unittests() {
     test_asm_one_movr1r2();
     test_asm_one_movr10xFF();
@@ -723,6 +942,9 @@ static void unittests() {
     test_asm_one_str_r0r1();
     test_asm_one_add_r1r1_0x05();
     test_asm_one_cmp_r3_0x0();
+    test_asm_one_sub_r2r2_0x04();
+    test_asm_one_lsr_r3r1r2();
+    test_asm_one_and_r3r3_0x15();
 
     printf("All unittests successfully passed.\n");
 }
