@@ -272,6 +272,28 @@ int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
+// bne: " some_label" -> return 0, out_word.u.number = 1A000000
+//   label id of "some_label" is stored into the linked list.
+int asm_bne(char* str, struct Emitter* emitter, struct Word* out_word) {
+    char* label;
+    int len_read_ch = 0;
+    char parsed_str[STR_SIZE] = {'\0'};
+
+    int non_sp_ch_idx = 0;
+    while (str[len_read_ch] == ' ') {len_read_ch++;}
+    while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
+        parsed_str[non_sp_ch_idx++] = str[len_read_ch];
+        len_read_ch++;
+    }
+
+    int symbol_label = to_label_symbol(parsed_str);
+    common_unsolved_label_address_list_put(emitter->pos, symbol_label, 0x1A000000);
+    out_word->wtype = WORD_NUMBER;
+    out_word->u.number = 0x1A000000;
+
+    return 0;
+}
+
 // add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
 // Now only supporting operand2 is an immediate value case.
 int asm_add(char* str, struct Word* out_word) {
@@ -408,6 +430,10 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_b(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _BNE:
+            if (asm_bne(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _RAW:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             if (word.wtype == WORD_NUMBER) {
@@ -435,9 +461,9 @@ void solve_label_address(struct Emitter* emitter) {
     int pos_label = 0;;
 
     while (linkedlist_get(list)) {
-        if (0xEA000000 == list->word) {
+        if ((0xEA000000 == list->word) || (0x1A000000 == list->word)) {
             dict_get(list->label_id, &pos_label);
-            int relative_word_num = list->emitter_pos - pos_label;
+            int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
             offset = offset >> 2;  // 2 bits shift.
             offset = offset & 0x00FFFFFF;  // Get the lower 24 bits.
