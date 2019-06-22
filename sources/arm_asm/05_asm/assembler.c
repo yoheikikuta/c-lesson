@@ -702,6 +702,12 @@ void solve_label_address(struct Emitter* emitter) {
                 for (int i = 0; i < 2; i++) {
                     emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
                 }
+            } else if (list->label_id == to_label_symbol("0x08000000")) {
+                // Replace the base word of (ldr, r13,=0x08000000) with 0xE3A0D302.
+                int replace_word = 0xE3A0D302;
+                for (int i = 0; i < 4; i++) {
+                    emitter->word_buf[list->emitter_pos + i] = (replace_word >> (8 * i)) & 0xFF;
+                }
             } else if (list->label_id == to_label_symbol("0xdeadbeaf")) {
                 // Use the hard-coded condition so far.
                 int address = 0xdeadbeaf;
