@@ -111,6 +111,7 @@ void set_mnemonics() {
     to_mnemonic_symbol("b");
     to_mnemonic_symbol(".globl");
     to_mnemonic_symbol("ldrb");
+    to_mnemonic_symbol("add");
 }
 
 // 
