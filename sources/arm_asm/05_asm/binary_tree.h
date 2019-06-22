@@ -20,6 +20,8 @@
 #define _BLE 15
 #define _BGT 16
 #define _BL 17
+#define _STMDB 18
+#define _LDMIA 19
 
 struct Node {
     char* name;

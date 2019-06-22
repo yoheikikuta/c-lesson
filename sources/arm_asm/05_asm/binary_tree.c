@@ -120,6 +120,8 @@ void set_mnemonics() {
     to_mnemonic_symbol("ble");
     to_mnemonic_symbol("bgt");
     to_mnemonic_symbol("bl");
+    to_mnemonic_symbol("stmdb");
+    to_mnemonic_symbol("ldmia");
 }
 
 // 
