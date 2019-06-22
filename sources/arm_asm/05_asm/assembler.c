@@ -93,43 +93,114 @@ int asm_mov(char* str, struct Word* out_word) {
     return 0;
 }
 
-// .raw: " 0x12345678" -> return 0, out_word->u.number = 0x12345678
-// .raw: " "hello"" -> return 0, out_word->u.str = "hello"
-int asm_raw(char* str, struct Word* out_word) {
+// add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
+// Now only supporting operand2 is an immediate value case.
+int asm_add(char* str, struct Word* out_word) {
     int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_operand1 = 0;
+    int register_dest = 0;
+    int immediate_v = 0;
 
-    int next_ch = get_next_nonsp_ch(str);
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE2800000;
 
-    if (next_ch == '0') {
-        out_word->wtype = WORD_NUMBER;
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
 
-        int number = 0x0;
-        len_read_ch = parse_int(str, &number);
-        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-        str += len_read_ch;
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
 
-        out_word->u.number = number;
-    } else if (next_ch == '"') {
-        out_word->wtype = WORD_STRING;
+    len_read_ch = parse_register(str, &register_operand1);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand1 << 16;
 
-        char* parsed_str;
-        len_read_ch = parse_str(str, &parsed_str);
-        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-        str += len_read_ch;
-        
-        out_word->u.str = (char*)malloc(strlen(parsed_str));
-        strcpy(out_word->u.str, parsed_str);
-    } else {
-        return ASM_FAILURE;
-    }
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
 
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
+// cmp: " r3, #0x0" -> return 0, out_word.u.number = E3530000
+// Now only supporting operand2 is an immediate value case.
+int asm_cmp(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_operand1 = 0;
+    int immediate_v = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE3500000;
+
+    len_read_ch = parse_register(str, &register_operand1);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_operand1 << 16;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_immediate_value(str, &immediate_v);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += immediate_v;
+
+    *out_word = word;
+    return 0;
+}
+
+// str: " r1, [r15]" -> return 0, out_word.u.number = E58F1000
+int asm_str(char* str, struct Word* out_word) {
+    int len_read_ch = 0;
+    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    int register_base = 0;
+    int register_dest = 0;
+
+    word.wtype = WORD_NUMBER;
+    word.u.number = 0xE5800000;
+
+    len_read_ch = parse_register(str, &register_dest);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_dest << 12;
+
+    len_read_ch = skip_comma(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = skip_sbracket_open(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    len_read_ch = parse_register(str, &register_base);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+    word.u.number += register_base << 16;
+
+    len_read_ch = skip_sbracket_close(str);
+    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+    str += len_read_ch;
+
+    *out_word = word;
     return 0;
 }
 
 // ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E (Big Endian)
 // ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
 // ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
-// ldr: " r0, =0x101f1000" -> return 0, out_word.u.number = E59F0000
+// ldr: " r0, =0x101f1000" or " r0, =something" -> return 0, out_word.u.number = E59F0000
 //   store its emitter_pos and word into the linked list.
 int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     int len_read_ch = 0;
@@ -214,42 +285,6 @@ int asm_ldrb(char* str, struct Word* out_word) {
     return 0;
 }
 
-// str: " r1, [r15]" -> return 0, out_word.u.number = E58F1000
-int asm_str(char* str, struct Word* out_word) {
-    int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_base = 0;
-    int register_dest = 0;
-
-    word.wtype = WORD_NUMBER;
-    word.u.number = 0xE5800000;
-
-    len_read_ch = parse_register(str, &register_dest);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_dest << 12;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = skip_sbracket_open(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_base);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_base << 16;
-
-    len_read_ch = skip_sbracket_close(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    *out_word = word;
-    return 0;
-}
-
 // b: " some_label" -> return 0, out_word.u.number = EA000000
 //   label id of "some_label" is stored into the linked list.
 int asm_b(char* str, struct Emitter* emitter, struct Word* out_word) {
@@ -294,71 +329,36 @@ int asm_bne(char* str, struct Emitter* emitter, struct Word* out_word) {
     return 0;
 }
 
-// add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
-// Now only supporting operand2 is an immediate value case.
-int asm_add(char* str, struct Word* out_word) {
+// .raw: " 0x12345678" -> return 0, out_word->u.number = 0x12345678
+// .raw: " "hello"" -> return 0, out_word->u.str = "hello"
+int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_base = 0;
-    int register_dest = 0;
-    int immediate_v = 0;
 
-    word.wtype = WORD_NUMBER;
-    word.u.number = 0xE2800000;
+    int next_ch = get_next_nonsp_ch(str);
 
-    len_read_ch = parse_register(str, &register_dest);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_dest << 12;
+    if (next_ch == '0') {
+        out_word->wtype = WORD_NUMBER;
 
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
+        int number = 0x0;
+        len_read_ch = parse_int(str, &number);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
 
-    len_read_ch = parse_register(str, &register_base);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_base << 16;
+        out_word->u.number = number;
+    } else if (next_ch == '"') {
+        out_word->wtype = WORD_STRING;
 
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
+        char* parsed_str;
+        len_read_ch = parse_str(str, &parsed_str);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+        
+        out_word->u.str = (char*)malloc(strlen(parsed_str));
+        strcpy(out_word->u.str, parsed_str);
+    } else {
+        return ASM_FAILURE;
+    }
 
-    len_read_ch = parse_immediate_value(str, &immediate_v);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += immediate_v;
-
-    *out_word = word;
-    return 0;
-}
-
-// cmp: " r3, #0x0" -> return 0, out_word.u.number = E3530000
-// Now only supporting operand2 is an immediate value case.
-int asm_cmp(char* str, struct Word* out_word) {
-    int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_operand1 = 0;
-    int immediate_v = 0;
-
-    word.wtype = WORD_NUMBER;
-    word.u.number = 0xE3500000;
-
-    len_read_ch = parse_register(str, &register_operand1);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_operand1 << 16;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_immediate_value(str, &immediate_v);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += immediate_v;
-
-    *out_word = word;
     return 0;
 }
 
@@ -406,6 +406,14 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _ADD:
+            if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _CMP:
+            if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _STR:
             if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
@@ -416,14 +424,6 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case _LDRB:
             if (asm_ldrb(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
-        case _ADD:
-            if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
-        case _CMP:
-            if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _B:
@@ -450,7 +450,7 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// b:
+// b or bne:
 //   e.g.) emitter->word_buf: [0x0, 0x0, 0x0, 0xEA] -> [0xFE, 0xFF, 0xFF, 0xEA]
 // ldr:
 //   e.g.) emitter->word_buf: [0x0, 0x0, 0x9F, 0xE5] -> [0x38, 0x00, 0x9F, 0xE5]
@@ -462,6 +462,7 @@ void solve_label_address(struct Emitter* emitter) {
 
     while (linkedlist_get(list)) {
         if ((0xEA000000 == list->word) || (0x1A000000 == list->word)) {
+            // b (bne) SOMETHING case.
             dict_get(list->label_id, &pos_label);
             int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
