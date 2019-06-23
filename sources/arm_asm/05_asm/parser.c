@@ -372,29 +372,29 @@ int parse_str(char* str, char** out_str) {
             case S_READING:
                 if (head_ch == '\\') {
                     state = S_ESCAPING;
-                    break;
+                    continue;
                 } else if (head_ch == '"') {
                     ++len_read_ch;  // Include the last double quote.
                     state = S_FINAL;
-                    break;
+                    continue;
                 } else {
                     tmpbuf[copy_pos++] = head_ch;
-                    break;
+                    continue;
                 }
             case S_ESCAPING:
                 if (head_ch == '"' || head_ch == '\\') {
                     tmpbuf[copy_pos++] = head_ch;
                     state = S_READING;
-                    break;
+                    continue;
                 } else if (head_ch == 'n') {
                     tmpbuf[copy_pos++] = '\n';
                     state = S_READING;
-                    break;
+                    continue;
                 } else {
                     return PARSE_FAILURE;
                 }
             case S_FINAL:
-                break;
+                continue;
         }
     }
 
