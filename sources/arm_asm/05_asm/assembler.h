@@ -7,7 +7,7 @@
 enum WordType {
     NO_WORD_TYPE,
     WORD_SKIP,
-    WORD_NUMBER,
+    WORD_CODE,
     WORD_STRING,
     WORD_LABEL
 };

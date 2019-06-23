@@ -49,10 +49,10 @@ void emit_string(struct Emitter* emitter, char* str) {
 // mov: " r1, r2" -> return 0, out_word->u.number = E1A01002
 int asm_mov(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_dest = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
 
     len_read_ch = parse_register(str, &register_dest);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -96,11 +96,11 @@ int asm_mov(char* str, struct Word* out_word) {
 // Now only supporting operand2 is an immediate value case.
 int asm_cmp(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_operand1 = 0;
     int immediate_v = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = 0xE3500000;
 
     len_read_ch = parse_register(str, &register_operand1);
@@ -127,12 +127,12 @@ int asm_cmp(char* str, struct Word* out_word) {
 //     " r3, r3, r4" -> return 0, out_word.u.number = E0833004
 int asm_data_processing_3_args(char* str, struct Word* out_word, int base_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_1st = 0;
     int register_dest = 0;
     int immediate_v = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = base_word;
 
     len_read_ch = parse_register(str, &register_dest);
@@ -188,11 +188,11 @@ int asm_data_processing_3_args(char* str, struct Word* out_word, int base_word) 
 // str: " r1, [r15]" -> return 0, out_word.u.number = E58F1000
 int asm_str(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_base = 0;
     int register_dest = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = 0xE5800000;
 
     len_read_ch = parse_register(str, &register_dest);
@@ -232,7 +232,7 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
     char parsed_str[STR_SIZE] = {'\0'};
     int register_dest = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = 0xE5000000;
 
     len_read_ch = parse_register(str, &register_dest);
@@ -276,11 +276,11 @@ int asm_ldr(char* str, struct Emitter* emitter, struct Word* out_word) {
 // ldrb: " r3, [r1]" -> return 0, out_word.u.number = E5D13000
 int asm_ldrb(char* str, struct Word* out_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_base = 0;
     int register_dest = 0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = 0xE5D00000;
 
     len_read_ch = parse_register(str, &register_dest);
@@ -315,12 +315,12 @@ int asm_ldrb(char* str, struct Word* out_word) {
 //     " r13!, {r3, r14}" -> return 0, out_word.u.number = E92D4008
 int asm_block_data_transfer(char* str, struct Word* out_word, int base_word) {
     int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
+    struct Word word = {WORD_CODE, {.number = 0x0}};
     int register_base = 0;
     int register_tmp = 0;
     int register_list = 0x0;
 
-    word.wtype = WORD_NUMBER;
+    word.wtype = WORD_CODE;
     word.u.number = base_word;
 
     len_read_ch = parse_register(str, &register_base);
@@ -375,7 +375,7 @@ int asm_branch(char* str, struct Emitter* emitter, struct Word* out_word, int ba
 
     int symbol_label = to_label_symbol(parsed_str);
     common_unsolved_label_address_list_put(emitter->pos, symbol_label, base_word);
-    out_word->wtype = WORD_NUMBER;
+    out_word->wtype = WORD_CODE;
     out_word->u.number = base_word;
 
     return 0;
@@ -390,7 +390,7 @@ int asm_raw(char* str, struct Word* out_word) {
     int next_ch = get_next_nonsp_ch(str);
 
     if (next_ch == '0') {
-        out_word->wtype = WORD_NUMBER;
+        out_word->wtype = WORD_CODE;
 
         int number = 0x0;
         len_read_ch = parse_int(str, &number);
@@ -418,7 +418,7 @@ int asm_raw(char* str, struct Word* out_word) {
 // Assemble a given line.
 //   "" (blank line) -> out_word wtype = WORD_SKIP 
 //   "label:" -> out_word wtype = WORD_LABEL, u,number = (label id).
-//   "str xxx" -> out_word wtype = WORD_NUMBER, u,number = (corresponding 4 bytes word).
+//   "str xxx" -> out_word wtype = WORD_CODE, u,number = (corresponding 4 bytes word).
 int asm_one(char* str, struct Word* out_word) {
     struct Substring substr = {'\0'};
     struct Word word = {NO_WORD_TYPE, {.number = 0x0}};
@@ -525,7 +525,7 @@ int asm_one(char* str, struct Word* out_word) {
             return 0;
         case RAW:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            if (word.wtype == WORD_NUMBER) {
+            if (word.wtype == WORD_CODE) {
                 *out_word = word;
             } else if (word.wtype == WORD_STRING) {
                 out_word->wtype = word.wtype;
@@ -633,7 +633,7 @@ int assemble(char* out_file_rel_path) {
                 break;
             case WORD_SKIP:
                 break;
-            case WORD_NUMBER:
+            case WORD_CODE:
                 emit_int(&emitter, word.u.number);
                 break;
             case WORD_STRING:
