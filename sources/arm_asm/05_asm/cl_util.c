@@ -20,7 +20,7 @@ void assert_str_substr_eq(char* str, struct Substring* substr) {
 
 int two_word_eq(struct Word* w1, struct Word* w2) {
     if (w1->wtype == w2->wtype) {
-        if (w1->wtype == WORD_NUMBER) {
+        if (w1->wtype == WORD_CODE) {
             return w1->u.number == w2->u.number;
         } else {
             return strcmp(w1->u.str, w2->u.str) == 0;
