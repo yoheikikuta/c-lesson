@@ -46,16 +46,13 @@ void emit_string(struct Emitter* emitter, char* str) {
     }
 }
 
-// Return 1 if the input str is equal to substr.str.
-int is_str_equal_to_substr(char* str, struct Substring substr) {
-    return strncmp(str, substr.str, substr.len) == 0;
-}
-
-// mov: " r1, r2" -> return 0, out_word->u.number = E1A01002 (Big Endian)
+// mov: " r1, r2" -> return 0, out_word->u.number = E1A01002
 int asm_mov(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {WORD_NUMBER, {.number = 0x0}};
     int register_dest = 0;
+
+    word.wtype = WORD_NUMBER;
 
     len_read_ch = parse_register(str, &register_dest);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -71,6 +68,7 @@ int asm_mov(char* str, struct Word* out_word) {
         // 0xE1A0X00X
         word.u.number = 0xE1A00000;
         word.u.number += register_dest << 12;
+
         int register_op2 = 0;            
         len_read_ch = parse_register(str, &register_op2);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -80,6 +78,7 @@ int asm_mov(char* str, struct Word* out_word) {
         // 0xE3A0XXXX
         word.u.number = 0xE3A00000;
         word.u.number += register_dest << 12;
+
         int immediate_v = 0;
         len_read_ch = parse_immediate_value(str, &immediate_v);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -164,26 +163,24 @@ int asm_add(char* str, struct Word* out_word) {
     if ((next_ch == 'r') || (next_ch == 'R')) {
         // 0xE08XX00X
         word.u.number = 0xE0800000;
+        word.u.number += register_dest << 12;
+        word.u.number += register_operand1 << 16;
 
         int register_op2 = 0;
         len_read_ch = parse_register(str, &register_op2);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-
-        word.u.number += register_dest << 12;
-        word.u.number += register_operand1 << 16;
         word.u.number += register_op2;
     } else if (next_ch == '#') {
         // 0xE28XX00X
         word.u.number = 0xE2800000;
+        word.u.number += register_dest << 12;
+        word.u.number += register_operand1 << 16;
 
         int immediate_v = 0;
         len_read_ch = parse_immediate_value(str, &immediate_v);
         if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
         str += len_read_ch;
-
-        word.u.number += register_dest << 12;
-        word.u.number += register_operand1 << 16;
         word.u.number += immediate_v;
     } else {
         return ASM_FAILURE;
@@ -335,7 +332,7 @@ int asm_str(char* str, struct Word* out_word) {
     return 0;
 }
 
-// ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E (Big Endian)
+// ldr: " r1, [r15, #0x30]" -> return 0, out_word.u.number = E59F101E
 // ldr: " r1, [r15, #-0x30]" -> return 0, out_word.u.number = E53F101E
 // ldr: " r1, [r15]" -> return 0, out_word.u.number = E59F1000
 // ldr: " r0, =0x101f1000" or " r0, =something" -> return 0, out_word.u.number = E59F0000
@@ -524,6 +521,7 @@ int asm_branch(char* str, struct Emitter* emitter, struct Word* out_word, int ba
     int len_read_ch = 0;
     char parsed_str[STR_SIZE] = {'\0'};
 
+    // "  somelabel" -> parsed_str = ['s','o','m','l','a','b','e','l','\0',...]
     int non_sp_ch_idx = 0;
     while (str[len_read_ch] == ' ') {len_read_ch++;}
     while ((str[len_read_ch] != ' ') && (str[len_read_ch] != '\0')) {
@@ -539,8 +537,9 @@ int asm_branch(char* str, struct Emitter* emitter, struct Word* out_word, int ba
     return 0;
 }
 
-// .raw: " 0x12345678" -> return 0, out_word->u.number = 0x12345678
-// .raw: " "hello"" -> return 0, out_word->u.str = "hello"
+// .raw: 
+//   " 0x12345678" -> return 0, out_word->u.number = 0x12345678
+//   " "hello"" -> return 0, out_word->u.str = "hello"
 int asm_raw(char* str, struct Word* out_word) {
     int len_read_ch = 0;
 
@@ -696,10 +695,11 @@ int asm_one(char* str, struct Word* out_word) {
     }
 }
 
-// branch:
-//   e.g.) emitter->word_buf: [0x0, 0x0, 0x0, 0xEA] -> [0xFE, 0xFF, 0xFF, 0xEA]
-// ldr:
-//   e.g.) emitter->word_buf: [0x0, 0x0, 0x9F, 0xE5] -> [0x38, 0x00, 0x9F, 0xE5]
+// Solve unsolved addressed for branch and ldr cases.
+//   branch:
+//     e.g.) emitter->word_buf: [0x0, 0x0, 0x0, 0xEA] -> [0xFE, 0xFF, 0xFF, 0xEA]
+//   ldr:
+//     e.g.) emitter->word_buf: [0x0, 0x0, 0x9F, 0xE5] -> [0x38, 0x00, 0x9F, 0xE5]
 void solve_label_address(struct Emitter* emitter) {
     struct LinkedList* list;
     list = malloc(sizeof(struct LinkedList));
@@ -708,7 +708,7 @@ void solve_label_address(struct Emitter* emitter) {
 
     while (linkedlist_get(list)) {
         if ((0x0A000000 == (list->word & 0x0A000000)) || (0x0B000000 == (list->word & 0x0B000000))) {
-            // branch (b, bne, ...) SOMETHING case.
+            // branch (b, bne, ...) somelabel case.
             dict_get(list->label_id, &pos_label);
             int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
@@ -718,9 +718,9 @@ void solve_label_address(struct Emitter* emitter) {
                 emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
             }
         } else if (0xE59F0000 == (list->word & 0xE59F0000)) {
-            // ldr rX,=SOMETHING case.
+            // ldr rX,=somelabel case.
+            // Now use hard-coded conditions for specific cases.
             if (list->label_id == to_label_symbol("0x101f1000")) {
-                // Use the hard-coded condition so far.
                 int address = 0x101f1000;
                 for (int i = 0; i < 4; i++) {
                     emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
@@ -729,14 +729,7 @@ void solve_label_address(struct Emitter* emitter) {
                 for (int i = 0; i < 2; i++) {
                     emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
                 }
-            } else if (list->label_id == to_label_symbol("0x08000000")) {
-                // Replace the base word of (ldr, r13,=0x08000000) with 0xE3A0D302.
-                int replace_word = 0xE3A0D302;
-                for (int i = 0; i < 4; i++) {
-                    emitter->word_buf[list->emitter_pos + i] = (replace_word >> (8 * i)) & 0xFF;
-                }
             } else if (list->label_id == to_label_symbol("0xdeadbeaf")) {
-                // Use the hard-coded condition so far.
                 int address = 0xdeadbeaf;
                 for (int i = 0; i < 4; i++) {
                     emitter->word_buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
@@ -744,6 +737,12 @@ void solve_label_address(struct Emitter* emitter) {
                 int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
                 for (int i = 0; i < 2; i++) {
                     emitter->word_buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
+                }
+            } else if (list->label_id == to_label_symbol("0x08000000")) {
+                // Replace the word of (ldr, r13,=0x08000000) with 0xE3A0D302.
+                int replace_word = 0xE3A0D302;
+                for (int i = 0; i < 4; i++) {
+                    emitter->word_buf[list->emitter_pos + i] = (replace_word >> (8 * i)) & 0xFF;
                 }
             } else {
                 // e.g., =message case.
