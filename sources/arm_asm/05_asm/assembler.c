@@ -451,79 +451,79 @@ int asm_one(char* str, struct Word* out_word) {
 
     int symbol_mnemonic = to_mnemonic_symbol(str_inst);
     switch (symbol_mnemonic) {
-        case _GLOBAL:
+        case GLOBAL:
             // Skip .globl mnemonic case.
             out_word->wtype = WORD_SKIP;
             return 0;
-        case _MOV:
+        case MOV:
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _CMP:
+        case CMP:
             if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _LSR:
+        case LSR:
             if (asm_data_processing_3_args(str, &word, 0xE1A00030) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _ADD:
+        case ADD:
             if (asm_data_processing_3_args(str, &word, 0xE0800000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _SUB:
+        case SUB:
             if (asm_data_processing_3_args(str, &word, 0xE0400000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _AND:
+        case AND:
             if (asm_data_processing_3_args(str, &word, 0xE0000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _STR:
+        case STR:
             if (asm_str(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _LDR:
+        case LDR:
             if (asm_ldr(str, &emitter, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _LDRB:
+        case LDRB:
             if (asm_ldrb(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _B:
+        case B:
             if (asm_branch(str, &emitter, &word, 0xEA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _BNE:
+        case BNE:
             if (asm_branch(str, &emitter, &word, 0x1A000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _BLE:
+        case BLE:
             if (asm_branch(str, &emitter, &word, 0xDA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _BGT:
+        case BGT:
             if (asm_branch(str, &emitter, &word, 0xCA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _BGE:
+        case BGE:
             if (asm_branch(str, &emitter, &word, 0xAA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _BL:
+        case BL:
             if (asm_branch(str, &emitter, &word, 0xEB000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _STMDB:
+        case STMDB:
             if (asm_block_data_transfer(str, &word, 0xE9200000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _LDMIA:
+        case LDMIA:
             if (asm_block_data_transfer(str, &word, 0xE8B00000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _RAW:
+        case RAW:
             if (asm_raw(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             if (word.wtype == WORD_NUMBER) {
                 *out_word = word;
