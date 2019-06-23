@@ -131,8 +131,9 @@ int asm_lsr(char* str, struct Word* out_word) {
     return 0;
 }
 
-// add: " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
-// Now only supporting operand2 is an immediate value case.
+// add: 
+//   " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
+//   " r3, r3, r4" -> return 0, out_word.u.number = E0833004
 int asm_add(char* str, struct Word* out_word) {
     int len_read_ch = 0;
     struct Word word = {WORD_NUMBER, {.number = 0x0}};
@@ -141,12 +142,10 @@ int asm_add(char* str, struct Word* out_word) {
     int immediate_v = 0;
 
     word.wtype = WORD_NUMBER;
-    word.u.number = 0xE2800000;
 
     len_read_ch = parse_register(str, &register_dest);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
-    word.u.number += register_dest << 12;
 
     len_read_ch = skip_comma(str);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -155,16 +154,40 @@ int asm_add(char* str, struct Word* out_word) {
     len_read_ch = parse_register(str, &register_operand1);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
-    word.u.number += register_operand1 << 16;
 
     len_read_ch = skip_comma(str);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
 
-    len_read_ch = parse_immediate_value(str, &immediate_v);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += immediate_v;
+    int next_ch = get_next_nonsp_ch(str);
+
+    if ((next_ch == 'r') || (next_ch == 'R')) {
+        // 0xE08XX00X
+        word.u.number = 0xE0800000;
+
+        int register_op2 = 0;
+        len_read_ch = parse_register(str, &register_op2);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+
+        word.u.number += register_dest << 12;
+        word.u.number += register_operand1 << 16;
+        word.u.number += register_op2;
+    } else if (next_ch == '#') {
+        // 0xE28XX00X
+        word.u.number = 0xE2800000;
+
+        int immediate_v = 0;
+        len_read_ch = parse_immediate_value(str, &immediate_v);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+
+        word.u.number += register_dest << 12;
+        word.u.number += register_operand1 << 16;
+        word.u.number += immediate_v;
+    } else {
+        return ASM_FAILURE;
+    }
 
     *out_word = word;
     return 0;
@@ -641,6 +664,10 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_branch(str, &emitter, &word, 0xCA000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _BGE:
+            if (asm_branch(str, &emitter, &word, 0xAA000000) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _BL:
             if (asm_branch(str, &emitter, &word, 0xEB000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
@@ -932,6 +959,16 @@ static void test_asm_one_add_r1r1_0x05() {
 	assert_two_num_eq(expect, actual.u.number);
 }
 
+static void test_asm_one_add_r3r3r4() {
+	char* input = " add r3, r3, r4";
+	int expect = 0xE0833004;
+	
+    struct Word actual = {NO_WORD_TYPE, {.number = 0x0}};
+	asm_one(input, &actual);
+	
+	assert_two_num_eq(expect, actual.u.number);
+}
+
 static void test_asm_one_cmp_r3_0x0() {
 	char* input = " cmp r3, #0x0";
 	int expect = 0xE3530000;
@@ -1007,6 +1044,7 @@ static void unittests() {
     test_asm_one_ldrb_r3r1();
     test_asm_one_str_r0r1();
     test_asm_one_add_r1r1_0x05();
+    test_asm_one_add_r3r3r4();
     test_asm_one_cmp_r3_0x0();
     test_asm_one_sub_r2r2_0x04();
     test_asm_one_lsr_r3r1r2();
