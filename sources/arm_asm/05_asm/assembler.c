@@ -92,143 +92,6 @@ int asm_mov(char* str, struct Word* out_word) {
     return 0;
 }
 
-// lsr: " r3, r1, r2" -> return 0, out_word->u.number = E1A03231
-int asm_lsr(char* str, struct Word* out_word) {
-    int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_dest = 0;
-    int register_shift = 0;
-    int register_operand2 = 0;
-
-    word.wtype = WORD_NUMBER;
-    word.u.number = 0xE1A00030;
-
-    len_read_ch = parse_register(str, &register_dest);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_dest << 12;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_operand2);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_operand2;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_shift);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_shift << 8;
-
-    *out_word = word;
-    return 0;
-}
-
-// add: 
-//   " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
-//   " r3, r3, r4" -> return 0, out_word.u.number = E0833004
-int asm_add(char* str, struct Word* out_word) {
-    int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_operand1 = 0;
-    int register_dest = 0;
-    int immediate_v = 0;
-
-    word.wtype = WORD_NUMBER;
-
-    len_read_ch = parse_register(str, &register_dest);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_operand1);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    int next_ch = get_next_nonsp_ch(str);
-
-    if ((next_ch == 'r') || (next_ch == 'R')) {
-        // 0xE08XX00X
-        word.u.number = 0xE0800000;
-        word.u.number += register_dest << 12;
-        word.u.number += register_operand1 << 16;
-
-        int register_op2 = 0;
-        len_read_ch = parse_register(str, &register_op2);
-        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-        str += len_read_ch;
-        word.u.number += register_op2;
-    } else if (next_ch == '#') {
-        // 0xE28XX00X
-        word.u.number = 0xE2800000;
-        word.u.number += register_dest << 12;
-        word.u.number += register_operand1 << 16;
-
-        int immediate_v = 0;
-        len_read_ch = parse_immediate_value(str, &immediate_v);
-        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-        str += len_read_ch;
-        word.u.number += immediate_v;
-    } else {
-        return ASM_FAILURE;
-    }
-
-    *out_word = word;
-    return 0;
-}
-
-// sub: " r2, r2, #0x04" -> return 0, out_word.u.number = E2422004
-// Now only supporting operand2 is an immediate value case.
-int asm_sub(char* str, struct Word* out_word) {
-    int len_read_ch = 0;
-    struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_operand1 = 0;
-    int register_dest = 0;
-    int immediate_v = 0;
-
-    word.wtype = WORD_NUMBER;
-    word.u.number = 0xE2400000;
-
-    len_read_ch = parse_register(str, &register_dest);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_dest << 12;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_operand1);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += register_operand1 << 16;
-
-    len_read_ch = skip_comma(str);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-
-    len_read_ch = parse_immediate_value(str, &immediate_v);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += immediate_v;
-
-    *out_word = word;
-    return 0;
-}
-
 // cmp: " r3, #0x0" -> return 0, out_word.u.number = E3530000
 // Now only supporting operand2 is an immediate value case.
 int asm_cmp(char* str, struct Word* out_word) {
@@ -258,16 +121,19 @@ int asm_cmp(char* str, struct Word* out_word) {
     return 0;
 }
 
-// and: " r3, r3, #0x15" -> return 0, out_word.u.number = E2033015
-int asm_and(char* str, struct Word* out_word) {
+// Assemble data processing instructions with three arguments.
+//   e.g.) add (base_word = 0xE0800000): 
+//     " r1, r1, #0x05" -> return 0, out_word.u.number = E2811005
+//     " r3, r3, r4" -> return 0, out_word.u.number = E0833004
+int asm_data_processing_3_args(char* str, struct Word* out_word, int base_word) {
     int len_read_ch = 0;
     struct Word word = {WORD_NUMBER, {.number = 0x0}};
-    int register_operand1 = 0;
+    int register_1st = 0;
     int register_dest = 0;
     int immediate_v = 0;
 
     word.wtype = WORD_NUMBER;
-    word.u.number = 0xE2000000;
+    word.u.number = base_word;
 
     len_read_ch = parse_register(str, &register_dest);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
@@ -277,20 +143,43 @@ int asm_and(char* str, struct Word* out_word) {
     len_read_ch = skip_comma(str);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
-
-    len_read_ch = parse_register(str, &register_operand1);
+    
+    len_read_ch = parse_register(str, &register_1st);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
-    word.u.number += register_operand1 << 16;
 
     len_read_ch = skip_comma(str);
     if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
     str += len_read_ch;
 
-    len_read_ch = parse_immediate_value(str, &immediate_v);
-    if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
-    str += len_read_ch;
-    word.u.number += immediate_v;
+    int next_ch = get_next_nonsp_ch(str);
+    if ((next_ch == 'r') || (next_ch == 'R')) {
+        int register_2nd = 0;
+        len_read_ch = parse_register(str, &register_2nd);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+
+        if (0x0 == (word.u.number & 0x000000F0)) {
+            // Such as add, and.
+            word.u.number += register_1st << 16;
+            word.u.number += register_2nd;
+        } else {
+            // Such as lsr.
+            word.u.number += register_1st;
+            word.u.number += register_2nd << 8;
+        }
+    } else if (next_ch == '#') {
+        word.u.number += 0x1 << 25;  // Flag operand2 = immediate value.
+        int immediate_v = 0;
+        len_read_ch = parse_immediate_value(str, &immediate_v);
+        if (len_read_ch == PARSE_FAILURE) return ASM_FAILURE;
+        str += len_read_ch;
+
+        word.u.number += register_1st << 16;
+        word.u.number += immediate_v;
+    } else {
+        return ASM_FAILURE;
+    }
 
     *out_word = word;
     return 0;
@@ -615,24 +504,24 @@ int asm_one(char* str, struct Word* out_word) {
             if (asm_mov(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
-        case _LSR:
-            if (asm_lsr(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
-        case _ADD:
-            if (asm_add(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
-        case _SUB:
-            if (asm_sub(str, &word) == ASM_FAILURE) return ASM_FAILURE;
-            *out_word = word;
-            return 0;
         case _CMP:
             if (asm_cmp(str, &word) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
+        case _LSR:
+            if (asm_data_processing_3_args(str, &word, 0xE1A00030) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _ADD:
+            if (asm_data_processing_3_args(str, &word, 0xE0800000) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
+        case _SUB:
+            if (asm_data_processing_3_args(str, &word, 0xE0400000) == ASM_FAILURE) return ASM_FAILURE;
+            *out_word = word;
+            return 0;
         case _AND:
-            if (asm_and(str, &word) == ASM_FAILURE) return ASM_FAILURE;
+            if (asm_data_processing_3_args(str, &word, 0xE0000000) == ASM_FAILURE) return ASM_FAILURE;
             *out_word = word;
             return 0;
         case _STR:
