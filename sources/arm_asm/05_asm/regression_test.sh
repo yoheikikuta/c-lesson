@@ -1,7 +1,7 @@
 gcc -w ./cl_util.c ./cl_getline.c ./parser.c ./binary_tree.c ./dict.c ./unsolved_label_address_list.c ./assembler.c -o ./assembler.out
 gcc -w ./cl_util.c ./regression_test_single_file.c -o ./regression_test_single_file.out
 
-TARGETS=("test_assembler" "test_hello_asm" "test_print_loop" "test_print_hex" "test_print_nomem" "test_putchar_mem")
+TARGETS=("test_assembler" "test_hello_asm" "test_print_loop" "test_print_hex" "test_print_nomem" "test_putchar_mem" "test_print_hex_mem")
 EXPECT_BASE="/test/test_expect/"
 ACTUAL_BASE="/test/test_input/"
 
