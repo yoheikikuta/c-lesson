@@ -5,3 +5,7 @@ ldr r1, [r15, #0x30]
 str r12, [r1]
 .raw 0x101f1000
 .raw "hello, world\n"
+.raw "escape1 \" end"
+.raw "escape2 \\ end"
+.raw "escape3 \\"
+.raw "escape4 \\\" end"
