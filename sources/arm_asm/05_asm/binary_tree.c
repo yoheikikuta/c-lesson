@@ -51,25 +51,32 @@ int add_new_node(char* str, int value, struct Node* out_node, enum Side side) {
 // Find or Add a node in the tree:
 //   (find) func = return_no_existing_node -> return node's value (if exists) or NO_EXISTING_NODE.
 //   (add) func = add_new_node -> retrun value and add a new node with str & value.
-int find_or_add_node(char* str, int value, struct Node* node, int* func) {
-    int (*pfunc)(char* str, int value, struct Node* node, enum Side side) = func;
+int find_or_add_node(char* str, int value, struct Node* node, NOTFOUND_CALLBACK_T on_not_found_callback) {
 	int str_compared = strcmp(str, node->name);
     
 	if(str_compared == 0) {
 		return node->value;
 	} else if(str_compared > 0){
 		if(node->right != NULL) {
-			return find_or_add_node(str, value, node->right, func);
+			return find_or_add_node(str, value, node->right, on_not_found_callback);
 		} else {
-            return pfunc(str, value, node, RIGHT);
+            return on_not_found_callback(str, value, node, RIGHT);
 		}
 	} else if(str_compared < 0){
 		if(node->left != NULL) {
-			return find_or_add_node(str, value, node->left, func);
+			return find_or_add_node(str, value, node->left, on_not_found_callback);
 		} else {
-            return pfunc(str, value, node, LEFT);
+            return on_not_found_callback(str, value, node, LEFT);
 		}
 	}
+}
+
+int find_node(char* str, int value, struct Node* node) {
+    return find_or_add_node(str, value, node, &return_no_existing_node);
+}
+
+int add_node(char* str, int value, struct Node* node) {
+    return find_or_add_node(str, value, node, &add_new_node);
 }
 
 // Convert a mnemonic to a symbol: "mov" ->
@@ -78,9 +85,9 @@ int find_or_add_node(char* str, int value, struct Node* node, int* func) {
 int to_mnemonic_symbol(char* str) {
 	int value = 0;
 
-	value = find_or_add_node(str, mnemonic_id, &mnemonic_root, &return_no_existing_node);
+	value = find_node(str, mnemonic_id, &mnemonic_root);
 	if(value == NO_EXISTING_NODE) {
-		value = find_or_add_node(str, ++mnemonic_id, &mnemonic_root, &add_new_node);
+		value = add_node(str, ++mnemonic_id, &mnemonic_root);
 		return value;
 	} else {
 		return value;
@@ -93,9 +100,9 @@ int to_mnemonic_symbol(char* str) {
 int to_label_symbol(char* str) {
 	int value = 0;
 
-	value = find_or_add_node(str, label_id, &label_root, &return_no_existing_node);
+	value = find_node(str, label_id, &label_root);
 	if(value == NO_EXISTING_NODE) {
-		value = find_or_add_node(str, ++label_id, &label_root, &add_new_node);
+		value = add_node(str, ++label_id, &label_root);
 		return value;
 	} else {
 		return value;
