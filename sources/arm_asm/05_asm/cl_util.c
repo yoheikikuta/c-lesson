@@ -27,8 +27,8 @@ int two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
     }
 }
 
-int two_linkedlist_eq(struct LinkedList* list1, struct LinkedList* list2) {
-    return (list1->emitter_pos == list2->emitter_pos) & (list1->label_id == list2->label_id) & (list1->word == list2->word);
+int two_linkedlist_eq(struct LinkedList* node1, struct LinkedList* node2) {
+    return (node1->emitter_pos == node2->emitter_pos) & (node1->label_id == node2->label_id) & (node1->word == node2->word);
 }
 
 void assert_two_keyvalue_eq(struct KeyValue* kv1, struct KeyValue* kv2) {
