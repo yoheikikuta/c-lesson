@@ -33,6 +33,8 @@ struct Node {
 
 enum Side {LEFT, RIGHT};
 
+typedef int (*NOTFOUND_CALLBACK_T)(char* str, int value, struct Node* node, enum Side side);
+
 /*
 Return symbol int corresponding to a mnemonic.
 Return symbol int corresponding to a label.
