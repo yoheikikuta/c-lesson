@@ -46,6 +46,18 @@ void emit_string(struct Emitter* emitter, char* str) {
     }
 }
 
+// Replace word in emitter.
+//   word: 0xE59F102C
+// ->
+//   emitter:
+//     pos (list->emitter_pos) (list->emitter_pos + 1) (list->emitter_pos + 2) (list->emitter_pos + 3)
+//     buf 0x2C                0x10                    0x9F                    0xE5                   
+void replace_word_on_list(struct Emitter* emitter, struct LinkedList* list, int word) {
+    for (int i = 0; i < 4; i++) {
+        emitter->buf[list->emitter_pos + i] = (word >> (i * 8)) & 0xFF;
+    }
+}
+
 // mov: " r1, r2" -> return 0, out_elem->u.number = E1A01002
 int asm_mov(char* str, struct AsmResultElem* out_elem) {
     int len_read_ch = 0;
@@ -554,40 +566,32 @@ void solve_label_address(struct Emitter* emitter) {
         if ((0x0A000000 == (list->word & 0x0A000000)) || (0x0B000000 == (list->word & 0x0B000000))) {
             // branch (b, bne, ...) somelabel case.
             dict_get(list->label_id, &pos_label);
+            int word = list->word;
             int relative_word_num = pos_label - list->emitter_pos;
             int offset = relative_word_num - 0x8;  // Subtract pc.
             offset = offset >> 2;  // 2 bits shift.
             offset = offset & 0x00FFFFFF;  // Get the lower 24 bits.
-            for (int i = 0; i < 3; i++) {
-                emitter->buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
-            }
+            word += offset;
+            replace_word_on_list(emitter, list, word);
         } else if (0xE59F0000 == (list->word & 0xE59F0000)) {
             // ldr rX,=somelabel case.
             // Now use hard-WORD_CODEd conditions for specific cases.
             if (list->label_id == to_label_symbol("0x101f1000")) {
-                int address = 0x101f1000;
-                for (int i = 0; i < 4; i++) {
-                    emitter->buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
-                }
+                emit_int(emitter, 0x101f1000);  // Add label address on the tail of emitter.
+                int word = list->word;
                 int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
-                for (int i = 0; i < 2; i++) {
-                    emitter->buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
-                }
+                word += offset;
+                replace_word_on_list(emitter, list, word);
             } else if (list->label_id == to_label_symbol("0xdeadbeaf")) {
-                int address = 0xdeadbeaf;
-                for (int i = 0; i < 4; i++) {
-                    emitter->buf[emitter->pos++] = (address >> (8 * i)) & 0xFF;
-                }
+                emit_int(emitter, 0xdeadbeaf);  // Add label address on the tail of emitter.
+                int word = list->word;
                 int offset = (emitter->pos - list->emitter_pos - 4) - 0x8;
-                for (int i = 0; i < 2; i++) {
-                    emitter->buf[list->emitter_pos + i] = (offset >> (i * 8)) & 0xFF;
-                }
+                word += offset;
+                replace_word_on_list(emitter, list, word);
             } else if (list->label_id == to_label_symbol("0x08000000")) {
                 // Replace the word of (ldr, r13,=0x08000000) with 0xE3A0D302.
-                int replace_word = 0xE3A0D302;
-                for (int i = 0; i < 4; i++) {
-                    emitter->buf[list->emitter_pos + i] = (replace_word >> (8 * i)) & 0xFF;
-                }
+                int word = 0xE3A0D302;
+                replace_word_on_list(emitter, list, word);
             } else {
                 // e.g., =message case.
                 //   [N] ldr rX,=message
@@ -595,18 +599,17 @@ void solve_label_address(struct Emitter* emitter) {
                 //   [M] message:
                 //     .raw "something"
                 // -> 
-                //   [emitter->pos] 0x0001XXXX + 0xM
                 //   Add offset from (ldr rX,=message) to (0x0001XXXX + 0xM) instruction into word of (ldr rX,=message).
+                //   [emitter->pos] 0x0001XXXX + 0xM
+                int word = list->word;
+                int offset = emitter->pos - list->emitter_pos - 0x8;
+                word += offset;
+                replace_word_on_list(emitter, list, word);
+
                 int label_pos = 0;
                 dict_get(list->label_id, &label_pos);
-                int offset_from_ldr = emitter->pos - list->emitter_pos - 0x8;
-
-                int word = 0x00010000 + label_pos;
-                emit_int(emitter, word);
-
-                for (int i = 0; i < 2; i++) {
-                    emitter->buf[list->emitter_pos + i] = (offset_from_ldr >> (i * 8)) & 0xFF;
-                }
+                int word_label_address = 0x00010000 + label_pos;
+                emit_int(emitter, word_label_address);  // Add label address on the tail of emitter.
             }
         }
     }
