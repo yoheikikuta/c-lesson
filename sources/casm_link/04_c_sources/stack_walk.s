@@ -47,31 +47,18 @@ print_address:
 func3:
 	.fnstart
 @ %bb.0:
-	push	{r4, r10, r11, lr}
-	add	r11, sp, #8
+	push	{r11, lr}
+	mov	r11, sp
 	sub	sp, sp, #8
 	str	r0, [sp, #4]
-	ldr	r0, .LCPI1_0
-	add	r4, sp, #4
-	mov	r1, r4
-	bl	printf
-	add	r0, r4, #28
-	str	r0, [sp]
-	ldr	r0, [sp]
-	ldr	r1, [r0]
-	ldr	r0, .LCPI1_1
-	bl	printf
+	ldr	r0, [sp, #8]
+	ldr	r0, [r0, #-8]
+	bl	print_address
 	ldr	r0, [sp, #4]
 	add	r0, r0, r0, lsl #1
-	sub	sp, r11, #8
-	pop	{r4, r10, r11, lr}
+	mov	sp, r11
+	pop	{r11, lr}
 	mov	pc, lr
-	.p2align	2
-@ %bb.1:
-.LCPI1_0:
-	.long	.L.str.1
-.LCPI1_1:
-	.long	.L.str.2
 .Lfunc_end1:
 	.size	func3, .Lfunc_end1-func3
 	.cantunwind
@@ -109,9 +96,8 @@ func2:
 	str	r0, [sp, #4]
 	b	.LBB2_1
 .LBB2_4:
-	ldr	r0, .LCPI2_0
-	add	r1, sp, #8
-	bl	printf
+	add	r0, sp, #8
+	bl	print_address
 	ldr	r0, [r11, #-4]
 	ldr	r1, [sp, #8]
 	add	r0, r0, r1
@@ -120,10 +106,6 @@ func2:
 	mov	sp, r11
 	pop	{r11, lr}
 	mov	pc, lr
-	.p2align	2
-@ %bb.5:
-.LCPI2_0:
-	.long	.L.str.3
 .Lfunc_end2:
 	.size	func2, .Lfunc_end2-func2
 	.cantunwind
@@ -176,7 +158,7 @@ main:
 	.p2align	2
 @ %bb.1:
 .LCPI4_0:
-	.long	.L.str.4
+	.long	.L.str.1
 .Lfunc_end4:
 	.size	main, .Lfunc_end4-main
 	.cantunwind
@@ -190,23 +172,8 @@ main:
 
 	.type	.L.str.1,%object        @ @.str.1
 .L.str.1:
-	.asciz	"func3's a4 address = %x\n"
-	.size	.L.str.1, 25
-
-	.type	.L.str.2,%object        @ @.str.2
-.L.str.2:
-	.asciz	"func2's a3 value = %i\n"
-	.size	.L.str.2, 23
-
-	.type	.L.str.3,%object        @ @.str.3
-.L.str.3:
-	.asciz	"func2's a3 address = %x\n"
-	.size	.L.str.3, 25
-
-	.type	.L.str.4,%object        @ @.str.4
-.L.str.4:
 	.asciz	"result is %d\n"
-	.size	.L.str.4, 14
+	.size	.L.str.1, 14
 
 
 	.ident	"clang version 6.0.0-1ubuntu2 (tags/RELEASE_600/final)"
