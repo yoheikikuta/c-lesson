@@ -66,6 +66,48 @@ print_msg:
 	.cantunwind
 	.fnend
                                         @ -- End function
+	.globl	get_target_address_in_N_nested_call @ -- Begin function get_target_address_in_N_nested_call
+	.p2align	2
+	.type	get_target_address_in_N_nested_call,%function
+	.code	32                      @ @get_target_address_in_N_nested_call
+get_target_address_in_N_nested_call:
+	.fnstart
+@ %bb.0:
+	sub	sp, sp, #16
+	str	r0, [sp, #12]
+	str	r1, [sp, #8]
+	ldr	r0, [sp, #12]
+	ldr	r0, [r0, #4]
+	str	r0, [sp, #4]
+	mov	r0, #1
+	str	r0, [sp]
+	b	.LBB2_1
+.LBB2_1:                                @ =>This Inner Loop Header: Depth=1
+	ldr	r0, [sp]
+	ldr	r1, [sp, #8]
+	cmp	r0, r1
+	bge	.LBB2_4
+	b	.LBB2_2
+.LBB2_2:                                @   in Loop: Header=BB2_1 Depth=1
+	ldr	r0, [sp, #4]
+	ldr	r0, [r0]
+	str	r0, [sp, #4]
+	b	.LBB2_3
+.LBB2_3:                                @   in Loop: Header=BB2_1 Depth=1
+	ldr	r0, [sp]
+	add	r0, r0, #1
+	str	r0, [sp]
+	b	.LBB2_1
+.LBB2_4:
+	ldr	r0, [sp, #4]
+	sub	r0, r0, #8
+	add	sp, sp, #16
+	mov	pc, lr
+.Lfunc_end2:
+	.size	get_target_address_in_N_nested_call, .Lfunc_end2-get_target_address_in_N_nested_call
+	.cantunwind
+	.fnend
+                                        @ -- End function
 	.globl	func3                   @ -- Begin function func3
 	.p2align	2
 	.type	func3,%function
@@ -76,22 +118,22 @@ func3:
 	push	{r11, lr}
 	mov	r11, sp
 	sub	sp, sp, #8
-	ldr	r0, [sp, #8]
+	add	r0, sp, #4
+	mov	r1, #3
+	bl	get_target_address_in_N_nested_call
 	ldr	r0, [r0]
-	ldr	r0, [r0]
-	ldr	r0, [r0, #-8]
 	bl	print_msg
-	ldr	r0, .LCPI2_0
+	ldr	r0, .LCPI3_0
 	bl	printf
 	mov	sp, r11
 	pop	{r11, lr}
 	mov	pc, lr
 	.p2align	2
 @ %bb.1:
-.LCPI2_0:
+.LCPI3_0:
 	.long	.L.str.2
-.Lfunc_end2:
-	.size	func3, .Lfunc_end2-func3
+.Lfunc_end3:
+	.size	func3, .Lfunc_end3-func3
 	.cantunwind
 	.fnend
                                         @ -- End function
@@ -105,10 +147,10 @@ func2:
 	push	{r11, lr}
 	mov	r11, sp
 	sub	sp, sp, #8
-	ldr	r0, .LCPI3_0
+	ldr	r0, .LCPI4_0
 	str	r0, [sp, #4]
 	ldr	r1, [sp, #4]
-	ldr	r0, .LCPI3_1
+	ldr	r0, .LCPI4_1
 	bl	printf
 	bl	func3
 	mov	sp, r11
@@ -116,12 +158,12 @@ func2:
 	mov	pc, lr
 	.p2align	2
 @ %bb.1:
-.LCPI3_0:
+.LCPI4_0:
 	.long	.L.str.3
-.LCPI3_1:
+.LCPI4_1:
 	.long	.L.str.4
-.Lfunc_end3:
-	.size	func2, .Lfunc_end3-func2
+.Lfunc_end4:
+	.size	func2, .Lfunc_end4-func2
 	.cantunwind
 	.fnend
                                         @ -- End function
@@ -135,10 +177,10 @@ func1:
 	push	{r11, lr}
 	mov	r11, sp
 	sub	sp, sp, #8
-	ldr	r0, .LCPI4_0
+	ldr	r0, .LCPI5_0
 	str	r0, [sp, #4]
 	ldr	r1, [sp, #4]
-	ldr	r0, .LCPI4_1
+	ldr	r0, .LCPI5_1
 	bl	printf
 	bl	func2
 	mov	sp, r11
@@ -146,12 +188,12 @@ func1:
 	mov	pc, lr
 	.p2align	2
 @ %bb.1:
-.LCPI4_0:
+.LCPI5_0:
 	.long	.L.str.5
-.LCPI4_1:
+.LCPI5_1:
 	.long	.L.str.6
-.Lfunc_end4:
-	.size	func1, .Lfunc_end4-func1
+.Lfunc_end5:
+	.size	func1, .Lfunc_end5-func1
 	.cantunwind
 	.fnend
                                         @ -- End function
@@ -167,10 +209,10 @@ main:
 	sub	sp, sp, #8
 	mov	r0, #0
 	str	r0, [sp, #4]
-	ldr	r0, .LCPI5_0
+	ldr	r0, .LCPI6_0
 	str	r0, [sp]
 	ldr	r1, [sp]
-	ldr	r0, .LCPI5_1
+	ldr	r0, .LCPI6_1
 	bl	printf
 	bl	func1
 	mov	r0, #0
@@ -179,12 +221,12 @@ main:
 	mov	pc, lr
 	.p2align	2
 @ %bb.1:
-.LCPI5_0:
+.LCPI6_0:
 	.long	.L.str.7
-.LCPI5_1:
+.LCPI6_1:
 	.long	.L.str.8
-.Lfunc_end5:
-	.size	main, .Lfunc_end5-main
+.Lfunc_end6:
+	.size	main, .Lfunc_end6-main
 	.cantunwind
 	.fnend
                                         @ -- End function
