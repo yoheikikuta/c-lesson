@@ -42,13 +42,21 @@ int* allocate_executable_buf(int size) {
 
 
 void jit_sum_till() {
-    /* TODO:
-    Place binary to binary_buf here.
-    Hint: put almost the same binary as sum_till_inline.
-    Compile and use arm-linux-gnueabi-objdump -S ./a.out to check binary.
+    /*
+    input:
+      r0: input integer
+    Use r2 to store tmp result.
+    Use r3 as loop counter.
     */
-    // dummy implementation 
-    binary_buf[0] = 0xe1a0f00e; // mov r15, r14
+    binary_buf[0] = 0xe3a02000;  //  0: mov r2, #0
+    binary_buf[1] = 0xe3a03000;  //  4: mov r3, #0
+    binary_buf[2] = 0xea000001;  //  8: b (Go to 0x14)
+    binary_buf[3] = 0xe0822003;  //  c: add r2, r2, r3
+    binary_buf[4] = 0xe2833001;  // 10: add r3, r3, #1
+    binary_buf[5] = 0xe1530000;  // 14: cmp r3, r0
+    binary_buf[6] = 0xbafffffb;  // 18: blt (Go to 0xc)
+    binary_buf[7] = 0xe1a00002;  // 1c: mov r0, r2
+    binary_buf[8] = 0xe1a0f00e;  // 20: mov r15, r14
 }
 
 
