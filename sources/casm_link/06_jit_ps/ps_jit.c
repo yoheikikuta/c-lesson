@@ -78,7 +78,7 @@ int* jit_script(char *input) {
 
             switch(op) {
                 case OP_ADD:
-                    word = 0xE8BD000C;  // ldmia r13!, {r2, r3}
+                    word = asm_ldmia(2, 2, 3);;  // ldmia r13!, {r2, r3}
                     emit_int(&emitter, word);
                     word = 0xE0822003;  // add r2, r2, r3
                     emit_int(&emitter, word);
@@ -91,7 +91,7 @@ int* jit_script(char *input) {
         }
     }
 
-    word = asm_ldmia(2);  // ldmia r13!, r2
+    word = asm_ldmia(1, 2);  // ldmia r13!, r2
     emit_int(&emitter, word);
     word = asm_mov_register(0, 2);  // mov r0, r2
     emit_int(&emitter, word);

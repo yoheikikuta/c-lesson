@@ -14,7 +14,7 @@ return: 0xE92D0004 (stmdb r13!, r2)
  */
 int asm_stmdb(int r);
 /*
-input: r = 2
-return: 0xE8BD0004 (ldmia r13!, r2)
+input: r_num = 2, 2,3
+return: 0xE8BD000C (ldmia r13!, {r2, r3})
  */
-int asm_ldmia(int r);
+int asm_ldmia(int r_num, ...);

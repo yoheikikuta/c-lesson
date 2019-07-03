@@ -1,6 +1,7 @@
 #include "asm.h"
 #include "parser.h"
 #include "stdio.h"
+#include <stdarg.h>
 
 
 /*
@@ -39,12 +40,17 @@ int asm_stmdb(int r) {
 }
 
 /*
-input: r = 2
-return: 0xE8BD0004 (ldmia r13!, r2)
+input: r_num = 2, 2,3
+return: 0xE8BD000C (ldmia r13!, {r2, r3})
  */
-int asm_ldmia(int r) {
+int asm_ldmia(int r_num, ...) {
+    va_list ap;
+    va_start(ap, r_num);
+
     int word = 0xE8BD0000;
-    word += 0x1 << r; 
+    for (int i = 0; i < r_num; i++) {
+        word += 0x1 << va_arg(ap, int);
+    }
 
     return word;
 }
@@ -83,10 +89,11 @@ void test_asm_stmdb() {
 }
 
 void test_asm_ldmia() {
+    int input_r_num = 1;
     int input_r = 2;
     int expect = 0xE8BD0004;
 
-    int word = asm_ldmia(input_r);
+    int word = asm_ldmia(input_r_num, input_r);
 
     assert_int_eq(expect, word);
 }
