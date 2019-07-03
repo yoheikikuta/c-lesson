@@ -50,12 +50,20 @@ void set_binaries(struct Emitter* emitter) {
     }
 }
 
+int asm_mov(int r_dest, int immediate_v) {
+    int word = 0xE3A00000;
+    word += r_dest << 12;
+    word += immediate_v;
+    
+    return word;
+}
+
 int* jit_script(char *input) {
     ensure_jit_buf();
     emitter.buf = byte_buf;
     emitter.pos = 0;
     /*
-    Function only returns 3.
+    Only support mov r0, #X.
     */
     struct Substr remain={input, strlen(input)};
     int word;
@@ -63,7 +71,8 @@ int* jit_script(char *input) {
     while (!is_end(&remain)) {
         skip_space(&remain);
         if (is_number(remain.ptr)) {
-            word = 0xE3A00000 + parse_number(remain.ptr);  // mov r0, #X
+            int immediate_v = parse_number(remain.ptr);
+            word = asm_mov(0, immediate_v);  // mov r0, #X
             emit_int(&emitter, word);
             skip_token(&remain);
             continue;
@@ -78,7 +87,7 @@ int* jit_script(char *input) {
     return binary_buf;
 }
 
-void test_jit_sctipr_only_3() {
+void test_jit_sctipr_3() {
     char* input = "3";
     int expect = 3;
 
@@ -90,7 +99,7 @@ void test_jit_sctipr_only_3() {
 }
 
 static void run_unit_tests() {
-    test_jit_sctipr_only_3();
+    test_jit_sctipr_3();
     printf("all test done\n");
 }
 
