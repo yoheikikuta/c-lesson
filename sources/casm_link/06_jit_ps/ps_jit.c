@@ -54,14 +54,32 @@ void set_binaries(struct Emitter* emitter) {
 /*
 Emit the following binaries into emitter:
   ldmia r13!, {r2, r3}
-  add r2, r2, r3
+  add r2, r3, r2
   strmdb r13!, r2
+"5 3 add" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
 */
 void asm_op_add(struct Emitter* emitter) {
     int word;
     word = asm_ldmia(2, 2, 3);
     emit_int(emitter, word);
-    word = asm_add(2, 2, 3);
+    word = asm_add(2, 3, 2);
+    emit_int(emitter, word);
+    word = asm_stmdb(2);
+    emit_int(emitter, word);
+}
+
+/*
+Emit the following binaries into emitter:
+  ldmia r13!, {r2, r3}
+  sub r2, r3, r2
+  strmdb r13!, r2
+"5 3 sub" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
+*/
+void asm_op_sub(struct Emitter* emitter) {
+    int word;
+    word = asm_ldmia(2, 2, 3);
+    emit_int(emitter, word);
+    word = asm_sub(2, 3, 2);
     emit_int(emitter, word);
     word = asm_stmdb(2);
     emit_int(emitter, word);
@@ -100,6 +118,9 @@ int* jit_script(char *input) {
             switch(op) {
                 case OP_ADD:
                     asm_op_add(&emitter);
+                    break;
+                case OP_SUB:
+                    asm_op_sub(&emitter);
                     break;
             }
 
@@ -151,10 +172,22 @@ void test_jit_sctipr_3_5_add() {
     assert_int_eq(expect, res);
 }
 
+void test_jit_sctipr_10_3_sub() {
+    char* input = "10 3 sub";
+    int expect = 7;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
 static void run_unit_tests() {
     test_jit_sctipr_3();
     test_jit_sctipr_3_5();
     test_jit_sctipr_3_5_add();
+    test_jit_sctipr_10_3_sub();
     printf("all test done\n");
 }
 

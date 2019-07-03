@@ -68,6 +68,19 @@ int asm_add(int r_dest, int r_1st_operand, int r_2nd_operand) {
     return word;
 }
 
+/*
+input: r_dest = 2, r_1st_operand = 3, r_2nd_operand = 4
+return: 0xE0432004 (add r2, r3, r4)
+ */
+int asm_sub(int r_dest, int r_1st_operand, int r_2nd_operand) {
+    int word = 0xE0400000;
+    word += r_dest << 12;
+    word += r_1st_operand << 16;
+    word += r_2nd_operand;
+
+    return word;
+}
+
 // 
 // TEST
 // 
@@ -122,12 +135,24 @@ void test_asm_add() {
     assert_int_eq(expect, word);
 }
 
+void test_asm_sub() {
+    int input_r_dest = 2;
+    int input_r_1st_operand = 3;
+    int input_r_2nd_operand = 4;
+    int expect = 0xE0432004;
+
+    int word = asm_sub(input_r_dest, input_r_1st_operand, input_r_2nd_operand);
+
+    assert_int_eq(expect, word);
+}
+
 static void run_unit_tests() {
     test_asm_mov_immediate_v();
     test_asm_mov_register();
     test_asm_stmdb();
     test_asm_ldmia();
     test_asm_add();
+    test_asm_sub();
     printf("all test done\n");
 }
 

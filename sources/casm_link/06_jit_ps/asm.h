@@ -23,3 +23,8 @@ input: r_dest = 2, r_1st_operand = 3, r_2nd_operand = 4
 return: 0xE0832004 (add r2, r3, r4)
  */
 int asm_add(int r_dest, int r_1st_operand, int r_2nd_operand);
+/*
+input: r_dest = 2, r_1st_operand = 3, r_2nd_operand = 4
+return: 0xE0432004 (add r2, r3, r4)
+ */
+int asm_sub(int r_dest, int r_1st_operand, int r_2nd_operand);
