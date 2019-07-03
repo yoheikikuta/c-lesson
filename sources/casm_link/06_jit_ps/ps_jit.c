@@ -51,13 +51,31 @@ void set_binaries(struct Emitter* emitter) {
     }
 }
 
+/*
+Emit the following binaries into emitter:
+  ldmia r13!, {r2, r3}
+  add r2, r2, r3
+  strmdb r13!, r2
+*/
+void asm_op_add(struct Emitter* emitter) {
+    int word;
+    word = asm_ldmia(2, 2, 3);
+    emit_int(emitter, word);
+    word = asm_add(2, 2, 3);
+    emit_int(emitter, word);
+    word = asm_stmdb(2);
+    emit_int(emitter, word);
+}
+
+/*
+input: "3 4 add"
+return: binary_buf (binaryies corresponding to the input instructions)
+*/
 int* jit_script(char *input) {
     ensure_jit_buf();
     emitter.buf = byte_buf;
     emitter.pos = 0;
-    /*
-    Only support mov r0, #X.
-    */
+
     struct Substr remain={input, strlen(input)};
     int word;
     int op;
@@ -65,12 +83,15 @@ int* jit_script(char *input) {
     while (!is_end(&remain)) {
         skip_space(&remain);
         if (is_number(remain.ptr)) {
+            // Push a given number into the stack.
             int immediate_v = parse_number(remain.ptr);
+            skip_token(&remain);
+
             word = asm_mov_immediate_v(2, immediate_v);  // mov r2, #X
             emit_int(&emitter, word);
             word = asm_stmdb(2);  // stmdb r13!, r2
             emit_int(&emitter, word);
-            skip_token(&remain);
+
             continue;
         } else {
             op = parse_word(&remain);
@@ -78,12 +99,7 @@ int* jit_script(char *input) {
 
             switch(op) {
                 case OP_ADD:
-                    word = asm_ldmia(2, 2, 3);;  // ldmia r13!, {r2, r3}
-                    emit_int(&emitter, word);
-                    word = asm_add(2, 2, 3);  // add r2, r2, r3
-                    emit_int(&emitter, word);
-                    word = asm_stmdb(2);  // stmdb r13!, r2
-                    emit_int(&emitter, word);
+                    asm_op_add(&emitter);
                     break;
             }
 
