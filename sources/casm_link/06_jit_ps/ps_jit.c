@@ -60,6 +60,7 @@ int* jit_script(char *input) {
     */
     struct Substr remain={input, strlen(input)};
     int word;
+    int op;
 
     while (!is_end(&remain)) {
         skip_space(&remain);
@@ -72,6 +73,20 @@ int* jit_script(char *input) {
             skip_token(&remain);
             continue;
         } else {
+            op = parse_word(&remain);
+            skip_token(&remain);
+
+            switch(op) {
+                case OP_ADD:
+                    word = 0xE8BD000C;  // ldmia r13!, {r2, r3}
+                    emit_int(&emitter, word);
+                    word = 0xE0822003;  // add r2, r2, r3
+                    emit_int(&emitter, word);
+                    word = asm_stmdb(2);  // stmdb r13!, r2
+                    emit_int(&emitter, word);
+                    break;
+            }
+
             continue;
         }
     }
@@ -98,8 +113,32 @@ void test_jit_sctipr_3() {
     assert_int_eq(expect, res);
 }
 
+void test_jit_sctipr_3_5() {
+    char* input = "3 5";
+    int expect = 5;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
+void test_jit_sctipr_3_5_add() {
+    char* input = "3 5 add";
+    int expect = 8;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
 static void run_unit_tests() {
     test_jit_sctipr_3();
+    test_jit_sctipr_3_5();
+    test_jit_sctipr_3_5_add();
     printf("all test done\n");
 }
 
