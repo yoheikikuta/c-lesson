@@ -86,6 +86,23 @@ void asm_op_sub(struct Emitter* emitter) {
 }
 
 /*
+Emit the following binaries into emitter:
+  ldmia r13!, {r2, r3}
+  mul r2, r3, r2
+  strmdb r13!, r2
+"5 3 mul" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
+*/
+void asm_op_mul(struct Emitter* emitter) {
+    int word;
+    word = asm_ldmia(2, 2, 3);
+    emit_int(emitter, word);
+    word = asm_mul(2, 3, 2);
+    emit_int(emitter, word);
+    word = asm_stmdb(2);
+    emit_int(emitter, word);
+}
+
+/*
 input: "3 4 add"
 return: binary_buf (binaryies corresponding to the input instructions)
 */
@@ -121,6 +138,9 @@ int* jit_script(char *input) {
                     break;
                 case OP_SUB:
                     asm_op_sub(&emitter);
+                    break;
+                case OP_MUL:
+                    asm_op_mul(&emitter);
                     break;
             }
 
@@ -183,11 +203,23 @@ void test_jit_sctipr_10_3_sub() {
     assert_int_eq(expect, res);
 }
 
+void test_jit_sctipr_4_9_mul() {
+    char* input = "4 9 mul";
+    int expect = 36;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
 static void run_unit_tests() {
     test_jit_sctipr_3();
     test_jit_sctipr_3_5();
     test_jit_sctipr_3_5_add();
     test_jit_sctipr_10_3_sub();
+    test_jit_sctipr_4_9_mul();
     printf("all test done\n");
 }
 
