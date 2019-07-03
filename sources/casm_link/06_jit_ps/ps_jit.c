@@ -72,7 +72,9 @@ int* jit_script(char *input) {
         skip_space(&remain);
         if (is_number(remain.ptr)) {
             int immediate_v = parse_number(remain.ptr);
-            word = asm_mov(0, immediate_v);  // mov r0, #X
+            word = asm_mov(2, immediate_v);  // mov r2, #X
+            emit_int(&emitter, word);
+            word = 0xE92D0000 + 0x1 << 2;  // stmdb r13!, r2
             emit_int(&emitter, word);
             skip_token(&remain);
             continue;
@@ -80,7 +82,12 @@ int* jit_script(char *input) {
             continue;
         }
     }
-    word = 0xe1a0f00e;  // mov r15, r14
+
+    word = 0xE8BD0000 + 0x1 << 2;  // ldmia r13, {r2}
+    emit_int(&emitter, word);
+    word = 0xE1A00002;  // mov r0, r2
+    emit_int(&emitter, word);
+    word = 0xE1A0f00E;  // mov r15, r14
     emit_int(&emitter, word);
 
     set_binaries(&emitter);
