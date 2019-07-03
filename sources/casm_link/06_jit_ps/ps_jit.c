@@ -5,6 +5,7 @@
 
 #include "parser.h"
 #include "test_util.h"
+#include "asm.h"
 
 extern int eval(int r0, int r1, char *str);
 struct Emitter {
@@ -50,14 +51,6 @@ void set_binaries(struct Emitter* emitter) {
     }
 }
 
-int asm_mov(int r_dest, int immediate_v) {
-    int word = 0xE3A00000;
-    word += r_dest << 12;
-    word += immediate_v;
-    
-    return word;
-}
-
 int* jit_script(char *input) {
     ensure_jit_buf();
     emitter.buf = byte_buf;
@@ -72,9 +65,9 @@ int* jit_script(char *input) {
         skip_space(&remain);
         if (is_number(remain.ptr)) {
             int immediate_v = parse_number(remain.ptr);
-            word = asm_mov(2, immediate_v);  // mov r2, #X
+            word = asm_mov_immediate_v(2, immediate_v);  // mov r2, #X
             emit_int(&emitter, word);
-            word = 0xE92D0000 + 0x1 << 2;  // stmdb r13!, r2
+            word = asm_stmdb(2);  // stmdb r13!, r2
             emit_int(&emitter, word);
             skip_token(&remain);
             continue;
@@ -83,11 +76,11 @@ int* jit_script(char *input) {
         }
     }
 
-    word = 0xE8BD0000 + 0x1 << 2;  // ldmia r13, {r2}
+    word = asm_ldmia(2);  // ldmia r13!, r2
     emit_int(&emitter, word);
-    word = 0xE1A00002;  // mov r0, r2
+    word = asm_mov_register(0, 2);  // mov r0, r2
     emit_int(&emitter, word);
-    word = 0xE1A0f00E;  // mov r15, r14
+    word = asm_mov_register(15, 14);  // mov r15, r14
     emit_int(&emitter, word);
 
     set_binaries(&emitter);

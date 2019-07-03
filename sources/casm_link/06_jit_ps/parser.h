@@ -10,6 +10,7 @@ int is_number(char *str);
 int parse_number(char *str);
 int is_register(char *str);
 int is_end(struct Substr *in_str);
+void assert_int_eq(int expect, int actual);
 
 enum {
     OP_ADD,
