@@ -18,3 +18,8 @@ input: r_num = 2, 2,3
 return: 0xE8BD000C (ldmia r13!, {r2, r3})
  */
 int asm_ldmia(int r_num, ...);
+/*
+input: r_dest = 2, r_1st_operand = 3, r_2nd_operand = 4
+return: 0xE0832004 (add r2, r3, r4)
+ */
+int asm_add(int r_dest, int r_1st_operand, int r_2nd_operand);
