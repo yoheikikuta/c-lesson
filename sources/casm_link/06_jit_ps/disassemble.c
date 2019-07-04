@@ -104,10 +104,10 @@ int try_print_asm(int word) {
 
         if (immediate_operand_v) {
             int immediate_v = (word & 0xFF);
-            cl_printf("add r%i, r%i, #0x%X\n", first_op_register_v, dest_register_v, immediate_v);
+            cl_printf("add r%i, r%i, #0x%X\n", dest_register_v, first_op_register_v, immediate_v);
         } else {
             int operand2_register_v = (word & 0xF);
-            cl_printf("add r%i, r%i, r%i\n", first_op_register_v, dest_register_v, operand2_register_v);
+            cl_printf("add r%i, r%i, r%i\n", dest_register_v, first_op_register_v, operand2_register_v);
         }
         return 1;
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
@@ -519,6 +519,18 @@ static void test_print_asm_add_r3_r3_r4() {
     cl_clear_output();
 }
 
+static void test_print_asm_add_r2_r3_r2() {
+    int input = 0xE0832002;
+    char* expect = "add r2, r3, r2\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_stmdb() {
     int input = 0xE92D0002;
     char* expect = "stmdb r13! {r1}\n";
@@ -605,6 +617,7 @@ static void unit_tests() {
     test_print_asm_add();
     test_print_asm_add_r3_r3_39();
     test_print_asm_add_r3_r3_r4();
+    test_print_asm_add_r2_r3_r2();
     test_print_asm_stmdb();
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
