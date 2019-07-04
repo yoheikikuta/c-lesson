@@ -110,6 +110,22 @@ int try_print_asm(int word) {
             cl_printf("add r%i, r%i, r%i\n", dest_register_v, first_op_register_v, operand2_register_v);
         }
         return 1;
+    } else if ((0xE0400000 == (word & 0xE0400000)) & (0x2 == ((word >> 21) & 0xF))) {
+        // SUB: add rX, rX, #X or add rX, rX, rX 
+        // Breakdown of 32 bits: 
+        //   [4 bits] 00 [immediate/operand 1 bit (1/0)] 0010 [1 bit] [1st operand register 4 bits] [dest register 4 bits] [operand2 12 bits]
+        int first_op_register_v = (word & 0xF0000) >> 4*4;
+        int dest_register_v = (word & 0xF000) >> 4*3;
+        int immediate_operand_v = (word >> 25) & 1;
+
+        if (immediate_operand_v) {
+            int immediate_v = (word & 0xFF);
+            cl_printf("sub r%i, r%i, #0x%X\n", dest_register_v, first_op_register_v, immediate_v);
+        } else {
+            int operand2_register_v = (word & 0xF);
+            cl_printf("sub r%i, r%i, r%i\n", dest_register_v, first_op_register_v, operand2_register_v);
+        }
+        return 1;
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
         // LDMIA: ldmia r13! {rX, rX, ...}
         char* registers_str = get_registers_str_from_lower_16bits(word);
@@ -119,10 +135,6 @@ int try_print_asm(int word) {
     } else if (word == 0x1AFFFFFA) {
         // BNE: bne [r15, #-0x18]
         cl_printf("bne [r15, #-0x18]\n");
-        return 1;
-    } else if (word == 0xE2422004) {
-        // SUB: sub r2, r2, #0x4
-        cl_printf("sub r2, r2, #0x4\n");
         return 1;
     } else if (word == 0xE203300F) {
         // AND: and r3, r3, #0xF
@@ -318,6 +330,18 @@ static void test_print_asm_cmp() {
 static void test_print_asm_sub() {
     int input = 0xE2422004;
     char* expect = "sub r2, r2, #0x4\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
+static void test_print_asm_sub_r2_r3_r2() {
+    int input = 0xE0432002;
+    char* expect = "sub r2, r3, r2\n";
 
     char* actual;
     try_print_asm(input);
@@ -601,6 +625,7 @@ static void unit_tests() {
     test_print_asm_lsr_r3_r0_r2();
     test_print_asm_cmp();
     test_print_asm_sub();
+    test_print_asm_sub_r2_r3_r2();
     test_print_asm_and();
     test_print_asm_b_negative();
     test_print_asm_b_positive();
