@@ -56,7 +56,7 @@ Emit the following binaries into emitter:
   ldmia r13!, {r2, r3}
   add r2, r3, r2
   strmdb r13!, r2
-"5 3 add" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
+"5 3 add" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5 -> r2 = 8
 */
 void asm_op_add(struct Emitter* emitter) {
     int word;
@@ -73,7 +73,7 @@ Emit the following binaries into emitter:
   ldmia r13!, {r2, r3}
   sub r2, r3, r2
   strmdb r13!, r2
-"5 3 sub" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
+"5 3 sub" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5 -> r2 = 2
 */
 void asm_op_sub(struct Emitter* emitter) {
     int word;
@@ -90,7 +90,7 @@ Emit the following binaries into emitter:
   ldmia r13!, {r2, r3}
   mul r2, r3, r2
   strmdb r13!, r2
-"5 3 mul" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5
+"5 3 mul" -> (stack bottom) 5 | 3 (stack bottom) -> lmdia -> r2 = 3, r3 = 5 -> r2 = 15
 */
 void asm_op_mul(struct Emitter* emitter) {
     int word;
@@ -99,6 +99,44 @@ void asm_op_mul(struct Emitter* emitter) {
     word = asm_mul(2, 3, 2);
     emit_int(emitter, word);
     word = asm_stmdb(2);
+    emit_int(emitter, word);
+}
+
+/*
+Emit the following binaries into emitter:
+  ldmia r13!, {r2, r3}
+  mov r4, #0 (tmp register for storing the quotient)
+  mov r5, r2 (tmp register for storing the divisor)
+  cmp r3, r2
+  blt (to mov r2, r4)
+  add r4, r4, #1
+  add r2, r2, r5
+  b (to cmp r3, r2)
+  mov r2, r4
+  strmdb r13!, r2
+"7 2 div" -> (stack bottom) 7 | 2 (stack bottom) -> lmdia -> r2 = 2, r3 = 7 -> r2 = 3 (quotient)
+*/
+void asm_op_div(struct Emitter* emitter) {
+    int word;
+    word = asm_ldmia(2, 2, 3);  // ldmia r13!, {r2, r3}
+    emit_int(emitter, word);
+    word = asm_mov_immediate_v(4, 0);  // mov r4, #0
+    emit_int(emitter, word);
+    word = asm_mov_register(5, 2);  // mov r5, r2
+    emit_int(emitter, word);
+    word = 0xE1530002;  // cmp r3, r2
+    emit_int(emitter, word);
+    word = 0xBA00000B;  // blt (to mov r2, r4)
+    emit_int(emitter, word);
+    word = 0xE2844001;  // add r4, r4, #1
+    emit_int(emitter, word);
+    word = asm_add(2, 2, 5);  // add r2, r2, r5
+    emit_int(emitter, word);
+    word = 0xEAFFFFEB;  // b (to cmp r3, r2)
+    emit_int(emitter, word);
+    word = asm_mov_register(2, 4);  // mov r2, r4
+    emit_int(emitter, word);
+    word = asm_stmdb(2); // stmdb r13!, r2 
     emit_int(emitter, word);
 }
 
@@ -141,6 +179,9 @@ int* jit_script(char *input) {
                     break;
                 case OP_MUL:
                     asm_op_mul(&emitter);
+                    break;
+                case OP_DIV:
+                    asm_op_div(&emitter);
                     break;
             }
 
@@ -214,12 +255,48 @@ void test_jit_sctipr_4_9_mul() {
     assert_int_eq(expect, res);
 }
 
+void test_jit_sctipr_3_5_div() {
+    char* input = "3 5 div";
+    int expect = 0;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
+void test_jit_sctipr_5_2_div() {
+    char* input = "5 2 div";
+    int expect = 2;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
+void test_jit_sctipr_18_3_div() {
+    char* input = "18 3 div";
+    int expect = 6;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 0);
+
+    assert_int_eq(expect, res);
+}
+
 static void run_unit_tests() {
     test_jit_sctipr_3();
     test_jit_sctipr_3_5();
     test_jit_sctipr_3_5_add();
     test_jit_sctipr_10_3_sub();
     test_jit_sctipr_4_9_mul();
+    test_jit_sctipr_3_5_div();
+    test_jit_sctipr_5_2_div();
+    test_jit_sctipr_18_3_div();
     printf("all test done\n");
 }
 
