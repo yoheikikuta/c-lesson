@@ -166,6 +166,16 @@ int* jit_script(char *input) {
             emit_int(&emitter, word);
 
             continue;
+        } else if (is_register(remain.ptr)) {
+            if (remain.ptr[1] == '1') {
+                word = asm_stmdb(1);
+            } else if (remain.ptr[1] == '0') {
+                word = asm_stmdb(0);
+            }
+            emit_int(&emitter, word);
+
+            skip_token(&remain);
+            continue;
         } else {
             op = parse_word(&remain);
             skip_token(&remain);
@@ -288,6 +298,39 @@ void test_jit_sctipr_18_3_div() {
     assert_int_eq(expect, res);
 }
 
+void test_jit_sctipr_r0_2_3_add() {
+    char* input = "r0 3 add";
+    int expect = 5;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(2, 0);
+
+    assert_int_eq(expect, res);
+}
+
+void test_jit_sctipr_9_r1_3_div() {
+    char* input = "9 r1 div";
+    int expect = 3;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(0, 3);
+
+    assert_int_eq(expect, res);
+}
+
+void test_jit_sctipr_r0_2_r1_3_mul() {
+    char* input = "r0 r1 mul";
+    int expect = 6;
+
+    int (*funcvar)(int, int);
+    funcvar = (int(*)(int, int))jit_script(input);
+    int res = funcvar(2, 3);
+
+    assert_int_eq(expect, res);
+}
+
 static void run_unit_tests() {
     test_jit_sctipr_3();
     test_jit_sctipr_3_5();
@@ -297,6 +340,9 @@ static void run_unit_tests() {
     test_jit_sctipr_3_5_div();
     test_jit_sctipr_5_2_div();
     test_jit_sctipr_18_3_div();
+    test_jit_sctipr_r0_2_3_add();
+    test_jit_sctipr_9_r1_3_div();
+    test_jit_sctipr_r0_2_r1_3_mul();
     printf("all test done\n");
 }
 
@@ -311,15 +357,15 @@ int main() {
     printf("res=%d\n", res);
 
     /*
-     TODO: Make below test pass.
+     JIT implementation.
     */
-    // funcvar = (int(*)(int, int))jit_script("3 7 add r1 sub 4 mul");
+    funcvar = (int(*)(int, int))jit_script("3 7 add r1 sub 4 mul");
 
-    // res = funcvar(1, 5);
-    // assert_int_eq(20, res);
+    res = funcvar(1, 5);
+    assert_int_eq(20, res);
 
-    // res = funcvar(1, 4);
-    // assert_int_eq(24, res);
+    res = funcvar(1, 4);
+    assert_int_eq(24, res);
 
     return 0;
 }
