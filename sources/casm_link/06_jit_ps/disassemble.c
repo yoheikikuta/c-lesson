@@ -6,6 +6,7 @@
 #define INSTRUCTION_BYTE_SIZE 4
 
 
+// Retrun 1 and print disassembled result if disassemble is succeeded, 0 else.
 int try_print_asm(int word) {
     if ((0xE1A00000 == (word & 0xE1A00000)) & (0xD == ((word >> 21) & 0xF))) {
         // LSR: lsr rX, rX, rX

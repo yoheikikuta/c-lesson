@@ -365,7 +365,7 @@ int main() {
     assert_int_eq(24, res);
 
     printf("-----Print disassemble result of funcvar(1, 4)-----\n");
-    for (int i = 0; i <= emitter.pos; i++) {
+    for (int i = 0; i < emitter.pos; i++) {
         if(!try_print_asm(emitter.buf[i])) {
             print_asm_hex_dump(emitter.buf[i]);
         };
