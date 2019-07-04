@@ -111,7 +111,7 @@ int try_print_asm(int word) {
         }
         return 1;
     } else if ((0xE0400000 == (word & 0xE0400000)) & (0x2 == ((word >> 21) & 0xF))) {
-        // SUB: add rX, rX, #X or add rX, rX, rX 
+        // SUB: add rX, rX, #X or sub rX, rX, rX 
         // Breakdown of 32 bits: 
         //   [4 bits] 00 [immediate/operand 1 bit (1/0)] 0010 [1 bit] [1st operand register 4 bits] [dest register 4 bits] [operand2 12 bits]
         int first_op_register_v = (word & 0xF0000) >> 4*4;
@@ -125,6 +125,16 @@ int try_print_asm(int word) {
             int operand2_register_v = (word & 0xF);
             cl_printf("sub r%i, r%i, r%i\n", dest_register_v, first_op_register_v, operand2_register_v);
         }
+        return 1;
+    } else if ((0xE0000000 == (word & 0xE0000000)) & (0x9 == ((word >> 4) & 0xF))) {
+        // MUL: mul rX, rX, rX 
+        // Breakdown of 32 bits: 
+        //   [4 bits] 00000000 [dest register 4 bits] 0000 [Rs 4 bits] 1001 [Rm 4 bits]
+        int dest_register_v = (word & 0xF0000) >> 4*4;
+        int rs_v = (word & 0xF00) >> 4*2;
+        int rm_v = word & 0xF;
+
+        cl_printf("mul r%i, r%i, r%i\n", dest_register_v, rm_v, rs_v);
         return 1;
     } else if (0xE8BD0000 == (word & 0xE8BD0000)) {
         // LDMIA: ldmia r13! {rX, rX, ...}
@@ -555,6 +565,18 @@ static void test_print_asm_add_r2_r3_r2() {
     cl_clear_output();
 }
 
+static void test_print_asm_mul_r2_r3_r4() {
+    int input = 0xE0020493;
+    char* expect = "mul r2, r3, r4\n";
+
+    char* actual;
+    try_print_asm(input);
+    actual = cl_get_result(0);
+
+    assert_two_str_eq(expect, actual);
+    cl_clear_output();
+}
+
 static void test_print_asm_stmdb() {
     int input = 0xE92D0002;
     char* expect = "stmdb r13! {r1}\n";
@@ -643,6 +665,7 @@ static void unit_tests() {
     test_print_asm_add_r3_r3_39();
     test_print_asm_add_r3_r3_r4();
     test_print_asm_add_r2_r3_r2();
+    test_print_asm_mul_r2_r3_r4();
     test_print_asm_stmdb();
     test_print_asm_stmdb_multi();
     test_print_asm_ldmia();
