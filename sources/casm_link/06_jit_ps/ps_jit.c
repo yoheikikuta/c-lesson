@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "test_util.h"
 #include "asm.h"
+#include "disassemble.h"
 
 extern int eval(int r0, int r1, char *str);
 struct Emitter {
@@ -362,6 +363,13 @@ int main() {
 
     res = funcvar(1, 4);
     assert_int_eq(24, res);
+
+    printf("-----Print disassemble result of funcvar(1, 4)-----\n");
+    for (int i = 0; i <= emitter.pos; i++) {
+        if(!try_print_asm(emitter.buf[i])) {
+            print_asm_hex_dump(emitter.buf[i]);
+        };
+    }
 
     return 0;
 }
