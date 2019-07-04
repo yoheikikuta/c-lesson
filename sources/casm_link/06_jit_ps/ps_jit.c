@@ -9,19 +9,16 @@
 
 extern int eval(int r0, int r1, char *str);
 struct Emitter {
-    unsigned char* buf;
+    int* buf;
     int pos;
 };
 static struct Emitter emitter;
-static unsigned char byte_buf[1024];
 
 // number: 0xE59F101E -> emitter: 
-//   pos       n     n+1   n+2   n+3   n+4
-//   buf  0x1E, 0x10, 0x9F, 0xE5
+//   pos  n           n+1
+//   buf  0xE59F101E
 void emit_int(struct Emitter* emitter, int number) {
-    for (int i = 0; i < 4; i++) {
-        emitter->buf[emitter->pos++] = (number >> (i * 8)) & 0xFF;
-    }
+    emitter->buf[emitter->pos++] = number;
 }
 
 /*
@@ -104,16 +101,16 @@ void asm_op_mul(struct Emitter* emitter) {
 
 /*
 Emit the following binaries into emitter:
-  ldmia r13!, {r2, r3}
-  mov r4, #0 (tmp register for storing the quotient)
-  mov r5, r2 (tmp register for storing the divisor)
-  cmp r3, r2
-  blt (to mov r2, r4)
-  add r4, r4, #1
-  add r2, r2, r5
-  b (to cmp r3, r2)
-  mov r2, r4
-  strmdb r13!, r2
+   0: ldmia r13!, {r2, r3}
+   4: mov r4, #0 (tmp register for storing the quotient)
+   8: mov r5, r2 (tmp register for storing the divisor)
+   c: cmp r3, r2
+  10: blt (to mov r2, r4)
+  14: add r4, r4, #1
+  18: add r2, r2, r5
+  1c: b (to cmp r3, r2)
+  20: mov r2, r4
+  24: strmdb r13!, r2
 "7 2 div" -> (stack bottom) 7 | 2 (stack bottom) -> lmdia -> r2 = 2, r3 = 7 -> r2 = 3 (quotient)
 */
 void asm_op_div(struct Emitter* emitter) {
@@ -126,13 +123,13 @@ void asm_op_div(struct Emitter* emitter) {
     emit_int(emitter, word);
     word = 0xE1530002;  // cmp r3, r2
     emit_int(emitter, word);
-    word = 0xBA00000B;  // blt (to mov r2, r4)
+    word = 0xBA000002;  // blt (to mov r2, r4)
     emit_int(emitter, word);
     word = 0xE2844001;  // add r4, r4, #1
     emit_int(emitter, word);
     word = asm_add(2, 2, 5);  // add r2, r2, r5
     emit_int(emitter, word);
-    word = 0xEAFFFFEB;  // b (to cmp r3, r2)
+    word = 0xEAFFFFFA;  // b (to cmp r3, r2)
     emit_int(emitter, word);
     word = asm_mov_register(2, 4);  // mov r2, r4
     emit_int(emitter, word);
@@ -146,7 +143,7 @@ return: binary_buf (binaryies corresponding to the input instructions)
 */
 int* jit_script(char *input) {
     ensure_jit_buf();
-    emitter.buf = byte_buf;
+    emitter.buf = binary_buf;
     emitter.pos = 0;
 
     struct Substr remain={input, strlen(input)};
@@ -206,7 +203,6 @@ int* jit_script(char *input) {
     word = asm_mov_register(15, 14);  // mov r15, r14
     emit_int(&emitter, word);
 
-    set_binaries(&emitter);
     return binary_buf;
 }
 
